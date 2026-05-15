@@ -1,4 +1,5 @@
 import { useState, Fragment } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useFlowStore } from '../store'
 import { ArrowRight, ArrowLeft, Check, Zap } from 'lucide-react'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -264,6 +265,7 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
 
 export default function OnboardingPage() {
   const completarOnboarding = useFlowStore(s => s.completarOnboarding)
+  const navigate = useNavigate()
   const isMobile = useIsMobile()
 
   const [step, setStep] = useState<Step>('welcome')
@@ -292,6 +294,7 @@ export default function OnboardingPage() {
       desafios,
       habitosSelecionados,
     })
+    navigate('/dashboard')
   }
 
   const anim = {
