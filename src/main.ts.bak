@@ -1,0 +1,2622 @@
+import './style.css'
+import { createCheckoutSession, createPortalSession } from './services/billing'
+import {
+  getCurrentUser,
+  isSupabaseConfigured,
+  onAuthChange,
+  sendMagicLink,
+  signOut,
+} from './services/supabase'
+
+type View = 'dashboard' | 'command' | 'habits' | 'projects' | 'finance' | 'focus' | 'billing'
+type OnboardingField =
+  | 'goals'
+  | 'routine'
+  | 'friction'
+  | 'habits'
+  | 'targets'
+  | 'productivity'
+  | 'money'
+  | 'priorities'
+
+type Profile = Record<OnboardingField, string[]>
+
+type HabitTone = 'blue' | 'green' | 'amber' | 'rose'
+type TaskPriority = 'P0' | 'P1' | 'P2'
+type FinanceKind = 'income' | 'expense' | 'subscription'
+type PlanId = 'starter' | 'pro' | 'flowplus'
+type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled'
+
+type Habit = {
+  id: string
+  name: string
+  area: string
+  streak: number
+  target: string
+  week: number[]
+  tone: HabitTone
+}
+
+type ProjectStatus = 'Backlog' | 'In progress' | 'Review' | 'Done'
+
+type ProjectTask = {
+  id: string
+  title: string
+  project: string
+  status: ProjectStatus
+  priority: TaskPriority
+  estimate: string
+}
+
+type HabitDraft = {
+  name: string
+  area: string
+  target: string
+  tone: HabitTone
+}
+
+type TaskDraft = {
+  title: string
+  project: string
+  priority: TaskPriority
+  estimate: string
+}
+
+type FinanceEntry = {
+  id: string
+  title: string
+  category: string
+  amount: number
+  kind: FinanceKind
+}
+
+type FinanceDraft = {
+  title: string
+  category: string
+  amount: string
+  kind: FinanceKind
+}
+
+type Subscription = {
+  plan: PlanId
+  status: SubscriptionStatus
+  trialStartedAt: string
+  trialEndsAt: string
+  billingStartsAt: string
+}
+
+type DailyPlan = {
+  intention: string
+  outcome: string
+  energy: 'Alta' | 'Estável' | 'Baixa'
+  review: string
+  completedSteps: string[]
+}
+
+type AppState = {
+  onboardingComplete: boolean
+  onboardingStep: number
+  activeView: View
+  profile: Profile
+  habits: Habit[]
+  completedHabits: string[]
+  habitDraft: HabitDraft
+  editingHabitId: string | null
+  projectTasks: ProjectTask[]
+  taskDraft: TaskDraft
+  editingTaskId: string | null
+  financeEntries: FinanceEntry[]
+  financeDraft: FinanceDraft
+  subscription: Subscription
+  authEmail: string
+  authUserId: string | null
+  authUserEmail: string | null
+  authMessage: string
+  billingMessage: string
+  billingLoadingPlan: PlanId | null
+  stripeCustomerId: string | null
+  dailyPlan: DailyPlan
+  commandInput: string
+  aiResponse: string
+  focusDuration: number
+  focusRemaining: number
+  focusRunning: boolean
+}
+
+const storageKey = 'flowos.mvp.state'
+const app = document.querySelector<HTMLDivElement>('#app')
+const trialDays = 15
+
+const emptyProfile: Profile = {
+  goals: [],
+  routine: [],
+  friction: [],
+  habits: [],
+  targets: [],
+  productivity: [],
+  money: [],
+  priorities: [],
+}
+
+const initialHabits: Habit[] = [
+  {
+    id: 'hydrate',
+    name: 'Hidratar e respirar',
+    area: 'Energia',
+    streak: 12,
+    target: '2 blocos hoje',
+    week: [1, 1, 1, 0, 1, 1, 0],
+    tone: 'blue',
+  },
+  {
+    id: 'train',
+    name: 'Treino essencial',
+    area: 'Corpo',
+    streak: 8,
+    target: '35 min',
+    week: [1, 1, 0, 1, 1, 0, 0],
+    tone: 'green',
+  },
+  {
+    id: 'review',
+    name: 'Review da noite',
+    area: 'Clareza',
+    streak: 18,
+    target: '10 min',
+    week: [1, 1, 1, 1, 1, 1, 0],
+    tone: 'amber',
+  },
+  {
+    id: 'money',
+    name: 'Check financeiro',
+    area: 'Capital',
+    streak: 5,
+    target: '1 decisão',
+    week: [1, 0, 1, 0, 1, 0, 0],
+    tone: 'rose',
+  },
+]
+
+const initialTasks: ProjectTask[] = [
+  {
+    id: 'task-1',
+    title: 'Definir oferta premium do FlowOS',
+    project: 'MVP',
+    status: 'In progress',
+    priority: 'P0',
+    estimate: '90m',
+  },
+  {
+    id: 'task-2',
+    title: 'Mapear rotina de aquisição',
+    project: 'Growth',
+    status: 'Backlog',
+    priority: 'P1',
+    estimate: '45m',
+  },
+  {
+    id: 'task-3',
+    title: 'Criar roteiro de demo executiva',
+    project: 'Launch',
+    status: 'Review',
+    priority: 'P1',
+    estimate: '30m',
+  },
+  {
+    id: 'task-4',
+    title: 'Fechar sprint semanal',
+    project: 'Operations',
+    status: 'Done',
+    priority: 'P2',
+    estimate: '20m',
+  },
+]
+
+const initialFinanceEntries: FinanceEntry[] = [
+  {
+    id: 'finance-1',
+    title: 'Consultoria premium',
+    category: 'Receita',
+    amount: 9200,
+    kind: 'income',
+  },
+  {
+    id: 'finance-2',
+    title: 'Produto digital',
+    category: 'Receita',
+    amount: 5200,
+    kind: 'income',
+  },
+  {
+    id: 'finance-3',
+    title: 'Retainer mensal',
+    category: 'Receita',
+    amount: 4000,
+    kind: 'income',
+  },
+  {
+    id: 'finance-4',
+    title: 'Operação e SaaS',
+    category: 'Operação',
+    amount: 3180,
+    kind: 'expense',
+  },
+  {
+    id: 'finance-5',
+    title: 'Vida e casa',
+    category: 'Essencial',
+    amount: 4260,
+    kind: 'expense',
+  },
+  {
+    id: 'finance-6',
+    title: 'Stack AI e apps',
+    category: 'Assinaturas',
+    amount: 1240,
+    kind: 'subscription',
+  },
+]
+
+const defaultHabitDraft: HabitDraft = {
+  name: '',
+  area: 'Energia',
+  target: '',
+  tone: 'blue',
+}
+
+const defaultTaskDraft: TaskDraft = {
+  title: '',
+  project: 'MVP',
+  priority: 'P1',
+  estimate: '45m',
+}
+
+const defaultFinanceDraft: FinanceDraft = {
+  title: '',
+  category: 'Operacional',
+  amount: '',
+  kind: 'expense',
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date)
+  nextDate.setDate(nextDate.getDate() + days)
+
+  return nextDate
+}
+
+function createSubscription(plan: PlanId = 'starter'): Subscription {
+  const now = new Date()
+  const trialEndsAt = addDays(now, trialDays)
+  const isStarter = plan === 'starter'
+
+  return {
+    plan,
+    status: isStarter ? 'trialing' : 'active',
+    trialStartedAt: now.toISOString(),
+    trialEndsAt: trialEndsAt.toISOString(),
+    billingStartsAt: (isStarter ? trialEndsAt : now).toISOString(),
+  }
+}
+
+const defaultDailyPlan: DailyPlan = {
+  intention: 'Operar o dia com clareza e uma vitória mensurável.',
+  outcome: 'Finalizar uma entrega P0 antes do fim da tarde.',
+  energy: 'Estável',
+  review: '',
+  completedSteps: ['plan'],
+}
+
+const dailyRitualSteps = [
+  {
+    id: 'plan',
+    title: 'Planejar',
+    label: 'Definir intenção, energia e resultado principal.',
+  },
+  {
+    id: 'focus',
+    title: 'Executar',
+    label: 'Proteger um bloco de deep work sem contexto aberto.',
+  },
+  {
+    id: 'habits',
+    title: 'Consistência',
+    label: 'Marcar hábitos essenciais antes do fim do dia.',
+  },
+  {
+    id: 'review',
+    title: 'Fechar',
+    label: 'Registrar aprendizado e próxima ação.',
+  },
+]
+
+const onboardingQuestions: Array<{
+  field: OnboardingField
+  label: string
+  title: string
+  subtitle: string
+  multiple: boolean
+  options: string[]
+}> = [
+  {
+    field: 'goals',
+    label: 'Objetivos',
+    title: 'O que precisa de mais clareza agora?',
+    subtitle: 'Escolha os vetores que devem guiar seu sistema.',
+    multiple: true,
+    options: ['Saúde e energia', 'Negócio', 'Carreira', 'Relacionamentos', 'Patrimônio'],
+  },
+  {
+    field: 'routine',
+    label: 'Rotina',
+    title: 'Como sua semana normalmente se comporta?',
+    subtitle: 'O FlowOS ajusta o nível de estrutura ao seu ritmo.',
+    multiple: false,
+    options: ['Dias previsíveis', 'Agenda intensa', 'Blocos irregulares', 'Modo criativo'],
+  },
+  {
+    field: 'friction',
+    label: 'Atrito',
+    title: 'Onde sua energia mais vaza?',
+    subtitle: 'Vamos transformar atrito em sistema.',
+    multiple: true,
+    options: ['Excesso de tarefas', 'Falta de foco', 'Finanças soltas', 'Projetos parados', 'Pouca energia'],
+  },
+  {
+    field: 'habits',
+    label: 'Hábitos',
+    title: 'Quais hábitos sustentam sua melhor versão?',
+    subtitle: 'Poucos hábitos, bem acompanhados, criam tração.',
+    multiple: true,
+    options: ['Sono', 'Treino', 'Leitura', 'Deep work', 'Review diário', 'Check financeiro'],
+  },
+  {
+    field: 'targets',
+    label: 'Metas',
+    title: 'Qual horizonte importa neste ciclo?',
+    subtitle: 'O MVP trabalha melhor com uma linha de chegada clara.',
+    multiple: false,
+    options: ['7 dias', '30 dias', '90 dias', '12 meses'],
+  },
+  {
+    field: 'productivity',
+    label: 'Produtividade',
+    title: 'Qual estilo de execução combina com você?',
+    subtitle: 'A IA usa isso para sugerir planos mais naturais.',
+    multiple: false,
+    options: ['Kanban leve', 'Agenda em blocos', 'Lista priorizada', 'Sprints semanais'],
+  },
+  {
+    field: 'money',
+    label: 'Finanças',
+    title: 'Como você quer acompanhar dinheiro?',
+    subtitle: 'Simples, visual e suficiente para decisão diária.',
+    multiple: false,
+    options: ['Fluxo mensal', 'Metas de reserva', 'Assinaturas', 'Receita variável'],
+  },
+  {
+    field: 'priorities',
+    label: 'Prioridades',
+    title: 'O que não pode sumir do radar?',
+    subtitle: 'Essas prioridades aparecem no dashboard e no command center.',
+    multiple: true,
+    options: ['Saúde', 'Família', 'Empresa', 'Criação', 'Estudo', 'Liberdade financeira'],
+  },
+]
+
+type PlanConfig = {
+  id: PlanId
+  label: string
+  price: string
+  badge: string
+  description: string
+  cta: string
+  features: string[]
+  limits: string[]
+  complements: string[]
+}
+
+const planCatalog: Record<PlanId, PlanConfig> = {
+  starter: {
+    id: 'starter',
+    label: 'Starter',
+    price: 'R$ 29/mês',
+    badge: '15 dias grátis',
+    description: 'O Life OS essencial para criar clareza, rotina e tração diária.',
+    cta: 'Iniciar Starter',
+    features: [
+      'Onboarding inteligente',
+      'Dashboard principal',
+      'Hábitos e tarefas',
+      'Life Score básico',
+      'Modo foco',
+      'Financeiro simples',
+    ],
+    limits: ['2 projetos ativos', '20 comandos de IA/mês', 'Histórico de 7 dias'],
+    complements: ['Cobrança automática após o 15º dia', 'Cancelamento antes do fim do teste'],
+  },
+  pro: {
+    id: 'pro',
+    label: 'Pro',
+    price: 'R$ 79/mês',
+    badge: 'Mais escolhido',
+    description: 'Sistema completo com IA para projetos, decisões e execução semanal.',
+    cta: 'Fazer upgrade',
+    features: [
+      'Tudo do Starter',
+      'AI Command Center completo',
+      'Projetos ilimitados',
+      'Relatórios semanais',
+      'Templates premium',
+      'Insights personalizados',
+    ],
+    limits: ['Comandos de IA ampliados', 'Histórico completo', 'Automações de rotina'],
+    complements: ['Prioridade em novas features', 'Exportação de dados'],
+  },
+  flowplus: {
+    id: 'flowplus',
+    label: 'Flow+',
+    price: 'R$ 129/mês',
+    badge: 'Elite',
+    description: 'Acesso premium para crescimento guiado, comunidade e próximos níveis.',
+    cta: 'Entrar no Flow+',
+    features: [
+      'Tudo do Pro',
+      'Consultorias em grupo',
+      'Grupos secretos',
+      'Conteúdos exclusivos',
+      'Playbooks avançados',
+      'Acesso antecipado',
+    ],
+    limits: ['IA ampliada com contexto profundo', 'Sessões mensais de planejamento', 'Desafios de evolução'],
+    complements: ['Comunidade privada', 'Masterminds e aulas fechadas', 'Roteiros para alavancar novos níveis'],
+  },
+}
+
+const planOrder: PlanId[] = ['starter', 'pro', 'flowplus']
+
+const permissionRows: Array<{ label: string; starter: string; pro: string; flowplus: string }> = [
+  {
+    label: 'AI Command Center',
+    starter: '20 comandos/mês',
+    pro: 'Ampliado',
+    flowplus: 'Contexto profundo',
+  },
+  {
+    label: 'Projetos',
+    starter: '2 ativos',
+    pro: 'Ilimitados',
+    flowplus: 'Ilimitados + sprint guiado',
+  },
+  {
+    label: 'Financeiro',
+    starter: 'Fluxo simples',
+    pro: 'Metas e assinaturas',
+    flowplus: 'Estratégia e reviews',
+  },
+  {
+    label: 'Relatórios',
+    starter: 'Life Score básico',
+    pro: 'Semanal completo',
+    flowplus: 'Mensal executivo',
+  },
+  {
+    label: 'Conteúdos',
+    starter: 'Essenciais',
+    pro: 'Templates premium',
+    flowplus: 'Consultorias e grupos secretos',
+  },
+]
+
+const navigation: Array<{ id: View; label: string; icon: string }> = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { id: 'command', label: 'AI Center', icon: 'spark' },
+  { id: 'habits', label: 'Hábitos', icon: 'habit' },
+  { id: 'projects', label: 'Projetos', icon: 'board' },
+  { id: 'finance', label: 'Financeiro', icon: 'wallet' },
+  { id: 'focus', label: 'Foco', icon: 'timer' },
+  { id: 'billing', label: 'Planos', icon: 'plan' },
+]
+
+const viewTitles: Record<View, { title: string; eyebrow: string }> = {
+  dashboard: { title: 'Life Dashboard', eyebrow: 'Hoje' },
+  command: { title: 'AI Command Center', eyebrow: 'Sistema contextual' },
+  habits: { title: 'Habit Tracker', eyebrow: 'Consistência' },
+  projects: { title: 'Project System', eyebrow: 'Execução' },
+  finance: { title: 'Finance System', eyebrow: 'Capital pessoal' },
+  focus: { title: 'Execution Mode', eyebrow: 'Deep work' },
+  billing: { title: 'Planos e Billing', eyebrow: 'Monetização' },
+}
+
+const icons: Record<string, string> = {
+  dashboard:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h6.5v6H4zM13.5 5.5H20v13h-6.5zM4 14.5h6.5v4H4z"/></svg>',
+  spark:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z"/></svg>',
+  habit:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 0 8 8h-3.2A4.8 4.8 0 1 1 12 7.2z"/><path d="M13 3h8v8h-3V8.1l-5.3 5.3-2.1-2.1L15.9 6H13z"/></svg>',
+  board:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v3H4zM4 11h7v8H4zM13 11h7v8h-7z"/></svg>',
+  wallet:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v4H6.8a1 1 0 0 0 0 2H21v9H6.5A2.5 2.5 0 0 1 4 16.5zM17 13.5a1.5 1.5 0 1 0 0 3h1.5v-3z"/></svg>',
+  timer:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2h4v3h-4zM12 6a8 8 0 1 0 0 16 8 8 0 0 0 0-16m1.2 4v3.5l2.7 1.6-1.2 2-4-2.4V10z"/></svg>',
+  plan:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7l8 14 8-14zm0 3.4 3.5 1.7L12 14.2 8.5 8.1z"/></svg>',
+  check:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.2 16.2-3.4-3.4-2.1 2.1 5.5 5.5L20.8 8.8l-2.1-2.1z"/></svg>',
+  arrow:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5l7 7-7 7-2.1-2.1 3.4-3.4H4v-3h10.3l-3.4-3.4z"/></svg>',
+  play:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  pause:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>',
+  reset:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.2 7.8A8 8 0 1 1 4 13h3a5 5 0 1 0 1.4-3.5L11 12H4V5z"/></svg>',
+  plus:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4h3v6.5H20v3h-6.5V20h-3v-6.5H4v-3h6.5z"/></svg>',
+}
+
+const defaultState: AppState = {
+  onboardingComplete: false,
+  onboardingStep: 0,
+  activeView: 'dashboard',
+  profile: emptyProfile,
+  habits: initialHabits,
+  completedHabits: ['hydrate', 'review'],
+  habitDraft: defaultHabitDraft,
+  editingHabitId: null,
+  projectTasks: initialTasks,
+  taskDraft: defaultTaskDraft,
+  editingTaskId: null,
+  financeEntries: initialFinanceEntries,
+  financeDraft: defaultFinanceDraft,
+  subscription: createSubscription(),
+  authEmail: '',
+  authUserId: null,
+  authUserEmail: null,
+  authMessage: isSupabaseConfigured
+    ? 'Login por magic link pronto para conectar sua conta.'
+    : 'Modo demo ativo. Configure Supabase para login real.',
+  billingMessage: 'Checkout real será usado quando a API local e as chaves Stripe estiverem configuradas.',
+  billingLoadingPlan: null,
+  stripeCustomerId: null,
+  dailyPlan: defaultDailyPlan,
+  commandInput: '',
+  aiResponse:
+    'Priorize um bloco de deep work antes do primeiro check de mensagens. Seu sistema está pedindo menos contexto aberto e uma decisão financeira pequena até o fim do dia.',
+  focusDuration: 25 * 60,
+  focusRemaining: 25 * 60,
+  focusRunning: false,
+}
+
+let state: AppState = loadState()
+let focusInterval: ReturnType<typeof setInterval> | undefined
+
+function loadState(): AppState {
+  const saved = window.localStorage.getItem(storageKey)
+
+  if (!saved) {
+    return structuredClone(defaultState)
+  }
+
+  try {
+    const parsed = JSON.parse(saved) as Partial<AppState>
+
+    return {
+      ...structuredClone(defaultState),
+      ...parsed,
+      profile: {
+        ...structuredClone(emptyProfile),
+        ...(parsed.profile ?? {}),
+      },
+      habits: parsed.habits?.length ? parsed.habits : initialHabits,
+      habitDraft: {
+        ...structuredClone(defaultHabitDraft),
+        ...(parsed.habitDraft ?? {}),
+      },
+      editingHabitId: parsed.editingHabitId ?? null,
+      projectTasks: parsed.projectTasks?.length ? parsed.projectTasks : initialTasks,
+      taskDraft: {
+        ...structuredClone(defaultTaskDraft),
+        ...(parsed.taskDraft ?? {}),
+      },
+      editingTaskId: parsed.editingTaskId ?? null,
+      financeEntries: parsed.financeEntries?.length ? parsed.financeEntries : initialFinanceEntries,
+      financeDraft: {
+        ...structuredClone(defaultFinanceDraft),
+        ...(parsed.financeDraft ?? {}),
+      },
+      subscription: {
+        ...createSubscription(),
+        ...(parsed.subscription ?? {}),
+      },
+      billingLoadingPlan: null,
+      dailyPlan: {
+        ...structuredClone(defaultDailyPlan),
+        ...(parsed.dailyPlan ?? {}),
+        completedSteps: parsed.dailyPlan?.completedSteps ?? defaultDailyPlan.completedSteps,
+      },
+      focusRunning: false,
+    }
+  } catch {
+    return structuredClone(defaultState)
+  }
+}
+
+function saveState() {
+  const stateToSave: AppState = {
+    ...state,
+    focusRunning: false,
+  }
+
+  window.localStorage.setItem(storageKey, JSON.stringify(stateToSave))
+}
+
+function icon(name: string) {
+  return icons[name] ?? icons.spark
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (char) => {
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }
+
+    return entities[char]
+  })
+}
+
+function todayLabel() {
+  return new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  }).format(new Date())
+}
+
+function dateLabel(value: string) {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value))
+}
+
+function trialDaysRemaining() {
+  const diff = new Date(state.subscription.trialEndsAt).getTime() - Date.now()
+
+  return Math.max(0, Math.ceil(diff / 86_400_000))
+}
+
+function currentSubscriptionStatus() {
+  if (state.subscription.plan === 'starter' && state.subscription.status === 'trialing' && trialDaysRemaining() === 0) {
+    return 'active'
+  }
+
+  return state.subscription.status
+}
+
+function subscriptionBadge() {
+  const plan = planCatalog[state.subscription.plan]
+  const status = currentSubscriptionStatus()
+
+  if (status === 'trialing') {
+    return `${plan.label} trial: ${trialDaysRemaining()} dias`
+  }
+
+  if (status === 'past_due') {
+    return `${plan.label}: pagamento pendente`
+  }
+
+  if (status === 'canceled') {
+    return `${plan.label}: cancelado`
+  }
+
+  return `${plan.label}: ativo`
+}
+
+function userFocus() {
+  return state.profile.goals[0] ?? 'Clareza, foco e execução'
+}
+
+function completionPercent() {
+  if (!state.habits.length) {
+    return 0
+  }
+
+  return Math.round((state.completedHabits.length / state.habits.length) * 100)
+}
+
+function ritualCompletionPercent() {
+  return Math.round((state.dailyPlan.completedSteps.length / dailyRitualSteps.length) * 100)
+}
+
+function projectCompletionPercent() {
+  if (!state.projectTasks.length) {
+    return 0
+  }
+
+  return Math.round(
+    (state.projectTasks.filter((task) => task.status === 'Done').length / state.projectTasks.length) *
+      100,
+  )
+}
+
+function areaScores() {
+  const habitProgress = completionPercent()
+  const ritualProgress = ritualCompletionPercent()
+  const projectProgress = projectCompletionPercent()
+  const moneyHabitDone = state.completedHabits.includes('money')
+  const p0Open = state.projectTasks.some((task) => task.priority === 'P0' && task.status !== 'Done')
+
+  return [
+    {
+      label: 'Energia',
+      score: Math.min(96, 54 + Math.round(habitProgress * 0.36)),
+      tone: 'green',
+    },
+    {
+      label: 'Foco',
+      score: Math.min(96, 56 + Math.round(ritualProgress * 0.32) + (state.focusRunning ? 4 : 0)),
+      tone: 'blue',
+    },
+    {
+      label: 'Projetos',
+      score: Math.min(96, 58 + Math.round(projectProgress * 0.3) + (p0Open ? 0 : 8)),
+      tone: 'amber',
+    },
+    {
+      label: 'Capital',
+      score: Math.min(96, 64 + (moneyHabitDone ? 14 : 0) + (state.profile.money.length ? 8 : 0)),
+      tone: 'rose',
+    },
+  ]
+}
+
+function weakestArea() {
+  return [...areaScores()].sort((a, b) => a.score - b.score)[0]
+}
+
+function lifeScore() {
+  const scores = areaScores()
+  const average = scores.reduce((sum, area) => sum + area.score, 0) / scores.length
+
+  return Math.round(average)
+}
+
+function activeTasks() {
+  return state.projectTasks.filter((task) => task.status !== 'Done')
+}
+
+function financeTotals() {
+  const income = state.financeEntries
+    .filter((entry) => entry.kind === 'income')
+    .reduce((sum, entry) => sum + entry.amount, 0)
+  const expenses = state.financeEntries
+    .filter((entry) => entry.kind !== 'income')
+    .reduce((sum, entry) => sum + entry.amount, 0)
+  const subscriptions = state.financeEntries
+    .filter((entry) => entry.kind === 'subscription')
+    .reduce((sum, entry) => sum + entry.amount, 0)
+  const free = income - expenses
+  const savingsRate = income ? Math.max(0, Math.round((free / income) * 100)) : 0
+
+  return {
+    income,
+    expenses,
+    subscriptions,
+    free,
+    savingsRate,
+  }
+}
+
+function moneyFormat(value: number) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function render() {
+  if (!app) {
+    return
+  }
+
+  app.innerHTML = state.onboardingComplete ? renderShell() : renderOnboarding()
+  saveState()
+  updateTimerDom()
+}
+
+function renderOnboarding() {
+  const question = onboardingQuestions[state.onboardingStep]
+  const selected = state.profile[question.field]
+  const progress = Math.round(((state.onboardingStep + 1) / onboardingQuestions.length) * 100)
+
+  return `
+    <main class="onboarding">
+      <section class="onboarding-panel">
+        <div class="brand-mark" aria-label="FlowOS">
+          <span>F</span>
+        </div>
+        <div class="onboarding-copy">
+          <p class="eyebrow">${question.label} ${state.onboardingStep + 1}/${onboardingQuestions.length}</p>
+          <h1>${question.title}</h1>
+          <p>${question.subtitle}</p>
+        </div>
+
+        <div class="progress-track" aria-hidden="true">
+          <span style="width: ${progress}%"></span>
+        </div>
+
+        <div class="choice-grid">
+          ${question.options
+            .map((option) => {
+              const isSelected = selected.includes(option)
+
+              return `
+                <button class="choice ${isSelected ? 'is-selected' : ''}" type="button" data-action="select-onboarding" data-field="${question.field}" data-value="${escapeHtml(option)}" data-multiple="${question.multiple}">
+                  <span>${escapeHtml(option)}</span>
+                  <span class="choice-check">${isSelected ? icon('check') : ''}</span>
+                </button>
+              `
+            })
+            .join('')}
+        </div>
+
+        <div class="onboarding-actions">
+          <button class="button ghost" type="button" data-action="prev-onboarding" ${state.onboardingStep === 0 ? 'disabled' : ''}>
+            Voltar
+          </button>
+          <button class="button secondary" type="button" data-action="complete-onboarding">
+            Entrar agora
+          </button>
+          <button class="button primary" type="button" data-action="next-onboarding">
+            ${state.onboardingStep === onboardingQuestions.length - 1 ? 'Criar sistema' : 'Continuar'}
+            ${icon('arrow')}
+          </button>
+        </div>
+      </section>
+
+      <aside class="onboarding-side" aria-label="Resumo do sistema">
+        <div>
+          <p class="eyebrow">FLOWOS</p>
+          <h2>Life Operating System</h2>
+          <p>Um cockpit diário para decisões, energia, execução e dinheiro.</p>
+        </div>
+        <div class="signal-stack">
+          ${renderSignal('Life score inicial', `${lifeScore()}%`, 'blue')}
+          ${renderSignal('Hábitos ativos', `${state.habits.length}`, 'green')}
+          ${renderSignal('Prioridade central', escapeHtml(userFocus()), 'amber')}
+        </div>
+      </aside>
+    </main>
+  `
+}
+
+function renderShell() {
+  const view = viewTitles[state.activeView]
+
+  return `
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-mark"><span>F</span></div>
+          <div>
+            <strong>FLOWOS</strong>
+            <span>Life OS</span>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Principal">
+          ${navigation
+            .map(
+              (item) => `
+                <button class="nav-item ${state.activeView === item.id ? 'is-active' : ''}" type="button" data-action="set-view" data-view="${item.id}">
+                  ${icon(item.icon)}
+                  <span>${item.label}</span>
+                </button>
+              `,
+            )
+            .join('')}
+        </nav>
+
+        <div class="sidebar-status">
+          <span class="status-dot"></span>
+          <div>
+            <strong>${lifeScore()} Life Score</strong>
+            <span>${subscriptionBadge()}</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">${view.eyebrow}</p>
+            <h1>${view.title}</h1>
+          </div>
+          <div class="topbar-actions">
+            <span class="auth-pill">${state.authUserEmail ? escapeHtml(state.authUserEmail) : 'Demo local'}</span>
+            <button class="plan-pill" type="button" data-action="set-view" data-view="billing">
+              ${icon('plan')}
+              <span>${subscriptionBadge()}</span>
+            </button>
+            <span class="date-pill">${todayLabel()}</span>
+            <button class="icon-button" type="button" data-action="set-view" data-view="command" aria-label="Abrir AI Command Center">
+              ${icon('spark')}
+            </button>
+          </div>
+        </header>
+
+        ${renderActiveView()}
+      </main>
+    </div>
+  `
+}
+
+function renderActiveView() {
+  switch (state.activeView) {
+    case 'command':
+      return renderCommandCenter()
+    case 'habits':
+      return renderHabits()
+    case 'projects':
+      return renderProjects()
+    case 'finance':
+      return renderFinance()
+    case 'focus':
+      return renderFocus()
+    case 'billing':
+      return renderBilling()
+    case 'dashboard':
+    default:
+      return renderDashboard()
+  }
+}
+
+function renderDashboard() {
+  const score = lifeScore()
+  const gap = weakestArea()
+  const topHabits = state.habits.slice(0, 3)
+  const finance = financeTotals()
+
+  return `
+    <section class="dashboard-grid">
+      <article class="hero-panel span-8">
+        <div>
+          <p class="eyebrow">Foco do dia</p>
+          <h2>${escapeHtml(userFocus())}</h2>
+          <p>Uma agenda limpa, três decisões importantes e um bloco protegido para execução profunda.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="button primary" type="button" data-action="set-view" data-view="focus">
+            ${icon('play')}
+            Iniciar foco
+          </button>
+          <button class="button ghost" type="button" data-action="set-view" data-view="command">
+            ${icon('spark')}
+            Planejar com IA
+          </button>
+        </div>
+      </article>
+
+      <article class="panel score-panel span-4">
+        <div class="score-ring" style="--score: ${score}">
+          <strong>${score}</strong>
+          <span>Life Score</span>
+        </div>
+        <div class="score-copy">
+          <p class="eyebrow">Evolução</p>
+          <h3>Alta clareza</h3>
+          <p>Seu próximo ganho está em ${gap.label.toLowerCase()}. Uma ação pequena hoje já move o score.</p>
+        </div>
+        <div class="score-breakdown">
+          ${areaScores().map(renderAreaScore).join('')}
+        </div>
+      </article>
+
+      ${renderDailyRitualPanel('span-8')}
+
+      <article class="panel span-4">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Agenda</p>
+            <h3>Timeline</h3>
+          </div>
+          <span class="mini-badge">4 blocos</span>
+        </div>
+        <div class="timeline">
+          ${renderTimelineItem('08:30', 'Planejamento e energia', 'Sistema pessoal')}
+          ${renderTimelineItem('10:00', 'Deep work', 'Projeto MVP')}
+          ${renderTimelineItem('14:00', 'Revisão financeira', 'Capital')}
+          ${renderTimelineItem('18:20', 'Review da noite', 'Clareza')}
+        </div>
+      </article>
+
+      <article class="panel span-4">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Hábitos</p>
+            <h3>Hoje</h3>
+          </div>
+          <span class="mini-badge">${completionPercent()}%</span>
+        </div>
+        <div class="compact-list">
+          ${topHabits.map(renderHabitRow).join('')}
+        </div>
+      </article>
+
+      <article class="panel span-4">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Prioridades</p>
+            <h3>Execução</h3>
+          </div>
+          <span class="mini-badge">${activeTasks().length} abertas</span>
+        </div>
+        <div class="compact-list">
+          ${activeTasks()
+            .slice(0, 3)
+            .map(
+              (task) => `
+                <button class="task-row" type="button" data-action="set-view" data-view="projects">
+                  <span class="priority ${task.priority.toLowerCase()}">${task.priority}</span>
+                  <span>${escapeHtml(task.title)}</span>
+                </button>
+              `,
+            )
+            .join('')}
+        </div>
+      </article>
+
+      <article class="panel span-6">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Financeiro</p>
+            <h3>Resumo mensal</h3>
+          </div>
+          <span class="mini-badge">${finance.savingsRate}% livre</span>
+        </div>
+        <div class="finance-strip">
+          ${renderMetric('Receita', moneyFormat(finance.income), 'green')}
+          ${renderMetric('Despesas', moneyFormat(finance.expenses), 'rose')}
+          ${renderMetric('Livre', moneyFormat(finance.free), 'blue')}
+        </div>
+      </article>
+
+      <article class="panel span-6 ai-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">AI Insights</p>
+            <h3>Sinal do sistema</h3>
+          </div>
+          <span class="mini-badge">Contextual</span>
+        </div>
+        <p>${escapeHtml(state.aiResponse)}</p>
+        <button class="button ghost" type="button" data-action="set-view" data-view="command">
+          ${icon('spark')}
+          Abrir comando
+        </button>
+      </article>
+    </section>
+  `
+}
+
+function renderCommandCenter() {
+  const gap = weakestArea()
+  const suggestions = [
+    `Aumente meu score de ${gap.label} hoje`,
+    'Organize meu dia em 3 blocos de alto impacto',
+    'Transforme meus projetos em um sprint simples',
+    'Crie um review noturno com próxima ação',
+  ]
+
+  return `
+    <section class="command-layout">
+      <article class="command-console">
+        <div class="command-orb">${icon('spark')}</div>
+        <p class="eyebrow">FLOWOS AI</p>
+        <h2>Comande sua vida em linguagem natural.</h2>
+        <form id="command-form" class="command-form">
+          <textarea id="command-input" rows="5" placeholder="Ex: reorganize meu dia considerando energia baixa e duas entregas importantes">${escapeHtml(state.commandInput)}</textarea>
+          <button class="button primary" type="submit">
+            ${icon('arrow')}
+            Executar
+          </button>
+        </form>
+        <div class="prompt-grid">
+          ${suggestions
+            .map(
+              (prompt) => `
+                <button class="prompt-chip" type="button" data-action="use-prompt" data-prompt="${escapeHtml(prompt)}">
+                  ${escapeHtml(prompt)}
+                </button>
+              `,
+            )
+            .join('')}
+        </div>
+        <div class="context-strip">
+          ${renderMetric('Ritual', `${ritualCompletionPercent()}%`, 'blue')}
+          ${renderMetric('Hábitos', `${completionPercent()}%`, 'green')}
+          ${renderMetric('Projetos', `${projectCompletionPercent()}%`, 'amber')}
+        </div>
+      </article>
+
+      <aside class="ai-output">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Resposta</p>
+            <h3>Plano sintetizado</h3>
+          </div>
+          <span class="mini-badge">AI-first</span>
+        </div>
+        ${renderAiPlan()}
+      </aside>
+    </section>
+  `
+}
+
+function renderAiPlan() {
+  const source = state.commandInput.trim() || 'Organizar o dia com foco, energia e controle financeiro.'
+  const priorities = state.profile.priorities.length
+    ? state.profile.priorities.slice(0, 3).join(', ')
+    : 'Saúde, empresa e clareza'
+  const p0Task = state.projectTasks.find((task) => task.priority === 'P0' && task.status !== 'Done')
+  const gap = weakestArea()
+
+  return `
+    <div class="ai-plan">
+      <p>${escapeHtml(state.aiResponse)}</p>
+      <div class="plan-block">
+        <span>1</span>
+        <div>
+          <strong>Intenção</strong>
+          <p>${escapeHtml(source)}</p>
+        </div>
+      </div>
+      <div class="plan-block">
+        <span>2</span>
+        <div>
+          <strong>Ordem sugerida</strong>
+          <p>Energia primeiro, execução profunda no meio do dia, fechamento leve antes do review.</p>
+        </div>
+      </div>
+      <div class="plan-block">
+        <span>3</span>
+        <div>
+          <strong>Prioridades protegidas</strong>
+          <p>${escapeHtml(priorities)}</p>
+        </div>
+      </div>
+      <div class="plan-block">
+        <span>4</span>
+        <div>
+          <strong>Próxima ação</strong>
+          <p>${escapeHtml(p0Task ? `Avançar "${p0Task.title}" para a próxima etapa.` : `Criar uma ação para elevar ${gap.label.toLowerCase()} hoje.`)}</p>
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function renderHabits() {
+  return `
+    <section class="habit-layout">
+      <article class="panel habit-summary">
+        <p class="eyebrow">Consistência</p>
+        <h2>${completionPercent()}% completo hoje</h2>
+        <p>Streaks fortes, metas pequenas e feedback visual imediato.</p>
+        <div class="summary-metrics">
+          ${renderMetric('Streak máximo', '18 dias', 'amber')}
+          ${renderMetric('Hábitos ativos', `${state.habits.length}`, 'blue')}
+          ${renderMetric('Concluídos hoje', `${state.completedHabits.length}`, 'green')}
+        </div>
+      </article>
+
+      <article class="panel entity-composer">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">${state.editingHabitId ? 'Editar hábito' : 'Novo hábito'}</p>
+            <h3>${state.editingHabitId ? 'Ajuste o ritual' : 'Adicionar ritual essencial'}</h3>
+          </div>
+          ${state.editingHabitId ? '<button class="button ghost compact" type="button" data-action="cancel-habit-edit">Cancelar</button>' : ''}
+        </div>
+        <form id="habit-form" class="entity-form">
+          <label class="field">
+            <span>Nome</span>
+            <input data-model="habit-name" value="${escapeHtml(state.habitDraft.name)}" placeholder="Ex: Sono profundo" />
+          </label>
+          <label class="field">
+            <span>Área</span>
+            <input data-model="habit-area" value="${escapeHtml(state.habitDraft.area)}" placeholder="Energia, Corpo, Clareza..." />
+          </label>
+          <label class="field">
+            <span>Meta</span>
+            <input data-model="habit-target" value="${escapeHtml(state.habitDraft.target)}" placeholder="Ex: 30 min, 2 blocos, 10 páginas" />
+          </label>
+          <label class="field">
+            <span>Tom</span>
+            <select data-model="habit-tone">
+              ${renderToneOptions(state.habitDraft.tone)}
+            </select>
+          </label>
+          <button class="button primary" type="submit">
+            ${icon('plus')}
+            ${state.editingHabitId ? 'Salvar hábito' : 'Criar hábito'}
+          </button>
+        </form>
+      </article>
+
+      <div class="habit-grid">
+        ${state.habits.map(renderHabitCard).join('')}
+      </div>
+    </section>
+  `
+}
+
+function renderProjects() {
+  const statuses: ProjectStatus[] = ['Backlog', 'In progress', 'Review', 'Done']
+
+  return `
+    <section class="projects-layout">
+      <article class="panel sprint-header">
+        <div>
+          <p class="eyebrow">Sprint atual</p>
+          <h2>Semana de validação</h2>
+          <p>Kanban enxuto para manter direção sem transformar o sistema em burocracia.</p>
+        </div>
+        <div class="sprint-metrics">
+          ${renderMetric('Scope', `${state.projectTasks.length} tasks`, 'blue')}
+          ${renderMetric('Done', `${state.projectTasks.filter((task) => task.status === 'Done').length}`, 'green')}
+          ${renderMetric('P0', `${state.projectTasks.filter((task) => task.priority === 'P0').length}`, 'rose')}
+        </div>
+      </article>
+
+      <article class="panel entity-composer task-composer">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">${state.editingTaskId ? 'Editar tarefa' : 'Nova tarefa'}</p>
+            <h3>${state.editingTaskId ? 'Ajuste a entrega' : 'Capturar próxima ação'}</h3>
+          </div>
+          ${state.editingTaskId ? '<button class="button ghost compact" type="button" data-action="cancel-task-edit">Cancelar</button>' : ''}
+        </div>
+        <form id="task-form" class="entity-form task-form">
+          <label class="field wide">
+            <span>Tarefa</span>
+            <input data-model="task-title" value="${escapeHtml(state.taskDraft.title)}" placeholder="Ex: Validar fluxo de onboarding" />
+          </label>
+          <label class="field">
+            <span>Projeto</span>
+            <input data-model="task-project" value="${escapeHtml(state.taskDraft.project)}" placeholder="MVP, Growth, Launch..." />
+          </label>
+          <label class="field">
+            <span>Prioridade</span>
+            <select data-model="task-priority">
+              ${renderPriorityOptions(state.taskDraft.priority)}
+            </select>
+          </label>
+          <label class="field">
+            <span>Tempo</span>
+            <input data-model="task-estimate" value="${escapeHtml(state.taskDraft.estimate)}" placeholder="45m" />
+          </label>
+          <button class="button primary" type="submit">
+            ${icon('plus')}
+            ${state.editingTaskId ? 'Salvar tarefa' : 'Criar tarefa'}
+          </button>
+        </form>
+      </article>
+
+      <div class="kanban">
+        ${statuses
+          .map(
+            (status) => `
+              <section class="kanban-column">
+                <header>
+                  <span>${status}</span>
+                  <strong>${state.projectTasks.filter((task) => task.status === status).length}</strong>
+                </header>
+                <div class="kanban-stack">
+                  ${state.projectTasks
+                    .filter((task) => task.status === status)
+                    .map(renderProjectCard)
+                    .join('')}
+                </div>
+              </section>
+            `,
+          )
+          .join('')}
+      </div>
+    </section>
+  `
+}
+
+function renderFinance() {
+  const finance = financeTotals()
+  const reserveProgress = Math.min(96, Math.max(18, Math.round(finance.savingsRate * 1.35)))
+  const investmentProgress = Math.min(96, Math.max(12, finance.savingsRate))
+  const subscriptionControl = Math.min(
+    96,
+    Math.max(18, 100 - Math.round((finance.subscriptions / Math.max(finance.income, 1)) * 420)),
+  )
+
+  return `
+    <section class="finance-layout">
+      <article class="panel finance-hero">
+        <div>
+          <p class="eyebrow">Patrimônio operacional</p>
+          <h2>${moneyFormat(finance.free)} livres este mês</h2>
+          <p>Controle suficiente para decidir rápido: fluxo, metas, despesas e assinaturas.</p>
+        </div>
+        <div class="finance-hero-grid">
+          ${renderMetric('Receita', moneyFormat(finance.income), 'green')}
+          ${renderMetric('Despesas', moneyFormat(finance.expenses), 'rose')}
+          ${renderMetric('Assinaturas', moneyFormat(finance.subscriptions), 'amber')}
+          ${renderMetric('Livre', `${finance.savingsRate}%`, 'blue')}
+        </div>
+      </article>
+
+      <article class="panel finance-composer">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Lançamento</p>
+            <h3>Adicionar movimento</h3>
+          </div>
+          <span class="mini-badge">${state.financeEntries.length} itens</span>
+        </div>
+        <form id="finance-form" class="entity-form finance-form">
+          <label class="field wide">
+            <span>Descrição</span>
+            <input data-model="finance-title" value="${escapeHtml(state.financeDraft.title)}" placeholder="Ex: Cliente, aluguel, assinatura..." />
+          </label>
+          <label class="field">
+            <span>Categoria</span>
+            <input data-model="finance-category" value="${escapeHtml(state.financeDraft.category)}" placeholder="Receita, casa, apps..." />
+          </label>
+          <label class="field">
+            <span>Tipo</span>
+            <select data-model="finance-kind">
+              ${renderFinanceKindOptions(state.financeDraft.kind)}
+            </select>
+          </label>
+          <label class="field">
+            <span>Valor</span>
+            <input data-model="finance-amount" value="${escapeHtml(state.financeDraft.amount)}" inputmode="decimal" placeholder="1200" />
+          </label>
+          <button class="button primary" type="submit">
+            ${icon('plus')}
+            Adicionar
+          </button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Fluxo</p>
+            <h3>Entradas e saídas</h3>
+          </div>
+          <span class="mini-badge">Maio</span>
+        </div>
+        <div class="money-list">
+          ${state.financeEntries.map(renderFinanceEntry).join('')}
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Metas</p>
+            <h3>Capital futuro</h3>
+          </div>
+          <span class="mini-badge">3 ativas</span>
+        </div>
+        <div class="goal-stack">
+          ${renderGoal('Reserva de oportunidade', reserveProgress, 'blue')}
+          ${renderGoal('Investimento mensal', investmentProgress, 'green')}
+          ${renderGoal('Controle de assinaturas', subscriptionControl, 'amber')}
+        </div>
+      </article>
+    </section>
+  `
+}
+
+function renderBilling() {
+  const currentPlan = planCatalog[state.subscription.plan]
+  const status = currentSubscriptionStatus()
+  const trialCopy =
+    status === 'trialing'
+      ? `${trialDaysRemaining()} dias restantes no teste gratuito`
+      : 'Assinatura pronta para cobrança recorrente'
+
+  return `
+    <section class="billing-layout">
+      <article class="panel billing-hero">
+        <div>
+          <p class="eyebrow">Plano atual</p>
+          <h2>${currentPlan.label}</h2>
+          <p>${trialCopy}. Próxima cobrança em ${dateLabel(state.subscription.billingStartsAt)}.</p>
+        </div>
+        <div class="billing-status-card">
+          <span class="mini-badge">${statusLabel(status)}</span>
+          <strong>${currentPlan.price}</strong>
+          <p>${currentPlan.description}</p>
+        </div>
+      </article>
+
+      ${renderAuthPanel()}
+
+      <article class="billing-message">
+        <span>${icon('spark')}</span>
+        <p>${escapeHtml(state.billingMessage)}</p>
+      </article>
+
+      <div class="pricing-grid">
+        ${planOrder.map((planId) => renderPlanCard(planCatalog[planId])).join('')}
+      </div>
+
+      <article class="panel permissions-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Permissões</p>
+            <h3>Comparativo dos planos</h3>
+          </div>
+          <span class="mini-badge">MVP gated</span>
+        </div>
+        <div class="permission-table">
+          <div class="permission-row permission-head">
+            <strong>Recurso</strong>
+            <strong>Starter</strong>
+            <strong>Pro</strong>
+            <strong>Flow+</strong>
+          </div>
+          ${permissionRows.map(renderPermissionRow).join('')}
+        </div>
+      </article>
+
+      <article class="panel billing-controls">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Estados de cobrança</p>
+            <h3>Simulação para validação</h3>
+          </div>
+          <span class="mini-badge">${subscriptionBadge()}</span>
+        </div>
+        <div class="billing-state-actions">
+          ${renderStatusButton('trialing', 'Trial')}
+          ${renderStatusButton('active', 'Ativo')}
+          ${renderStatusButton('past_due', 'Falha')}
+          ${renderStatusButton('canceled', 'Cancelado')}
+          <button class="session-tab" type="button" data-action="open-portal">
+            Portal Stripe
+          </button>
+        </div>
+      </article>
+    </section>
+  `
+}
+
+function renderFocus() {
+  return `
+    <section class="focus-layout">
+      <article class="focus-stage">
+        <p class="eyebrow">Execution Mode</p>
+        <h2>Deep work protegido</h2>
+        <div class="timer-face" style="--timer-progress: ${timerProgress()}">
+          <strong id="focus-time">${formatTime(state.focusRemaining)}</strong>
+          <span id="focus-label">${state.focusRunning ? 'Sessão ativa' : 'Pronto para iniciar'}</span>
+        </div>
+        <div class="focus-controls">
+          <button class="icon-button large" type="button" data-action="${state.focusRunning ? 'pause-focus' : 'start-focus'}" aria-label="${state.focusRunning ? 'Pausar foco' : 'Iniciar foco'}">
+            ${state.focusRunning ? icon('pause') : icon('play')}
+          </button>
+          <button class="icon-button large" type="button" data-action="reset-focus" aria-label="Reiniciar foco">
+            ${icon('reset')}
+          </button>
+        </div>
+        <div class="session-tabs">
+          ${renderSessionButton('25 min', 25 * 60)}
+          ${renderSessionButton('50 min', 50 * 60)}
+          ${renderSessionButton('90 min', 90 * 60)}
+        </div>
+      </article>
+
+      <aside class="panel focus-side">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Metas diárias</p>
+            <h3>Execução limpa</h3>
+          </div>
+          <span class="mini-badge">3/4</span>
+        </div>
+        <div class="focus-goals">
+          ${renderFocusGoal('Finalizar bloco P0', true)}
+          ${renderFocusGoal('Enviar proposta', true)}
+          ${renderFocusGoal('Revisar caixa', false)}
+          ${renderFocusGoal('Fechar review', true)}
+        </div>
+      </aside>
+    </section>
+  `
+}
+
+function renderAuthPanel() {
+  return `
+    <article class="panel auth-panel">
+      <div>
+        <p class="eyebrow">Conta</p>
+        <h3>${state.authUserEmail ? 'Sessão conectada' : 'Entrar no FLOWOS'}</h3>
+        <p>${escapeHtml(state.authMessage)}</p>
+      </div>
+      <form id="auth-form" class="auth-form">
+        <label class="field">
+          <span>E-mail</span>
+          <input data-model="auth-email" value="${escapeHtml(state.authEmail)}" inputmode="email" placeholder="voce@empresa.com" />
+        </label>
+        <button class="button primary" type="submit">
+          ${icon('arrow')}
+          Enviar magic link
+        </button>
+        <button class="button ghost" type="button" data-action="sign-out" ${state.authUserEmail ? '' : 'disabled'}>
+          Sair
+        </button>
+      </form>
+    </article>
+  `
+}
+
+function statusLabel(status: SubscriptionStatus) {
+  const labels: Record<SubscriptionStatus, string> = {
+    trialing: 'Trial ativo',
+    active: 'Assinatura ativa',
+    past_due: 'Pagamento pendente',
+    canceled: 'Cancelado',
+  }
+
+  return labels[status]
+}
+
+function renderPlanCard(plan: PlanConfig) {
+  const isCurrentPlan = state.subscription.plan === plan.id
+  const currentStatus = currentSubscriptionStatus()
+  const isLocked = state.subscription.status === 'canceled' && isCurrentPlan
+  const isLoading = state.billingLoadingPlan === plan.id
+  const actionCopy = isLoading ? 'Abrindo checkout...' : isCurrentPlan && !isLocked ? 'Plano atual' : plan.cta
+
+  return `
+    <article class="plan-card ${isCurrentPlan ? 'is-current' : ''} ${plan.id === 'pro' ? 'is-featured' : ''}">
+      <div class="plan-card-top">
+        <span class="mini-badge">${plan.badge}</span>
+        ${isCurrentPlan ? `<span class="plan-current">${statusLabel(currentStatus)}</span>` : ''}
+      </div>
+      <div>
+        <h3>${plan.label}</h3>
+        <strong>${plan.price}</strong>
+        <p>${plan.description}</p>
+      </div>
+      <div class="plan-section">
+        <span>Inclui</span>
+        ${plan.features.map((feature) => `<p>${icon('check')}${escapeHtml(feature)}</p>`).join('')}
+      </div>
+      <div class="plan-section muted">
+        <span>Permissões e complementos</span>
+        ${[...plan.limits, ...plan.complements].map((item) => `<p>${escapeHtml(item)}</p>`).join('')}
+      </div>
+      <button class="button ${plan.id === 'starter' ? 'ghost' : 'primary'}" type="button" data-action="select-plan" data-plan="${plan.id}" ${isLoading || (isCurrentPlan && !isLocked) ? 'disabled' : ''}>
+        ${actionCopy}
+      </button>
+    </article>
+  `
+}
+
+function renderPermissionRow(row: { label: string; starter: string; pro: string; flowplus: string }) {
+  return `
+    <div class="permission-row">
+      <strong>${row.label}</strong>
+      <span>${row.starter}</span>
+      <span>${row.pro}</span>
+      <span>${row.flowplus}</span>
+    </div>
+  `
+}
+
+function renderStatusButton(status: SubscriptionStatus, label: string) {
+  const isActive = state.subscription.status === status
+
+  return `
+    <button class="session-tab ${isActive ? 'is-active' : ''}" type="button" data-action="set-billing-status" data-status="${status}">
+      ${label}
+    </button>
+  `
+}
+
+function renderSignal(label: string, value: string, tone: string) {
+  return `
+    <div class="signal ${tone}">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `
+}
+
+function renderMetric(label: string, value: string, tone: string) {
+  return `
+    <div class="metric ${tone}">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `
+}
+
+function renderAreaScore(area: { label: string; score: number; tone: string }) {
+  return `
+    <div class="area-score">
+      <div>
+        <strong>${area.label}</strong>
+        <span>${area.score}</span>
+      </div>
+      <div class="goal-track"><span class="${area.tone}" style="width: ${area.score}%"></span></div>
+    </div>
+  `
+}
+
+function renderDailyRitualPanel(spanClass = '') {
+  return `
+    <article class="panel daily-ritual ${spanClass}">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Ritual diário</p>
+          <h3>Plano, execução e fechamento</h3>
+        </div>
+        <span class="mini-badge">${ritualCompletionPercent()}%</span>
+      </div>
+
+      <div class="daily-plan-grid">
+        <label class="field">
+          <span>Intenção</span>
+          <input data-model="daily-intention" value="${escapeHtml(state.dailyPlan.intention)}" placeholder="Como você quer operar hoje?" />
+        </label>
+        <label class="field">
+          <span>Resultado principal</span>
+          <input data-model="daily-outcome" value="${escapeHtml(state.dailyPlan.outcome)}" placeholder="Qual vitória deixa o dia ganho?" />
+        </label>
+        <label class="field">
+          <span>Energia</span>
+          <select data-model="daily-energy">
+            ${['Alta', 'Estável', 'Baixa']
+              .map(
+                (energy) => `
+                  <option value="${energy}" ${state.dailyPlan.energy === energy ? 'selected' : ''}>${energy}</option>
+                `,
+              )
+              .join('')}
+          </select>
+        </label>
+        <label class="field wide">
+          <span>Review rápido</span>
+          <input data-model="daily-review" value="${escapeHtml(state.dailyPlan.review)}" placeholder="O que precisa ser lembrado no fechamento?" />
+        </label>
+      </div>
+
+      <div class="ritual-steps">
+        ${dailyRitualSteps
+          .map((step) => {
+            const done = state.dailyPlan.completedSteps.includes(step.id)
+
+            return `
+              <button class="ritual-step ${done ? 'is-done' : ''}" type="button" data-action="toggle-ritual-step" data-id="${step.id}">
+                <span>${done ? icon('check') : ''}</span>
+                <strong>${step.title}</strong>
+                <small>${step.label}</small>
+              </button>
+            `
+          })
+          .join('')}
+      </div>
+    </article>
+  `
+}
+
+function renderTimelineItem(time: string, title: string, label: string) {
+  return `
+    <div class="timeline-item">
+      <time>${time}</time>
+      <div>
+        <strong>${title}</strong>
+        <span>${label}</span>
+      </div>
+    </div>
+  `
+}
+
+function renderHabitRow(habit: Habit) {
+  const done = state.completedHabits.includes(habit.id)
+
+  return `
+    <button class="habit-row" type="button" data-action="toggle-habit" data-id="${habit.id}">
+      <span class="habit-dot ${habit.tone}"></span>
+      <span>${escapeHtml(habit.name)}</span>
+      <strong>${done ? 'Done' : habit.target}</strong>
+    </button>
+  `
+}
+
+function renderHabitCard(habit: Habit) {
+  const done = state.completedHabits.includes(habit.id)
+
+  return `
+    <article class="habit-card ${done ? 'is-done' : ''}">
+      <div class="habit-card-top">
+        <span class="habit-dot ${habit.tone}"></span>
+        <div class="card-actions">
+          <button class="icon-button small" type="button" data-action="edit-habit" data-id="${habit.id}" aria-label="Editar ${escapeHtml(habit.name)}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.8V21h3.2L18.7 9.5l-3.2-3.2zM17.4 4.4l3.2 3.2 1.2-1.2a2.2 2.2 0 0 0-3.2-3.2z"/></svg>
+          </button>
+          <button class="icon-button small" type="button" data-action="toggle-habit" data-id="${habit.id}" aria-label="Alternar ${escapeHtml(habit.name)}">
+            ${done ? icon('check') : icon('plus')}
+          </button>
+          <button class="icon-button small danger" type="button" data-action="delete-habit" data-id="${habit.id}" aria-label="Excluir ${escapeHtml(habit.name)}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l1 2h4v3H3V6h4zm-2 7h12l-.8 10H6.8z"/></svg>
+          </button>
+        </div>
+      </div>
+      <h3>${escapeHtml(habit.name)}</h3>
+      <p>${habit.area} / ${habit.target}</p>
+      <div class="habit-streak">
+        <strong>${habit.streak}</strong>
+        <span>dias de streak</span>
+      </div>
+      <div class="week-bars">
+        ${habit.week
+          .map((day, index) => `<span class="${day || (done && index === 6) ? 'is-filled' : ''}"></span>`)
+          .join('')}
+      </div>
+    </article>
+  `
+}
+
+function renderProjectCard(task: ProjectTask) {
+  return `
+    <article class="project-card">
+      <div class="project-meta">
+        <span class="priority ${task.priority.toLowerCase()}">${task.priority}</span>
+        <span>${task.estimate}</span>
+      </div>
+      <h3>${escapeHtml(task.title)}</h3>
+      <p>${escapeHtml(task.project)}</p>
+      <div class="project-actions">
+        <button class="icon-button small" type="button" data-action="edit-task" data-id="${task.id}" aria-label="Editar ${escapeHtml(task.title)}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.8V21h3.2L18.7 9.5l-3.2-3.2zM17.4 4.4l3.2 3.2 1.2-1.2a2.2 2.2 0 0 0-3.2-3.2z"/></svg>
+        </button>
+        <button class="icon-button small" type="button" data-action="move-task-back" data-id="${task.id}" aria-label="Mover para etapa anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7 2.1-2.1-3.4-3.4H20v-3H9.7l3.4-3.4z"/></svg>
+        </button>
+        <button class="icon-button small" type="button" data-action="move-task-next" data-id="${task.id}" aria-label="Mover para próxima etapa">
+          ${icon('arrow')}
+        </button>
+        <button class="icon-button small danger" type="button" data-action="delete-task" data-id="${task.id}" aria-label="Excluir ${escapeHtml(task.title)}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l1 2h4v3H3V6h4zm-2 7h12l-.8 10H6.8z"/></svg>
+        </button>
+      </div>
+    </article>
+  `
+}
+
+function renderFinanceEntry(entry: FinanceEntry) {
+  const isIncome = entry.kind === 'income'
+  const tone = isIncome ? 'green' : entry.kind === 'subscription' ? 'amber' : 'rose'
+  const value = isIncome ? entry.amount : -entry.amount
+  const label = entry.kind === 'income' ? 'Receita' : entry.kind === 'subscription' ? 'Assinatura' : 'Despesa'
+
+  return `
+    <div class="money-row finance-entry">
+      <div>
+        <strong>${escapeHtml(entry.title)}</strong>
+        <span>${label} / ${escapeHtml(entry.category)}</span>
+      </div>
+      <div class="money-actions">
+        <strong class="${tone}">${moneyFormat(value)}</strong>
+        <button class="icon-button small danger" type="button" data-action="delete-finance" data-id="${entry.id}" aria-label="Excluir ${escapeHtml(entry.title)}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8l1 2h4v3H3V6h4zm-2 7h12l-.8 10H6.8z"/></svg>
+        </button>
+      </div>
+    </div>
+  `
+}
+
+function renderGoal(title: string, progress: number, tone: string) {
+  return `
+    <div class="goal-row">
+      <div>
+        <strong>${title}</strong>
+        <span>${progress}%</span>
+      </div>
+      <div class="goal-track"><span class="${tone}" style="width: ${progress}%"></span></div>
+    </div>
+  `
+}
+
+function renderFocusGoal(title: string, done: boolean) {
+  return `
+    <div class="focus-goal ${done ? 'is-done' : ''}">
+      <span>${done ? icon('check') : ''}</span>
+      <strong>${title}</strong>
+    </div>
+  `
+}
+
+function renderSessionButton(label: string, duration: number) {
+  return `
+    <button class="session-tab ${state.focusDuration === duration ? 'is-active' : ''}" type="button" data-action="set-session" data-duration="${duration}">
+      ${label}
+    </button>
+  `
+}
+
+function renderToneOptions(selectedTone: HabitTone) {
+  const tones: Array<{ value: HabitTone; label: string }> = [
+    { value: 'blue', label: 'Azul' },
+    { value: 'green', label: 'Verde' },
+    { value: 'amber', label: 'Âmbar' },
+    { value: 'rose', label: 'Rose' },
+  ]
+
+  return tones
+    .map(
+      (tone) => `
+        <option value="${tone.value}" ${selectedTone === tone.value ? 'selected' : ''}>${tone.label}</option>
+      `,
+    )
+    .join('')
+}
+
+function renderPriorityOptions(selectedPriority: TaskPriority) {
+  const priorities: TaskPriority[] = ['P0', 'P1', 'P2']
+
+  return priorities
+    .map(
+      (priority) => `
+        <option value="${priority}" ${selectedPriority === priority ? 'selected' : ''}>${priority}</option>
+      `,
+    )
+    .join('')
+}
+
+function renderFinanceKindOptions(selectedKind: FinanceKind) {
+  const kinds: Array<{ value: FinanceKind; label: string }> = [
+    { value: 'income', label: 'Receita' },
+    { value: 'expense', label: 'Despesa' },
+    { value: 'subscription', label: 'Assinatura' },
+  ]
+
+  return kinds
+    .map(
+      (kind) => `
+        <option value="${kind.value}" ${selectedKind === kind.value ? 'selected' : ''}>${kind.label}</option>
+      `,
+    )
+    .join('')
+}
+
+function selectOnboarding(field: OnboardingField, value: string, multiple: boolean) {
+  const selected = state.profile[field]
+
+  if (multiple) {
+    state.profile[field] = selected.includes(value)
+      ? selected.filter((item) => item !== value)
+      : [...selected, value]
+    return
+  }
+
+  state.profile[field] = [value]
+}
+
+function completeOnboarding() {
+  state.onboardingComplete = true
+  state.activeView = 'dashboard'
+}
+
+function activateDemoPlan(planId: PlanId) {
+  const plan = planCatalog[planId]
+
+  state.subscription = createSubscription(planId)
+  state.activeView = 'billing'
+  state.billingLoadingPlan = null
+  state.aiResponse =
+    planId === 'starter'
+      ? 'Trial Starter iniciado: 15 dias gratuitos antes da primeira cobrança.'
+      : `Plano ${plan.label} ativado para validação do MVP. Billing real entra na próxima integração.`
+}
+
+async function beginPlanCheckout(planId: PlanId) {
+  const email = state.authUserEmail ?? state.authEmail.trim()
+
+  state.billingLoadingPlan = planId
+  state.billingMessage = 'Preparando checkout seguro no Stripe...'
+  render()
+
+  try {
+    const session = await createCheckoutSession({
+      plan: planId,
+      email: email || undefined,
+      userId: state.authUserId ?? undefined,
+    })
+
+    if (session.url) {
+      window.location.href = session.url
+      return
+    }
+
+    throw new Error('Stripe não retornou uma URL de checkout.')
+  } catch (error) {
+    activateDemoPlan(planId)
+    state.billingMessage = `${error instanceof Error ? error.message : 'Checkout indisponível.'} Plano aplicado em modo demo.`
+    render()
+  }
+}
+
+function setBillingStatus(status: SubscriptionStatus) {
+  if (status === 'trialing') {
+    state.subscription = createSubscription('starter')
+    return
+  }
+
+  state.subscription = {
+    ...state.subscription,
+    status,
+    billingStartsAt: status === 'active' ? new Date().toISOString() : state.subscription.billingStartsAt,
+  }
+}
+
+async function submitAuth() {
+  const email = state.authEmail.trim()
+
+  if (!email) {
+    state.authMessage = 'Informe um e-mail para enviar o magic link.'
+    render()
+    return
+  }
+
+  state.authMessage = 'Enviando magic link...'
+  render()
+
+  const result = await sendMagicLink(email)
+  state.authMessage = result.message
+
+  if (!result.ok && !isSupabaseConfigured) {
+    state.authUserEmail = email
+    state.authUserId = 'demo-user'
+    state.authMessage = 'Modo demo conectado. Configure Supabase para autenticação real.'
+  }
+
+  render()
+}
+
+async function submitSignOut() {
+  await signOut()
+  state.authUserId = null
+  state.authUserEmail = null
+  state.authMessage = isSupabaseConfigured
+    ? 'Sessão encerrada.'
+    : 'Modo demo desconectado. Configure Supabase para login real.'
+  render()
+}
+
+async function openBillingPortal() {
+  if (!state.stripeCustomerId) {
+    state.billingMessage = 'Portal Stripe exige um customer_id sincronizado via webhook após o checkout real.'
+    render()
+    return
+  }
+
+  try {
+    const session = await createPortalSession(state.stripeCustomerId)
+
+    if (session.url) {
+      window.location.href = session.url
+    }
+  } catch (error) {
+    state.billingMessage = error instanceof Error ? error.message : 'Portal Stripe indisponível.'
+    render()
+  }
+}
+
+function handleCommandSubmit() {
+  const command = state.commandInput.trim()
+
+  if (!command) {
+    state.aiResponse =
+      'Escolha uma intenção clara e eu transformo em plano, blocos de tempo e próxima ação.'
+    return
+  }
+
+  const friction = state.profile.friction[0] ?? 'contexto aberto'
+  const target = state.profile.targets[0] ?? '7 dias'
+  const gap = weakestArea()
+  const p0Task = state.projectTasks.find((task) => task.priority === 'P0' && task.status !== 'Done')
+  const missingHabits = state.habits
+    .filter((habit) => !state.completedHabits.includes(habit.id))
+    .slice(0, 2)
+    .map((habit) => habit.name)
+
+  state.aiResponse = `Plano criado para ${target}: reduza ${friction.toLowerCase()}, eleve ${gap.label.toLowerCase()} e proteja "${state.dailyPlan.outcome}". ${
+    p0Task ? `A tarefa P0 agora é "${p0Task.title}".` : 'Crie uma tarefa P0 antes do próximo bloco de foco.'
+  } ${
+    missingHabits.length ? `Feche também: ${missingHabits.join(' e ')}.` : 'Hábitos essenciais já estão bem encaminhados hoje.'
+  }`
+}
+
+function moveTask(taskId: string, direction: 1 | -1) {
+  const statuses: ProjectStatus[] = ['Backlog', 'In progress', 'Review', 'Done']
+
+  state.projectTasks = state.projectTasks.map((task) => {
+    if (task.id !== taskId) {
+      return task
+    }
+
+    const index = statuses.indexOf(task.status)
+    const nextIndex = Math.max(0, Math.min(statuses.length - 1, index + direction))
+
+    return {
+      ...task,
+      status: statuses[nextIndex],
+    }
+  })
+}
+
+function resetTaskDraft() {
+  state.taskDraft = structuredClone(defaultTaskDraft)
+  state.editingTaskId = null
+}
+
+function saveTask() {
+  const title = state.taskDraft.title.trim()
+  const project = state.taskDraft.project.trim() || 'MVP'
+  const estimate = state.taskDraft.estimate.trim() || '45m'
+
+  if (!title) {
+    state.aiResponse = 'Capture uma tarefa clara para que o FlowOS consiga priorizar sua execução.'
+    return
+  }
+
+  if (state.editingTaskId) {
+    state.projectTasks = state.projectTasks.map((task) =>
+      task.id === state.editingTaskId
+        ? {
+            ...task,
+            title,
+            project,
+            estimate,
+            priority: state.taskDraft.priority,
+          }
+        : task,
+    )
+  } else {
+    state.projectTasks = [
+      ...state.projectTasks,
+      {
+        id: makeId('task'),
+        title,
+        project,
+        status: 'Backlog',
+        priority: state.taskDraft.priority,
+        estimate,
+      },
+    ]
+  }
+
+  resetTaskDraft()
+}
+
+function editTask(id: string) {
+  const task = state.projectTasks.find((item) => item.id === id)
+
+  if (!task) {
+    return
+  }
+
+  state.editingTaskId = task.id
+  state.taskDraft = {
+    title: task.title,
+    project: task.project,
+    priority: task.priority,
+    estimate: task.estimate,
+  }
+}
+
+function deleteTask(id: string) {
+  state.projectTasks = state.projectTasks.filter((task) => task.id !== id)
+
+  if (state.editingTaskId === id) {
+    resetTaskDraft()
+  }
+}
+
+function resetFinanceDraft() {
+  state.financeDraft = structuredClone(defaultFinanceDraft)
+}
+
+function parseFinanceAmount(value: string) {
+  const sanitized = value.replace(/[^\d,.-]/g, '').trim()
+  const normalized = sanitized.includes(',')
+    ? sanitized.replace(/\./g, '').replace(',', '.')
+    : sanitized
+  const amount = Number(normalized)
+
+  return Number.isFinite(amount) ? Math.abs(amount) : 0
+}
+
+function saveFinanceEntry() {
+  const title = state.financeDraft.title.trim()
+  const category = state.financeDraft.category.trim() || 'Operacional'
+  const amount = parseFinanceAmount(state.financeDraft.amount)
+
+  if (!title || amount <= 0) {
+    state.aiResponse = 'Registre descrição e valor para manter o controle financeiro confiável.'
+    return
+  }
+
+  state.financeEntries = [
+    {
+      id: makeId('finance'),
+      title,
+      category,
+      amount: Math.round(amount),
+      kind: state.financeDraft.kind,
+    },
+    ...state.financeEntries,
+  ]
+
+  state.aiResponse = 'Fluxo financeiro atualizado. O dashboard recalculou receita, despesas e dinheiro livre do mês.'
+  resetFinanceDraft()
+}
+
+function deleteFinanceEntry(id: string) {
+  state.financeEntries = state.financeEntries.filter((entry) => entry.id !== id)
+}
+
+function toggleHabit(id: string) {
+  state.completedHabits = state.completedHabits.includes(id)
+    ? state.completedHabits.filter((habitId) => habitId !== id)
+    : [...state.completedHabits, id]
+
+  if (state.completedHabits.length && !state.dailyPlan.completedSteps.includes('habits')) {
+    state.dailyPlan.completedSteps = [...state.dailyPlan.completedSteps, 'habits']
+  }
+}
+
+function makeId(prefix: string) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+function resetHabitDraft() {
+  state.habitDraft = structuredClone(defaultHabitDraft)
+  state.editingHabitId = null
+}
+
+function saveHabit() {
+  const name = state.habitDraft.name.trim()
+  const area = state.habitDraft.area.trim() || 'Clareza'
+  const target = state.habitDraft.target.trim() || '1 check'
+
+  if (!name) {
+    state.aiResponse = 'Dê um nome ao hábito para que o FlowOS consiga acompanhá-lo.'
+    return
+  }
+
+  if (state.editingHabitId) {
+    state.habits = state.habits.map((habit) =>
+      habit.id === state.editingHabitId
+        ? {
+            ...habit,
+            name,
+            area,
+            target,
+            tone: state.habitDraft.tone,
+          }
+        : habit,
+    )
+  } else {
+    state.habits = [
+      ...state.habits,
+      {
+        id: makeId('habit'),
+        name,
+        area,
+        target,
+        streak: 0,
+        week: [0, 0, 0, 0, 0, 0, 0],
+        tone: state.habitDraft.tone,
+      },
+    ]
+  }
+
+  resetHabitDraft()
+}
+
+function editHabit(id: string) {
+  const habit = state.habits.find((item) => item.id === id)
+
+  if (!habit) {
+    return
+  }
+
+  state.editingHabitId = habit.id
+  state.habitDraft = {
+    name: habit.name,
+    area: habit.area,
+    target: habit.target,
+    tone: habit.tone,
+  }
+}
+
+function deleteHabit(id: string) {
+  state.habits = state.habits.filter((habit) => habit.id !== id)
+  state.completedHabits = state.completedHabits.filter((habitId) => habitId !== id)
+
+  if (state.editingHabitId === id) {
+    resetHabitDraft()
+  }
+}
+
+function toggleRitualStep(id: string) {
+  state.dailyPlan.completedSteps = state.dailyPlan.completedSteps.includes(id)
+    ? state.dailyPlan.completedSteps.filter((stepId) => stepId !== id)
+    : [...state.dailyPlan.completedSteps, id]
+}
+
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`
+}
+
+function timerProgress() {
+  return Math.round(((state.focusDuration - state.focusRemaining) / state.focusDuration) * 100)
+}
+
+function startFocus() {
+  if (focusInterval) {
+    clearInterval(focusInterval)
+  }
+
+  if (!state.dailyPlan.completedSteps.includes('focus')) {
+    state.dailyPlan.completedSteps = [...state.dailyPlan.completedSteps, 'focus']
+  }
+
+  state.focusRunning = true
+  render()
+
+  focusInterval = setInterval(() => {
+    state.focusRemaining = Math.max(0, state.focusRemaining - 1)
+    updateTimerDom()
+
+    if (state.focusRemaining === 0) {
+      pauseFocus()
+    }
+  }, 1000)
+}
+
+function pauseFocus() {
+  state.focusRunning = false
+
+  if (focusInterval) {
+    clearInterval(focusInterval)
+    focusInterval = undefined
+  }
+
+  render()
+}
+
+function resetFocus() {
+  state.focusRunning = false
+  state.focusRemaining = state.focusDuration
+
+  if (focusInterval) {
+    clearInterval(focusInterval)
+    focusInterval = undefined
+  }
+
+  render()
+}
+
+function setSession(duration: number) {
+  state.focusDuration = duration
+  state.focusRemaining = duration
+  state.focusRunning = false
+
+  if (focusInterval) {
+    clearInterval(focusInterval)
+    focusInterval = undefined
+  }
+}
+
+function updateTimerDom() {
+  const time = document.querySelector<HTMLElement>('#focus-time')
+  const label = document.querySelector<HTMLElement>('#focus-label')
+  const face = document.querySelector<HTMLElement>('.timer-face')
+
+  if (time) {
+    time.textContent = formatTime(state.focusRemaining)
+  }
+
+  if (label) {
+    label.textContent = state.focusRunning ? 'Sessão ativa' : 'Pronto para iniciar'
+  }
+
+  if (face) {
+    face.style.setProperty('--timer-progress', `${timerProgress()}`)
+  }
+}
+
+function updateModel(model: string, value: string) {
+  switch (model) {
+    case 'daily-intention':
+      state.dailyPlan.intention = value
+      if (value.trim() && !state.dailyPlan.completedSteps.includes('plan')) {
+        state.dailyPlan.completedSteps = [...state.dailyPlan.completedSteps, 'plan']
+      }
+      break
+    case 'daily-outcome':
+      state.dailyPlan.outcome = value
+      if (value.trim() && !state.dailyPlan.completedSteps.includes('plan')) {
+        state.dailyPlan.completedSteps = [...state.dailyPlan.completedSteps, 'plan']
+      }
+      break
+    case 'daily-energy':
+      state.dailyPlan.energy = value as DailyPlan['energy']
+      break
+    case 'daily-review':
+      state.dailyPlan.review = value
+      if (value.trim() && !state.dailyPlan.completedSteps.includes('review')) {
+        state.dailyPlan.completedSteps = [...state.dailyPlan.completedSteps, 'review']
+      }
+      break
+    case 'habit-name':
+      state.habitDraft.name = value
+      break
+    case 'habit-area':
+      state.habitDraft.area = value
+      break
+    case 'habit-target':
+      state.habitDraft.target = value
+      break
+    case 'habit-tone':
+      state.habitDraft.tone = value as HabitTone
+      break
+    case 'task-title':
+      state.taskDraft.title = value
+      break
+    case 'task-project':
+      state.taskDraft.project = value
+      break
+    case 'task-priority':
+      state.taskDraft.priority = value as TaskPriority
+      break
+    case 'task-estimate':
+      state.taskDraft.estimate = value
+      break
+    case 'finance-title':
+      state.financeDraft.title = value
+      break
+    case 'finance-category':
+      state.financeDraft.category = value
+      break
+    case 'finance-amount':
+      state.financeDraft.amount = value
+      break
+    case 'finance-kind':
+      state.financeDraft.kind = value as FinanceKind
+      break
+    case 'auth-email':
+      state.authEmail = value
+      break
+  }
+}
+
+document.addEventListener('click', (event) => {
+  const control = (event.target as HTMLElement).closest<HTMLElement>('[data-action]')
+
+  if (!control) {
+    return
+  }
+
+  const action = control.dataset.action
+
+  switch (action) {
+    case 'set-view':
+      state.activeView = (control.dataset.view ?? 'dashboard') as View
+      render()
+      break
+    case 'select-onboarding':
+      selectOnboarding(
+        control.dataset.field as OnboardingField,
+        control.dataset.value ?? '',
+        control.dataset.multiple === 'true',
+      )
+      render()
+      break
+    case 'next-onboarding':
+      if (state.onboardingStep === onboardingQuestions.length - 1) {
+        completeOnboarding()
+      } else {
+        state.onboardingStep += 1
+      }
+      render()
+      break
+    case 'prev-onboarding':
+      state.onboardingStep = Math.max(0, state.onboardingStep - 1)
+      render()
+      break
+    case 'complete-onboarding':
+      completeOnboarding()
+      render()
+      break
+    case 'select-plan':
+      void beginPlanCheckout((control.dataset.plan ?? 'starter') as PlanId)
+      break
+    case 'set-billing-status':
+      setBillingStatus((control.dataset.status ?? 'active') as SubscriptionStatus)
+      render()
+      break
+    case 'sign-out':
+      void submitSignOut()
+      break
+    case 'open-portal':
+      void openBillingPortal()
+      break
+    case 'use-prompt':
+      state.commandInput = control.dataset.prompt ?? ''
+      handleCommandSubmit()
+      render()
+      break
+    case 'toggle-habit':
+      toggleHabit(control.dataset.id ?? '')
+      render()
+      break
+    case 'edit-habit':
+      editHabit(control.dataset.id ?? '')
+      render()
+      break
+    case 'delete-habit':
+      deleteHabit(control.dataset.id ?? '')
+      render()
+      break
+    case 'cancel-habit-edit':
+      resetHabitDraft()
+      render()
+      break
+    case 'toggle-ritual-step':
+      toggleRitualStep(control.dataset.id ?? '')
+      render()
+      break
+    case 'move-task-next':
+      moveTask(control.dataset.id ?? '', 1)
+      render()
+      break
+    case 'move-task-back':
+      moveTask(control.dataset.id ?? '', -1)
+      render()
+      break
+    case 'edit-task':
+      editTask(control.dataset.id ?? '')
+      render()
+      break
+    case 'delete-task':
+      deleteTask(control.dataset.id ?? '')
+      render()
+      break
+    case 'delete-finance':
+      deleteFinanceEntry(control.dataset.id ?? '')
+      render()
+      break
+    case 'cancel-task-edit':
+      resetTaskDraft()
+      render()
+      break
+    case 'start-focus':
+      startFocus()
+      break
+    case 'pause-focus':
+      pauseFocus()
+      break
+    case 'reset-focus':
+      resetFocus()
+      break
+    case 'set-session':
+      setSession(Number(control.dataset.duration ?? state.focusDuration))
+      render()
+      break
+  }
+})
+
+document.addEventListener('input', (event) => {
+  const target = event.target as HTMLInputElement | HTMLTextAreaElement
+
+  if (target.id === 'command-input') {
+    state.commandInput = target.value
+    saveState()
+  }
+
+  if (target.dataset.model) {
+    updateModel(target.dataset.model, target.value)
+    saveState()
+  }
+})
+
+document.addEventListener('change', (event) => {
+  const target = event.target as HTMLSelectElement
+
+  if (!target.dataset.model) {
+    return
+  }
+
+  updateModel(target.dataset.model, target.value)
+  render()
+})
+
+document.addEventListener('submit', (event) => {
+  const formId = (event.target as HTMLElement).id
+
+  if (!['command-form', 'habit-form', 'task-form', 'finance-form', 'auth-form'].includes(formId)) {
+    return
+  }
+
+  event.preventDefault()
+
+  if (formId === 'command-form') {
+    handleCommandSubmit()
+  }
+
+  if (formId === 'habit-form') {
+    saveHabit()
+  }
+
+  if (formId === 'task-form') {
+    saveTask()
+  }
+
+  if (formId === 'finance-form') {
+    saveFinanceEntry()
+  }
+
+  if (formId === 'auth-form') {
+    void submitAuth()
+    return
+  }
+
+  render()
+})
+
+function syncAuthUser(user: Awaited<ReturnType<typeof getCurrentUser>>) {
+  state.authUserId = user?.id ?? null
+  state.authUserEmail = user?.email ?? null
+
+  if (user?.email) {
+    state.authEmail = user.email
+    state.authMessage = 'Conta conectada com Supabase Auth.'
+  }
+}
+
+async function hydrateAuth() {
+  const user = await getCurrentUser()
+  syncAuthUser(user)
+
+  if (user) {
+    render()
+  }
+}
+
+onAuthChange((user) => {
+  syncAuthUser(user)
+  render()
+})
+
+void hydrateAuth()
+render()

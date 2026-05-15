@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#120d20"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </radialGradient>
+    <radialGradient id="glow1" cx="35%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="65%" cy="45%" r="40%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c4b5fd"/>
+      <stop offset="50%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#c4b5fd"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.4"/>
+    </linearGradient>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="500" fill="url(#bg)"/>
+  <rect width="500" height="500" fill="url(#glow1)"/>
+  <rect width="500" height="500" fill="url(#glow2)"/>
+
+  <!-- Subtle grid -->
+  <g opacity="0.04" stroke="#8b5cf6" stroke-width="1">
+    <line x1="0" y1="100" x2="500" y2="100"/>
+    <line x1="0" y1="200" x2="500" y2="200"/>
+    <line x1="0" y1="300" x2="500" y2="300"/>
+    <line x1="0" y1="400" x2="500" y2="400"/>
+    <line x1="100" y1="0" x2="100" y2="500"/>
+    <line x1="200" y1="0" x2="200" y2="500"/>
+    <line x1="300" y1="0" x2="300" y2="500"/>
+    <line x1="400" y1="0" x2="400" y2="500"/>
+  </g>
+
+  <!-- Decorative stars -->
+  <circle cx="148" cy="148" r="2" fill="#f59e0b" opacity="0.6"/>
+  <circle cx="352" cy="140" r="1.5" fill="#c4b5fd" opacity="0.5"/>
+  <circle cx="380" cy="220" r="2" fill="#f59e0b" opacity="0.4"/>
+  <circle cx="120" cy="230" r="1.5" fill="#a78bfa" opacity="0.5"/>
+  <circle cx="168" cy="320" r="1" fill="#fbbf24" opacity="0.4"/>
+  <circle cx="332" cy="310" r="1.5" fill="#c4b5fd" opacity="0.35"/>
+
+  <!-- Outer glow rings -->
+  <circle cx="250" cy="185" r="94" fill="none" stroke="url(#border-grad)" stroke-width="1" opacity="0.3"/>
+
+  <!-- Icon background -->
+  <rect x="196" y="132" width="108" height="108" rx="28" fill="#160d2b" stroke="url(#border-grad)" stroke-width="1.5"/>
+
+  <!-- Infinity / Flow icon -->
+  <g filter="url(#glow-filter)" fill="none" stroke="url(#icon-grad)" stroke-width="6" stroke-linecap="round">
+    <!-- Infinity symbol -->
+    <path d="M224 186 C224 175 232 168 241 168 C250 168 257 175 250 186 C257 197 264 204 273 204 C282 204 290 197 290 186 C290 175 282 168 273 168 C264 168 257 175 250 186 C243 197 236 204 227 204 C218 204 210 197 210 186 Z"/>
+  </g>
+
+  <!-- Gold accent dot -->
+  <circle cx="273" cy="168" r="5" fill="#f59e0b" opacity="0.9"/>
+  <circle cx="227" cy="204" r="4" fill="#c4b5fd" opacity="0.8"/>
+
+  <!-- Label -->
+  <text x="250" y="288" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="13" font-weight="600" fill="#a78bfa" text-anchor="middle" letter-spacing="4">PLANO</text>
+
+  <!-- Plan name -->
+  <text x="250" y="340" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="52" font-weight="700" fill="url(#text-grad)" text-anchor="middle" letter-spacing="-1">Flow+</text>
+
+  <!-- Tagline -->
+  <text x="250" y="376" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="15" fill="#a78bfa" text-anchor="middle" opacity="0.7">O sistema completo sem restrições</text>
+
+  <!-- Bottom badge -->
+  <rect x="157" y="410" width="186" height="32" rx="16" fill="rgba(139,92,246,0.1)" stroke="rgba(139,92,246,0.35)" stroke-width="1"/>
+  <text x="250" y="426" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="11" font-weight="500" fill="#f59e0b" text-anchor="middle">✦</text>
+  <text x="250" y="431" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="13" font-weight="600" fill="#c4b5fd" text-anchor="middle">Exclusivo · R$ 249,90 / mês</text>
+</svg>

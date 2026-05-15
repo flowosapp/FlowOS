@@ -1,0 +1,153 @@
+<!--
+  FLOWOS — Template de confirmação de cadastro
+  ─────────────────────────────────────────────
+  Como aplicar no Supabase:
+  1. Acesse: https://supabase.com/dashboard/project/qsgmdwbkvmxpjelozwuc/auth/templates
+  2. Clique em "Confirm signup"
+  3. Cole o conteúdo HTML abaixo no campo "Body"
+  4. Subject: Confirme sua conta no FlowOS — bem-vindo(a), {{ .Data.full_name }}!
+  5. Salve.
+
+  Variáveis Supabase disponíveis:
+  {{ .ConfirmationURL }} — link de confirmação único (obrigatório)
+  {{ .Email }}          — email do usuário
+  {{ .Data.full_name }} — nome informado no cadastro
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bem-vindo ao FlowOS</title>
+</head>
+<body style="margin:0;padding:0;background:#04040e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#04040e;padding:48px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:40px;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:12px;width:44px;height:44px;text-align:center;vertical-align:middle;">
+                    <span style="font-size:22px;line-height:44px;">⚡</span>
+                  </td>
+                  <td style="padding-left:12px;vertical-align:middle;">
+                    <span style="font-size:20px;font-weight:800;letter-spacing:0.1em;color:#ffffff;">FLOWOS</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Card principal -->
+          <tr>
+            <td style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;">
+
+              <!-- Banner gradiente topo -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,rgba(59,130,246,0.18),rgba(139,92,246,0.12),rgba(6,182,212,0.08));padding:40px 40px 36px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.05);">
+
+                    <!-- Score ring emoji -->
+                    <div style="font-size:48px;margin-bottom:20px;">🚀</div>
+
+                    <h1 style="margin:0 0 12px;font-size:26px;font-weight:800;letter-spacing:-0.03em;color:#ffffff;line-height:1.2;">
+                      Bem-vindo(a) ao FlowOS{{ .Data.full_name }},<br/>
+                      <span style="background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                        sua vida agora tem um sistema.
+                      </span>
+                    </h1>
+
+                    <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;max-width:400px;margin:0 auto;">
+                      Você está a um clique de começar a operar no seu potencial máximo — com hábitos, finanças, saúde e inteligência artificial unificados.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Corpo -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:36px 40px;">
+
+                    <p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">
+                      Para ativar sua conta e começar sua jornada, clique no botão abaixo:
+                    </p>
+
+                    <!-- CTA Button -->
+                    <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
+                      <tr>
+                        <td align="center" style="background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:12px;box-shadow:0 0 32px rgba(59,130,246,0.4);">
+                          <a href="{{ .ConfirmationURL }}" style="display:block;padding:16px 40px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.01em;">
+                            ✓ &nbsp;Confirmar minha conta
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Features -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:28px;">
+                      <tr>
+                        <td style="padding:20px 24px;">
+                          <p style="margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.25);">O que te espera no FlowOS</p>
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.6);">⚡ <strong style="color:rgba(255,255,255,0.85);">Life Score</strong> — um número que mede seu potencial diário</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.6);">🧠 <strong style="color:rgba(255,255,255,0.85);">Central IA</strong> — insights personalizados com seus dados reais</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.6);">💰 <strong style="color:rgba(255,255,255,0.85);">Finanças</strong> — controle total com metas e categorias inteligentes</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.6);">🎯 <strong style="color:rgba(255,255,255,0.85);">Hábitos & Foco</strong> — streaks, Pomodoro e modo deep work</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:5px 0;font-size:13px;color:rgba(255,255,255,0.6);">❤️ <strong style="color:rgba(255,255,255,0.85);">Saúde & Sono</strong> — monitore energia, treinos e qualidade do sono</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.3);line-height:1.6;">
+                      Se o botão não funcionar, copie e cole o link abaixo no navegador:
+                    </p>
+                    <p style="margin:0;font-size:11px;word-break:break-all;">
+                      <a href="{{ .ConfirmationURL }}" style="color:#3b82f6;text-decoration:none;">{{ .ConfirmationURL }}</a>
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:28px 0 0;text-align:center;">
+              <p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.2);">
+                Você está recebendo este e-mail porque criou uma conta no FlowOS.
+              </p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.15);">
+                Se não foi você, ignore este e-mail com segurança.
+              </p>
+              <p style="margin:16px 0 0;font-size:11px;color:rgba(255,255,255,0.12);">
+                © 2026 FlowOS — Life Operating System
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
