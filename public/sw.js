@@ -1,11 +1,13 @@
-/* FLOWOS Service Worker v2 — cache-first + push + background sync + auto-update */
+/* FLOWOS Service Worker v3 — cache-first + push + background sync + auto-update */
 
-const CACHE_VERSION = 'flowos-v2'
+const CACHE_VERSION = 'flowos-v3'
 const STATIC_CACHE  = `${CACHE_VERSION}-static`
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`
+const MAX_DYNAMIC_ITEMS = 60
 
 const PRECACHE_URLS = [
   '/',
+  '/offline.html',
   '/manifest.json',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg',
@@ -25,13 +27,19 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys()
+      .then(keys => Promise.all(
         keys
           .filter(k => k !== STATIC_CACHE && k !== DYNAMIC_CACHE)
           .map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
+      ))
+      .then(() => self.clients.claim())
+      .then(() => {
+        // Notifica todos os clientes que o SW foi atualizado
+        self.clients.matchAll({ type: 'window' }).then(clients =>
+          clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
+        )
+      })
   )
 })
 
@@ -47,7 +55,7 @@ self.addEventListener('fetch', (event) => {
   // Passa direto: API própria
   if (url.pathname.startsWith('/api/')) return
 
-  // Navegação SPA: network-first, fallback para shell em cache
+  // Navegação SPA: network-first, fallback para shell ou offline.html
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -60,6 +68,7 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() =>
           caches.match('/') ??
+          caches.match('/offline.html') ??
           new Response('<h1>Offline</h1>', { headers: { 'Content-Type': 'text/html' } })
         )
     )
@@ -75,7 +84,14 @@ self.addEventListener('fetch', (event) => {
         return fetch(request).then(res => {
           if (res.ok && request.method === 'GET') {
             const clone = res.clone()
-            caches.open(DYNAMIC_CACHE).then(c => c.put(request, clone))
+            caches.open(DYNAMIC_CACHE).then(async c => {
+              await c.put(request, clone)
+              // Limita crescimento do cache dinâmico
+              const keys = await c.keys()
+              if (keys.length > MAX_DYNAMIC_ITEMS) {
+                await c.delete(keys[0])
+              }
+            })
           }
           return res
         })

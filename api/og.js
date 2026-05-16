@@ -59,7 +59,7 @@ export default function handler(req) {
                   }},
                   { type: 'div', props: {
                     style: { fontSize: 16, color: 'rgba(255,255,255,0.2)' },
-                    children: 'flow-os-app.vercel.app',
+                    children: (process.env.FLOWOS_APP_URL ?? 'flowosapp.io').replace(/^https?:\/\//, ''),
                   }},
                 ],
               }},

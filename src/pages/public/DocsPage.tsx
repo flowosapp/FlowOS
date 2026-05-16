@@ -75,7 +75,7 @@ export default function DocsPage() {
 
       <div style={{ marginTop: 64, padding: '28px 32px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 16 }}>
         <p style={{ fontSize: 15, color: '#fff', fontWeight: 600, marginBottom: 6 }}>Não encontrou o que procurava?</p>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>Fale com o suporte em <span style={{ color: '#c4b5fd' }}>suporte@flowos.app</span> — respondemos em menos de 4 horas nos dias úteis.</p>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>Fale com o suporte em <span style={{ color: '#c4b5fd' }}>suporte@flowosapp.io</span> — respondemos em menos de 4 horas nos dias úteis.</p>
       </div>
     </PublicShell>
   )

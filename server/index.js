@@ -450,23 +450,45 @@ try {
   }
 } catch {}
 
-// Armazenamento em memória (substituir por Supabase em produção)
-const pushSubscriptions = new Map()
+// Push subscriptions persisted in Supabase (falls back to in-memory if Supabase unavailable)
+const pushSubscriptionsMemory = new Map()
+
+async function getPushSubscriptions() {
+  if (!supabaseAdmin) return [...pushSubscriptionsMemory.values()]
+  const { data } = await supabaseAdmin.from('push_subscriptions').select('endpoint, p256dh, auth')
+  return (data ?? []).map(r => ({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } }))
+}
+
+async function savePushSubscription(sub, userId) {
+  if (!supabaseAdmin) { pushSubscriptionsMemory.set(sub.endpoint, sub); return }
+  const keys = sub.keys ?? {}
+  await supabaseAdmin.from('push_subscriptions').upsert({
+    endpoint: sub.endpoint,
+    p256dh: keys.p256dh ?? '',
+    auth: keys.auth ?? '',
+    ...(userId ? { user_id: userId } : {}),
+  }, { onConflict: 'endpoint' })
+}
+
+async function deletePushSubscription(endpoint) {
+  if (!supabaseAdmin) { pushSubscriptionsMemory.delete(endpoint); return }
+  await supabaseAdmin.from('push_subscriptions').delete().eq('endpoint', endpoint)
+}
 
 app.post('/api/push/vapid-key', (_req, res) => {
   res.json({ publicKey: vapidPublic ?? null })
 })
 
-app.post('/api/push/subscribe', (req, res) => {
+app.post('/api/push/subscribe', async (req, res) => {
   const sub = req.body
   if (!sub?.endpoint) return res.status(400).json({ error: 'subscription inválida' })
-  pushSubscriptions.set(sub.endpoint, sub)
+  await savePushSubscription(sub, sub.userId)
   res.json({ ok: true })
 })
 
-app.post('/api/push/unsubscribe', (req, res) => {
+app.post('/api/push/unsubscribe', async (req, res) => {
   const { endpoint } = req.body ?? {}
-  if (endpoint) pushSubscriptions.delete(endpoint)
+  if (endpoint) await deletePushSubscription(endpoint)
   res.json({ ok: true })
 })
 
@@ -475,16 +497,17 @@ app.post('/api/push/send', async (req, res) => {
   if (!webPush) return res.status(503).json({ error: 'web-push não configurado' })
   const { title = 'FLOWOS', body = 'Notificação', tag = 'flowos', url = '/dashboard' } = req.body ?? {}
   const payload = JSON.stringify({ title, body, tag, data: { url } })
+  const subs = await getPushSubscriptions()
   const results = await Promise.allSettled(
-    [...pushSubscriptions.values()].map(sub =>
-      webPush.sendNotification(sub, payload).catch(err => {
-        if (err.statusCode === 410) pushSubscriptions.delete(sub.endpoint)
+    subs.map(sub =>
+      webPush.sendNotification(sub, payload).catch(async err => {
+        if (err.statusCode === 410) await deletePushSubscription(sub.endpoint)
         throw err
       })
     )
   )
   const sent = results.filter(r => r.status === 'fulfilled').length
-  res.json({ sent, total: pushSubscriptions.size })
+  res.json({ sent, total: subs.length })
 })
 
 app.listen(port, () => {

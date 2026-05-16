@@ -42,12 +42,20 @@ export default async function handler(req, res) {
   })
 
   const results = await Promise.allSettled(
-    subs.map(s =>
-      webpush.sendNotification(
-        { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-        payload,
-      )
-    )
+    subs.map(async s => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+          payload,
+        )
+      } catch (err) {
+        // Subscription expirada — remove do banco
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          await supabase.from('push_subscriptions').delete().eq('endpoint', s.endpoint)
+        }
+        throw err
+      }
+    })
   )
 
   const sent = results.filter(r => r.status === 'fulfilled').length

@@ -50,12 +50,12 @@ O acesso dos funcionários aos dados de produção é auditado, logado e requer 
 • **Portabilidade**: exportar seus dados para uso em outro serviço.
 • **Revogação**: revogar o consentimento de coleta a qualquer momento.
 
-Para exercer qualquer direito, acesse Configurações → Privacidade ou envie e-mail para privacidade@flowos.app.`,
+Para exercer qualquer direito, acesse Configurações → Privacidade ou envie e-mail para privacidade@flowosapp.io.`,
   },
   {
     title: '6. Contato do DPO',
     body: `Nosso Encarregado de Proteção de Dados (DPO) pode ser contactado em:
-privacidade@flowos.app · Tempo de resposta: até 5 dias úteis.`,
+privacidade@flowosapp.io · Tempo de resposta: até 5 dias úteis.`,
   },
 ]
 

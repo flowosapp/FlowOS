@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLOWOS — Offline</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --text-dim: rgba(255,255,255,0.4);
+      --accent: #3b82f6;
+      --cyan: #00d4ff;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 400px;
+      width: 100%;
+      animation: fadeIn 0.4s ease;
+    }
+    .icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #3b82f6, #00d4ff);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 0 40px rgba(59,130,246,0.25);
+    }
+    svg { display: block; }
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 10px; }
+    p { font-size: 14px; color: var(--text-dim); line-height: 1.7; margin-bottom: 28px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .status { margin-top: 20px; font-size: 12px; color: var(--text-dim); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-right: 6px; animation: pulse 1.5s ease infinite; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+        <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <line x1="12" y1="20" x2="12.01" y2="20"/>
+      </svg>
+    </div>
+    <h1>Você está offline</h1>
+    <p>
+      Sem conexão com a internet no momento.<br/>
+      Seus dados estão <strong style="color:var(--text)">salvos localmente</strong> e tudo sincroniza automaticamente quando a conexão voltar.
+    </p>
+    <a class="btn" href="/" onclick="window.location.reload(); return false;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Tentar novamente
+    </a>
+    <p class="status"><span class="dot"></span>Aguardando reconexão...</p>
+  </div>
+  <script>
+    window.addEventListener('online', () => window.location.reload())
+  </script>
+</body>
+</html>

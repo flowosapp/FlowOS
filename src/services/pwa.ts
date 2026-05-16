@@ -79,7 +79,14 @@ export async function getExistingSubscription(): Promise<PushSubscription | null
 
 export async function unsubscribePush(): Promise<void> {
   const sub = await getExistingSubscription()
-  if (sub) await sub.unsubscribe()
+  if (!sub) return
+  const endpoint = sub.endpoint
+  await sub.unsubscribe()
+  await fetch('/api/push/unsubscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint }),
+  }).catch(() => {})
 }
 
 // ── SW Messaging — agendar alarme via SW ────────────────────────────────────

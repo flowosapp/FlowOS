@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
 import { useFlowStore } from '../store'
 import { Send, Sparkles, Trash2, Zap } from 'lucide-react'
 
-const API_URL = ''
+const API_URL = (import.meta.env.VITE_FLOWOS_API_URL as string | undefined) ?? ''
 
 const SUGESTOES = [
   'Organize meu dia para máxima produtividade',
@@ -405,7 +405,7 @@ export default function AIPage() {
           </button>
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 8, textAlign: 'center' }}>
-          {API_URL ? 'Powered by Claude · contexto completo do seu FLOWOS' : 'A IA do FLOWOS conhece seus hábitos, tarefas, projetos e finanças.'}
+          {API_URL ? 'Powered by Gemini · contexto completo do seu FLOWOS' : 'A IA do FLOWOS conhece seus hábitos, tarefas, projetos e finanças.'}
         </p>
       </div>
 

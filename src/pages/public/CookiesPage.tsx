@@ -77,7 +77,7 @@ export default function CookiesPage() {
       <div style={{ padding: '24px 28px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 14 }}>
         <p style={{ fontSize: 14, color: '#fff', fontWeight: 500, marginBottom: 6 }}>Gerenciar cookies</p>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>
-          Você pode gerenciar ou excluir cookies nas configurações do seu navegador. Cookies essenciais não podem ser desabilitados sem afetar o funcionamento do app. Para dúvidas: <span style={{ color: '#93c5fd' }}>privacidade@flowos.app</span>
+          Você pode gerenciar ou excluir cookies nas configurações do seu navegador. Cookies essenciais não podem ser desabilitados sem afetar o funcionamento do app. Para dúvidas: <span style={{ color: '#93c5fd' }}>privacidade@flowosapp.io</span>
         </p>
       </div>
     </PublicShell>

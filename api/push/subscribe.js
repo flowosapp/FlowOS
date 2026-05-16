@@ -12,15 +12,15 @@ export default async function handler(req, res) {
 
   const { endpoint, keys, userId } = req.body ?? {}
 
-  if (!endpoint || !keys?.p256dh || !keys?.auth || !userId) {
-    return res.status(400).json({ error: 'endpoint, keys e userId são obrigatórios.' })
+  if (!endpoint || !keys?.p256dh || !keys?.auth) {
+    return res.status(400).json({ error: 'endpoint e keys são obrigatórios.' })
   }
 
   const { error } = await supabase
     .from('push_subscriptions')
     .upsert(
-      { user_id: userId, endpoint, p256dh: keys.p256dh, auth: keys.auth },
-      { onConflict: 'user_id,endpoint' }
+      { endpoint, p256dh: keys.p256dh, auth: keys.auth, ...(userId ? { user_id: userId } : {}) },
+      { onConflict: 'endpoint' }
     )
 
   if (error) return res.status(500).json({ error: error.message })

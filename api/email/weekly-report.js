@@ -7,7 +7,7 @@ const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_K
   : null
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const APP_URL = process.env.FLOWOS_APP_URL ?? 'https://flow-os-app.vercel.app'
+const APP_URL = process.env.FLOWOS_APP_URL ?? 'https://flowosapp.io'
 
 function buildEmailHtml(email) {
   return `<!DOCTYPE html>
@@ -153,7 +153,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'FlowOS <noreply@flowosapp.com>',
+          from: process.env.RESEND_FROM_EMAIL ?? 'FlowOS <noreply@flowosapp.io>',
           to: [user.email],
           subject: '🔥 Sua semana no FlowOS — hora de dominar mais uma',
           html: buildEmailHtml(user.email),

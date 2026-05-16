@@ -64,7 +64,7 @@ export default function CarreirasPage() {
 
       <div style={{ marginTop: 48, padding: '28px 32px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 16 }}>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Não encontrou sua vaga?</p>
-        <p style={{ fontSize: 15, color: '#fff', fontWeight: 500 }}>Mande seu currículo para <span style={{ color: '#93c5fd' }}>careers@flowos.app</span></p>
+        <p style={{ fontSize: 15, color: '#fff', fontWeight: 500 }}>Mande seu currículo para <span style={{ color: '#93c5fd' }}>careers@flowosapp.io</span></p>
       </div>
     </PublicShell>
   )
