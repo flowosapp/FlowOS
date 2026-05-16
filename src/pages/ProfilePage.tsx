@@ -9,7 +9,7 @@ import { useFlowStore, calcularPontuacaoVida } from '../store'
 import { useAuthUser } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { isSupabaseConfigured, signOut, uploadAvatar, deleteAvatar } from '../services/supabase'
-import { createCheckoutSession, redeemBetaCode } from '../services/billing'
+import { createCheckoutSession } from '../services/billing'
 import {
   requestNotificationPermission, getNotificationPermission,
   subscribePush, getExistingSubscription, unsubscribePush,
@@ -85,9 +85,6 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<Tab>('identidade')
   const [saved, setSaved] = useState(false)
   const [upgrading, setUpgrading] = useState(false)
-  const [betaCode, setBetaCode] = useState('')
-  const [betaLoading, setBetaLoading] = useState(false)
-  const [betaMsg, setBetaMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -149,21 +146,6 @@ export default function ProfilePage() {
     atualizarPerfil({ avatarUrl: undefined })
   }
 
-  async function handleBetaRedeem() {
-    if (!betaCode.trim() || !authUser?.id) return
-    setBetaLoading(true)
-    setBetaMsg(null)
-    try {
-      await redeemBetaCode(betaCode.trim(), authUser.id)
-      upgradePro()
-      setBetaMsg({ ok: true, text: 'Código ativado! Bem-vindo ao Flow+ 🚀' })
-      setBetaCode('')
-    } catch (err) {
-      setBetaMsg({ ok: false, text: err instanceof Error ? err.message : 'Código inválido.' })
-    } finally {
-      setBetaLoading(false)
-    }
-  }
 
   async function handleUpgrade() {
     setUpgrading(true)
@@ -717,49 +699,6 @@ export default function ProfilePage() {
 
           {/* Código Beta */}
           {!isPro && (
-            <div
-              className="card"
-              style={{
-                marginBottom: 20,
-                background: 'linear-gradient(135deg, rgba(139,92,246,0.06), rgba(59,130,246,0.04))',
-                border: '1px solid rgba(139,92,246,0.2)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <Sparkles size={15} color="#8b5cf6" />
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa' }}>Acesso Beta — Flow+</h3>
-              </div>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.6 }}>
-                Tem um código de acesso beta? Insira abaixo para ativar o plano Flow+ completo sem custo.
-              </p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="input-field"
-                  placeholder="Ex: FLOWBETA2026"
-                  value={betaCode}
-                  onChange={e => { setBetaCode(e.target.value.toUpperCase()); setBetaMsg(null) }}
-                  onKeyDown={e => e.key === 'Enter' && handleBetaRedeem()}
-                  style={{ flex: 1, fontSize: 13, letterSpacing: '0.06em', fontWeight: 600, textTransform: 'uppercase' }}
-                  disabled={betaLoading}
-                />
-                <button
-                  className="btn-primary"
-                  onClick={handleBetaRedeem}
-                  disabled={betaLoading || !betaCode.trim()}
-                  style={{ gap: 8, whiteSpace: 'nowrap', background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)' }}
-                >
-                  {betaLoading
-                    ? <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
-                    : <Sparkles size={14} />}
-                  Ativar
-                </button>
-              </div>
-              {betaMsg && (
-                <p style={{ marginTop: 10, fontSize: 12, fontWeight: 600, color: betaMsg.ok ? '#10b981' : '#ef4444' }}>
-                  {betaMsg.text}
-                </p>
-              )}
-            </div>
           )}
 
           {/* Comparativo de planos */}

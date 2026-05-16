@@ -32,6 +32,3 @@ export async function createPortalSession(customerId: string) {
   return postJson<{ url: string }>('/api/billing/portal', { customerId })
 }
 
-export async function redeemBetaCode(code: string, userId: string) {
-  return postJson<{ ok: true; plan: string }>('/api/beta/redeem', { code, userId })
-}
