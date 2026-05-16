@@ -697,10 +697,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Código Beta */}
-          {!isPro && (
-          )}
-
           {/* Comparativo de planos */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
             {[
