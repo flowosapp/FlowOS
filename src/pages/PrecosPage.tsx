@@ -4,6 +4,7 @@ import { Check, Zap, Cpu, Crown, ArrowLeft, ChevronDown, ChevronUp } from 'lucid
 import { isSupabaseConfigured } from '../services/supabase'
 import { createCheckoutSession } from '../services/billing'
 import type { BillingPlan } from '../services/billing'
+import { track, Events } from '../services/analytics'
 
 const PLANS = [
   {
@@ -105,6 +106,7 @@ export default function PrecosPage() {
       return
     }
     setLoadingPlan(plan)
+    track(Events.CHECKOUT_STARTED, { plan })
     try {
       const { url } = await createCheckoutSession({ plan })
       window.location.href = url

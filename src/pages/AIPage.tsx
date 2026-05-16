@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
 import { useFlowStore } from '../store'
 import { Send, Sparkles, Trash2, Zap } from 'lucide-react'
+import { track, Events } from '../services/analytics'
 
 const API_URL = (import.meta.env.VITE_FLOWOS_API_URL as string | undefined) ?? ''
 
@@ -247,6 +248,7 @@ export default function AIPage() {
     const q = (query ?? input).trim()
     if (!q || carregando) return
 
+    track(Events.AI_MESSAGE_SENT)
     const historicoPrevio = [...mensagens]
     setInput('')
     adicionarMensagem('usuario', q)

@@ -1,9 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import App from './App'
 import { ToastProvider } from './contexts/ToastContext'
+import { initAnalytics } from './services/analytics'
 import './index.css'
+
+initAnalytics()
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
   <React.StrictMode>
@@ -11,6 +15,7 @@ ReactDOM.createRoot(document.getElementById('app')!).render(
       <ToastProvider>
         <App />
       </ToastProvider>
+      <Analytics />
     </BrowserRouter>
   </React.StrictMode>
 )

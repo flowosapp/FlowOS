@@ -3,6 +3,7 @@ import { useFlowStore } from '../store'
 import { CheckCircle2, Circle, Flame, Plus, Trash2, X } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import { dispararConfetti } from '../utils/confetti'
+import { track, Events } from '../services/analytics'
 
 const ICONES = ['⚡', '🎯', '💪', '🧘', '📚', '✍️', '🌙', '💧', '🥗', '🚀', '🎨', '🧠', '❤️', '☀️', '🏃', '🎵', '🌿', '💼']
 const CORES = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16']
@@ -42,6 +43,7 @@ export default function HabitsPage() {
     e.preventDefault()
     if (!novoNome.trim()) return
     adicionarHabito(novoNome.trim(), novoIcone, novaCor)
+    track(Events.HABIT_CREATED)
     setNovoNome('')
     setNovoIcone('⚡')
     setNovaCor('#3b82f6')

@@ -7,6 +7,7 @@ import type { FlowState } from './types'
 import { isSupabaseConfigured, getCurrentUser, onAuthChange, loadUserState, saveUserState, getSubscription, isActiveSubscription } from './services/supabase'
 import { canInstall, isStandalone, captureInstallPrompt, promptInstall, registerBackgroundSync } from './services/pwa'
 import { AuthContext } from './contexts/AuthContext'
+import { identifyUser, resetAnalyticsUser, track, Events } from './services/analytics'
 import AppLayout from './components/AppLayout'
 import OfflineBanner from './components/OfflineBanner'
 import UpdatePrompt from './components/UpdatePrompt'
@@ -61,6 +62,15 @@ export default function App() {
     })
 
     return onAuthChange(u => {
+      // Identify / reset user for analytics
+      if (u && !prevUser.current) {
+        identifyUser(u.id, u.email)
+        track(Events.LOGIN, { provider: u.app_metadata?.provider })
+      } else if (!u && prevUser.current) {
+        resetAnalyticsUser()
+        track(Events.LOGOUT)
+      }
+
       // Show install modal on fresh login (null → user)
       if (!prevUser.current && u && !isStandalone() && !sessionStorage.getItem('install-modal-shown')) {
         setTimeout(() => {
@@ -142,6 +152,7 @@ export default function App() {
     if (checkout === 'success') {
       upgradePro()
       setCheckoutResult('success')
+      track(Events.CHECKOUT_SUCCESS)
       window.history.replaceState({}, '', window.location.pathname)
     } else if (checkout === 'cancelled') {
       setCheckoutResult('cancelled')
