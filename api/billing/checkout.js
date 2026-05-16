@@ -36,6 +36,7 @@ export default async function handler(req, res) {
       client_reference_id: userId || undefined,
       metadata: { plan, userId: userId ?? '' },
       subscription_data: subscriptionData,
+      payment_method_collection: 'always',
       allow_promotion_codes: true,
       success_url: `${appUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}?checkout=cancelled`,
