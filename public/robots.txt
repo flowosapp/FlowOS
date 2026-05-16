@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /ia
+Disallow: /habitos
+Disallow: /projetos
+Disallow: /financas
+Disallow: /foco
+Disallow: /saude
+Disallow: /crescimento
+Disallow: /perfil
+Disallow: /api/
+
+Sitemap: https://flow-os-app.vercel.app/sitemap.xml

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060608"/>
+      <stop offset="100%" stop-color="#0d0d18"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="80"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="60"/></filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Glow blobs -->
+  <ellipse cx="250" cy="200" rx="300" ry="250" fill="rgba(59,130,246,0.12)" filter="url(#blur1)"/>
+  <ellipse cx="950" cy="430" rx="280" ry="220" fill="rgba(139,92,246,0.1)" filter="url(#blur2)"/>
+
+  <!-- Grid lines subtle -->
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+  </g>
+
+  <!-- Border -->
+  <rect width="1198" height="628" x="1" y="1" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Logo badge -->
+  <rect x="80" y="72" width="140" height="52" rx="16" fill="url(#brand)"/>
+  <text x="150" y="106" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="24" font-weight="900" fill="#ffffff" letter-spacing="-0.5">FlowOS</text>
+
+  <!-- Main headline -->
+  <text x="80" y="220" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="72" font-weight="900" letter-spacing="-2" fill="#f2f2f5">Seu Sistema</text>
+  <text x="80" y="310" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="72" font-weight="900" letter-spacing="-2" fill="url(#brand)">Operacional</text>
+  <text x="80" y="400" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="72" font-weight="900" letter-spacing="-2" fill="#f2f2f5">de Vida</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="460" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22" fill="rgba(255,255,255,0.45)" letter-spacing="-0.3">Hábitos · Finanças · Saúde · IA · Life Score</text>
+
+  <!-- CTA chip -->
+  <rect x="80" y="500" width="220" height="44" rx="22" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+  <text x="190" y="527" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="15" font-weight="600" fill="#60a5fa">✦ 15 dias grátis</text>
+
+  <!-- Right side — feature cards -->
+  <!-- Card 1 -->
+  <rect x="740" y="72" width="180" height="100" rx="16" fill="rgba(59,130,246,0.08)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+  <text x="760" y="108" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="28">⚡</text>
+  <text x="760" y="134" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13" font-weight="700" fill="#f2f2f5">Life Score</text>
+  <text x="760" y="154" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#9898a8">Pontuação diária</text>
+
+  <!-- Card 2 -->
+  <rect x="940" y="72" width="180" height="100" rx="16" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+  <text x="960" y="108" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="28">🤖</text>
+  <text x="960" y="134" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13" font-weight="700" fill="#f2f2f5">Central IA</text>
+  <text x="960" y="154" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#9898a8">Análises com contexto</text>
+
+  <!-- Card 3 -->
+  <rect x="740" y="192" width="180" height="100" rx="16" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+  <text x="760" y="228" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="28">💰</text>
+  <text x="760" y="254" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13" font-weight="700" fill="#f2f2f5">Finanças</text>
+  <text x="760" y="274" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#9898a8">Controle total</text>
+
+  <!-- Card 4 -->
+  <rect x="940" y="192" width="180" height="100" rx="16" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+  <text x="960" y="228" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="28">🎯</text>
+  <text x="960" y="254" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13" font-weight="700" fill="#f2f2f5">Modo Foco</text>
+  <text x="960" y="274" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="11" fill="#9898a8">Pomodoro + streaks</text>
+
+  <!-- Score ring visual -->
+  <circle cx="930" cy="430" r="90" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
+  <circle cx="930" cy="430" r="90" fill="none" stroke="url(#brand)" stroke-width="12" stroke-linecap="round" stroke-dasharray="424" stroke-dashoffset="85" transform="rotate(-90 930 430)"/>
+  <text x="930" y="420" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="42" font-weight="900" fill="#f2f2f5">80</text>
+  <text x="930" y="448" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13" fill="#9898a8">Life Score</text>
+
+  <!-- Bottom gradient bar -->
+  <rect x="0" y="618" width="1200" height="12" fill="url(#brand)" opacity="0.4"/>
+</svg>
