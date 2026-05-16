@@ -46,7 +46,7 @@ function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   return arr.buffer
 }
 
-export async function subscribePush(): Promise<PushSubscription | null> {
+export async function subscribePush(userId?: string): Promise<PushSubscription | null> {
   if (!('PushManager' in window)) return null
   const reg = await navigator.serviceWorker.ready
   if (!VAPID_PUBLIC_KEY) {
@@ -58,11 +58,11 @@ export async function subscribePush(): Promise<PushSubscription | null> {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     })
-    // Envia subscription para o servidor
+    const json = sub.toJSON() as { endpoint: string; keys?: { p256dh?: string; auth?: string } }
     await fetch('/api/push/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sub.toJSON()),
+      body: JSON.stringify({ ...json, userId }),
     }).catch(() => {})
     return sub
   } catch (err) {

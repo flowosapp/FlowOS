@@ -32,6 +32,7 @@ import StatusPage from './pages/public/StatusPage'
 import PrivacidadePage from './pages/public/PrivacidadePage'
 import TermosPage from './pages/public/TermosPage'
 import CookiesPage from './pages/public/CookiesPage'
+import PrecosPage from './pages/PrecosPage'
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -213,6 +214,7 @@ export default function App() {
         <Route path="/privacidade" element={<PrivacidadePage />} />
         <Route path="/termos" element={<TermosPage />} />
         <Route path="/cookies" element={<CookiesPage />} />
+        <Route path="/precos" element={<PrecosPage />} />
         <Route path="*" element={<LoginPage />} />
       </Routes>
     )
@@ -228,8 +230,9 @@ export default function App() {
       <UpdatePrompt />
       {installModal}
       <Routes>
-        {/* Landing page acessível mesmo logado */}
+        {/* Páginas públicas acessíveis mesmo logado */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/precos" element={<PrecosPage />} />
 
         {/* Todas as rotas do app dentro do AppLayout */}
         <Route path="*" element={
