@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>FlowOS — Stripe Product Images</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #060608;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+      font-family: 'Inter', sans-serif;
+      gap: 40px;
+    }
+    h1 { color: #f2f2f5; font-size: 18px; font-weight: 600; letter-spacing: -0.03em; }
+    .grid {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .plan {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .plan label {
+      color: #62627a;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    img {
+      width: 280px;
+      height: 280px;
+      border-radius: 16px;
+    }
+    .instructions {
+      max-width: 600px;
+      color: #9898a8;
+      font-size: 13px;
+      line-height: 1.7;
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+    .instructions strong { color: #f2f2f5; }
+    code {
+      background: rgba(59,130,246,0.1);
+      color: #60a5fa;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>FlowOS — Imagens dos Planos (Stripe)</h1>
+
+  <div class="grid">
+    <div class="plan">
+      <img src="starter-plan.svg" alt="Starter" />
+      <label>Starter · R$29/mês</label>
+    </div>
+    <div class="plan">
+      <img src="pro-plan.svg" alt="Pro" />
+      <label>Pro · R$49/mês</label>
+    </div>
+    <div class="plan">
+      <img src="flowplus-plan.svg" alt="Flow+" />
+      <label>Flow+ · R$129/mês</label>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <strong>Como usar no Stripe:</strong><br><br>
+    1. Abra cada SVG no browser, faça screenshot ou use <code>Ctrl+P → Save as PDF</code><br>
+    2. Converta para PNG (500×500) via <code>squoosh.app</code> ou <code>cloudconvert.com</code><br>
+    3. No Stripe Dashboard → Products → selecione o produto → <strong>Edit</strong> → faça upload da imagem<br><br>
+    <strong>Tamanho recomendado:</strong> 500×500px PNG, fundo escuro já incluído.
+  </div>
+</body>
+</html>
