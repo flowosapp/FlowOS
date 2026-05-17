@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   User, Target, CreditCard, Database, Save, Download,
   AlertTriangle, Crown, Check, Flame, Sparkles, Activity,
@@ -61,15 +62,16 @@ function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
 
 type Tab = 'identidade' | 'performance' | 'assinatura' | 'notificacoes' | 'dados'
 
-const TABS: { id: Tab; icon: typeof User; label: string }[] = [
-  { id: 'identidade',    icon: User,       label: 'Identidade' },
-  { id: 'performance',   icon: Activity,   label: 'Alta Performance' },
-  { id: 'assinatura',    icon: CreditCard, label: 'Assinatura' },
-  { id: 'notificacoes',  icon: Bell,       label: 'Notificações' },
-  { id: 'dados',         icon: Database,   label: 'Dados' },
-]
-
 export default function ProfilePage() {
+  const { t } = useTranslation(['profile', 'common'])
+
+  const TABS: { id: Tab; icon: typeof User; label: string }[] = [
+    { id: 'identidade',    icon: User,       label: t('tab_identity') },
+    { id: 'performance',   icon: Activity,   label: t('tab_performance') },
+    { id: 'assinatura',    icon: CreditCard, label: t('tab_subscription') },
+    { id: 'notificacoes',  icon: Bell,       label: t('tab_notifications') },
+    { id: 'dados',         icon: Database,   label: t('tab_data') },
+  ]
   const perfil = useFlowStore(s => s.perfil)
   const habitos = useFlowStore(s => s.habitos)
   const tarefas = useFlowStore(s => s.tarefas)
@@ -372,7 +374,7 @@ export default function ProfilePage() {
 
             {/* Upload de foto */}
             <div style={{ marginBottom: 20 }}>
-              <label className="label">Foto de Perfil</label>
+              <label className="label">{t('photo')}</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 {/* Preview */}
                 <div
@@ -425,7 +427,7 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label className="label">Nome de Exibição</label>
+              <label className="label">{t('display_name')}</label>
               <input
                 className="input-field"
                 value={nome}
@@ -435,7 +437,7 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label className="label">Email</label>
+              <label className="label">{t('email')}</label>
               <input
                 className="input-field"
                 value={authUser?.email ?? 'Não autenticado'}
@@ -448,21 +450,21 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label className="label">Mantra Pessoal</label>
+              <label className="label">{t('mantra')}</label>
               <input
                 className="input-field"
                 value={mantra}
                 onChange={e => setMantra(e.target.value)}
-                placeholder="Ex: Foco total. Resultados reais."
+                placeholder={t('mantra_placeholder')}
                 maxLength={80}
               />
               <span style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4, display: 'block' }}>
-                Aparece no cabeçalho do seu perfil como inspiração diária.
+                {t('mantra_hint')}
               </span>
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <label className="label">Moeda</label>
+              <label className="label">{t('currency')}</label>
               <select
                 className="input-field"
                 value={moeda}
@@ -476,7 +478,7 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label className="label">Cor do Avatar</label>
+              <label className="label">{t('avatar_color')}</label>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
                 {GRADIENTES_AVATAR.map(grad => (
                   <button
@@ -794,7 +796,7 @@ export default function ProfilePage() {
 
           {/* Exportar */}
           <div className="card" style={{ marginBottom: 14 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Exportar Dados</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{t('export_data')}</h3>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
               Baixe um backup completo dos seus dados em JSON — hábitos, tarefas, finanças e configurações.
             </p>
@@ -806,7 +808,7 @@ export default function ProfilePage() {
 
           {/* Importar */}
           <div className="card" style={{ marginBottom: 14 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Importar Dados</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{t('import_data')}</h3>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
               Restaure um backup gerado pelo FlowOS. Os dados atuais serão substituídos.
             </p>
@@ -827,7 +829,7 @@ export default function ProfilePage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <AlertTriangle size={15} color="var(--danger)" />
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--danger)' }}>Zona de Perigo</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--danger)' }}>{t('danger_zone')}</h3>
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
               Estas ações são irreversíveis. Todos os seus dados serão permanentemente apagados.
@@ -835,7 +837,7 @@ export default function ProfilePage() {
             <button
               className="btn-ghost"
               onClick={() => {
-                if (confirm('Tem certeza? Todos os dados serão apagados e você voltará ao onboarding.')) {
+                if (confirm(t('reset_confirm'))) {
                   resetStore()
                   window.location.reload()
                 }
@@ -843,7 +845,7 @@ export default function ProfilePage() {
               style={{ color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.25)', gap: 8 }}
             >
               <RefreshCw size={15} />
-              Redefinir tudo e recomeçar
+              {t('reset_all')}
             </button>
           </div>
         </div>

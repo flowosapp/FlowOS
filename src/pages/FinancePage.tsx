@@ -1,4 +1,5 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore } from '../store'
 import { useToast } from '../contexts/ToastContext'
 import type {
@@ -67,6 +68,7 @@ function corFiltroStatus(v: 'todos' | StatusPagamento, ativo: boolean) {
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 export default function FinancePage() {
+  const { t } = useTranslation(['finance', 'common'])
   const transacoes = useFlowStore(s => s.transacoes)
   const categorias = useFlowStore(s => s.categorias)
   const contas = useFlowStore(s => s.contas)
@@ -125,10 +127,10 @@ export default function FinancePage() {
   function abrirEditar(t: Transacao) { setEditando(t); setShowModal(true) }
 
   const ABAS = [
-    { key: 'transacoes' as const, label: 'Transações', pro: false },
-    { key: 'categorias' as const, label: 'Categorias', pro: false },
-    { key: 'carteira' as const, label: 'Minha Carteira', pro: false },
-    { key: 'tags' as const, label: 'Tags', pro: true },
+    { key: 'transacoes' as const, label: t('tab_transactions'), pro: false },
+    { key: 'categorias' as const, label: t('tab_categories'), pro: false },
+    { key: 'carteira' as const, label: t('tab_wallet'), pro: false },
+    { key: 'tags' as const, label: t('tab_tags'), pro: true },
   ]
 
   return (
@@ -137,29 +139,29 @@ export default function FinancePage() {
       <div style={{ padding: '20px 32px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
-            <h1 className="page-title">Finanças</h1>
-            <p className="page-subtitle">{transacoes.length} transações · saldo {fmtMoeda(saldoLiquido)} este mês</p>
+            <h1 className="page-title">{t('title')}</h1>
+            <p className="page-subtitle">{t('summary', { count: transacoes.length, balance: fmtMoeda(saldoLiquido) })}</p>
           </div>
           <button className="btn-primary" onClick={abrirNova} style={{ gap: 6 }}>
             <Plus size={15} />
-            Nova Transação
+            {t('new_transaction')}
           </button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-          <CardResumo label="Receitas (mês)" valor={fmtMoeda(totalReceitas)} cor="#10b981"
+          <CardResumo label={t('income_month')} valor={fmtMoeda(totalReceitas)} cor="#10b981"
             icon={<TrendingUp size={16} color="#10b981" />}
-            sub={`${transacoesMes.filter(t => t.tipo === 'receita').length} entradas`} />
-          <CardResumo label="Gastos (mês)" valor={fmtMoeda(totalGastos)} cor="#ef4444"
+            sub={`${transacoesMes.filter(t => t.tipo === 'receita').length}`} />
+          <CardResumo label={t('expenses_month')} valor={fmtMoeda(totalGastos)} cor="#ef4444"
             icon={<TrendingDown size={16} color="#ef4444" />}
-            sub={`${transacoesMes.filter(t => t.tipo === 'gasto').length} saídas`} />
-          <CardResumo label="Saldo Líquido" valor={fmtMoeda(saldoLiquido)} cor={saldoLiquido >= 0 ? '#3b82f6' : '#ef4444'}
+            sub={`${transacoesMes.filter(t => t.tipo === 'gasto').length}`} />
+          <CardResumo label={t('net_balance')} valor={fmtMoeda(saldoLiquido)} cor={saldoLiquido >= 0 ? '#3b82f6' : '#ef4444'}
             icon={<Wallet size={16} color={saldoLiquido >= 0 ? '#3b82f6' : '#ef4444'} />}
-            sub={saldoLiquido >= 0 ? 'Positivo ✓' : 'Atenção!'} />
-          <CardResumo label="Vencem em 7 dias" valor={String(vencendoBreve.length)}
+            sub={saldoLiquido >= 0 ? '✓' : '!'} />
+          <CardResumo label={t('due_7_days')} valor={String(vencendoBreve.length)}
             cor={vencendoBreve.length > 0 ? '#f59e0b' : '#71717a'}
             icon={<Bell size={16} color={vencendoBreve.length > 0 ? '#f59e0b' : '#71717a'} />}
-            sub={vencendoBreve.length > 0 ? fmtMoeda(vencendoBreve.reduce((s, t) => s + t.valor, 0)) : 'Tudo em dia'} />
+            sub={vencendoBreve.length > 0 ? fmtMoeda(vencendoBreve.reduce((s, t) => s + t.valor, 0)) : ''} />
         </div>
       </div>
 
@@ -234,7 +236,7 @@ function AbaTransacoes({ transacoesFiltradas, categorias, filterTipo, setFilterT
             return (
               <button key={v} onClick={() => setFilterTipo(v)}
                 style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${ativo ? 'rgba(59,130,246,0.4)' : 'var(--border)'}`, background: ativo ? 'rgba(59,130,246,0.1)' : 'transparent', color: ativo ? 'var(--accent)' : 'var(--text-secondary)', fontSize: 12, fontWeight: ativo ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
-                {v === 'todos' ? 'Todos' : v === 'receita' ? 'Receitas' : 'Gastos'}
+                {v === 'todos' ? t('filter_all') : v === 'receita' ? t('filter_income') : t('filter_expenses')}
               </button>
             )
           })}
@@ -444,7 +446,7 @@ function ModalTransacao({ transacao, categorias, contas, tags, isPro, onClose }:
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 18, width: '100%', maxWidth: 560, maxHeight: '92vh', overflowY: 'auto' }}>
         <div style={{ padding: '22px 24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h3 style={{ fontSize: 17, fontWeight: 700 }}>{transacao ? 'Editar Transação' : 'Nova Transação'}</h3>
+          <h3 style={{ fontSize: 17, fontWeight: 700 }}>{transacao ? t('modal_edit') : t('modal_new')}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: 4, borderRadius: 6 }}><X size={18} /></button>
         </div>
 

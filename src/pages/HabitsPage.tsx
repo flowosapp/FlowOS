@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore } from '../store'
 import { CheckCircle2, Circle, Flame, Plus, Trash2, X } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
@@ -19,6 +20,7 @@ function ultimos21Dias(): string[] {
 }
 
 export default function HabitsPage() {
+  const { t } = useTranslation(['habits', 'common'])
   const habitos = useFlowStore(s => s.habitos)
   const alternarHabito = useFlowStore(s => s.alternarHabito)
   const adicionarHabito = useFlowStore(s => s.adicionarHabito)
@@ -75,15 +77,15 @@ export default function HabitsPage() {
     <div className="page-container animate-in">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 className="page-title">Hábitos</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="page-subtitle">
-            {feitosHoje}/{habitos.length} concluídos hoje
-            {habitos.length > 0 && ` · streak médio: ${streakMedio} dias`}
+            {t('done_today', { done: feitosHoje, total: habitos.length })}
+            {habitos.length > 0 && ` · ${t('avg_streak', { days: streakMedio })}`}
           </p>
         </div>
         <button className="btn-primary" onClick={() => setShowAdd(true)} style={{ gap: 6 }}>
           <Plus size={15} />
-          Novo Hábito
+          {t('new_habit')}
         </button>
       </div>
 
@@ -93,16 +95,16 @@ export default function HabitsPage() {
           onClick={e => e.target === e.currentTarget && setShowAdd(false)}>
           <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 16, padding: 28, width: 380, maxWidth: '90vw' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700 }}>Novo Hábito</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700 }}>{t('new_habit')}</h3>
               <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: 4 }}><X size={18} /></button>
             </div>
             <form onSubmit={handleAdicionar}>
               <div style={{ marginBottom: 16 }}>
-                <label className="label">Nome do Hábito</label>
-                <input className="input-field" placeholder="ex: Corrida matinal" value={novoNome} onChange={e => setNovoNome(e.target.value)} autoFocus />
+                <label className="label">{t('habit_name')}</label>
+                <input className="input-field" placeholder={t('habit_name_placeholder')} value={novoNome} onChange={e => setNovoNome(e.target.value)} autoFocus />
               </div>
               <div style={{ marginBottom: 16 }}>
-                <label className="label">Ícone</label>
+                <label className="label">{t('icon')}</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {ICONES.map(icone => (
                     <button key={icone} type="button" onClick={() => setNovoIcone(icone)}
@@ -113,7 +115,7 @@ export default function HabitsPage() {
                 </div>
               </div>
               <div style={{ marginBottom: 20 }}>
-                <label className="label">Cor</label>
+                <label className="label">{t('color')}</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {CORES.map(c => (
                     <button key={c} type="button" onClick={() => setNovaCor(c)}
@@ -122,8 +124,8 @@ export default function HabitsPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button type="button" className="btn-ghost" onClick={() => setShowAdd(false)} style={{ flex: 1 }}>Cancelar</button>
-                <button type="submit" className="btn-primary" disabled={!novoNome.trim()} style={{ flex: 2, opacity: novoNome.trim() ? 1 : 0.4 }}>Adicionar</button>
+                <button type="button" className="btn-ghost" onClick={() => setShowAdd(false)} style={{ flex: 1 }}>{t('common:cancel')}</button>
+                <button type="submit" className="btn-primary" disabled={!novoNome.trim()} style={{ flex: 2, opacity: novoNome.trim() ? 1 : 0.4 }}>{t('add_habit')}</button>
               </div>
             </form>
           </div>
@@ -189,23 +191,24 @@ export default function HabitsPage() {
 }
 
 function EstadoVazio({ onAdicionar }: { onAdicionar: () => void }) {
+  const { t } = useTranslation('habits')
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '56px 0', textAlign: 'center', animation: 'fadeIn 0.3s ease' }}>
       <div style={{ fontSize: 56, marginBottom: 18, animation: 'float 3s ease-in-out infinite', lineHeight: 1 }}>🔥</div>
-      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.02em' }}>Nenhum hábito ainda</h3>
+      <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.02em' }}>{t('no_habits_title')}</h3>
       <p style={{ fontSize: 14, color: 'var(--text-1)', marginBottom: 10, maxWidth: 300, lineHeight: 1.7 }}>
-        Construa rotinas poderosas acompanhando hábitos diariamente.
+        {t('no_habits_desc')}
       </p>
       <p style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 28, maxWidth: 280, lineHeight: 1.6 }}>
-        Pequenas ações, compostas ao longo do tempo, criam resultados extraordinários.
+        {t('no_habits_quote')}
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
         <button className="btn-primary" onClick={onAdicionar} style={{ gap: 7 }}>
           <Plus size={15} />
-          Adicionar primeiro hábito
+          {t('add_habit')}
         </button>
         <span style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 4 }}>
-          Sugestões: 💪 Exercício · 📚 Leitura · 💧 Hidratação · 🧘 Meditação
+          {t('suggestions')}
         </span>
       </div>
     </div>
