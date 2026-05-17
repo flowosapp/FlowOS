@@ -15,15 +15,12 @@ import {
 } from 'lucide-react'
 import type { DiaSemana } from '../types'
 
-const DIAS   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
-const DIAS_S = ['D','S','T','Q','Q','S','S']
-const MESES  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+type TFn = (key: string, opts?: Record<string, unknown>) => string
 
 function hojeStr() { return new Date().toISOString().split('T')[0] }
 function diaAtualKey(): DiaSemana {
   return (['dom','seg','ter','qua','qui','sex','sab'] as DiaSemana[])[new Date().getDay()]
 }
-// saudacao is now inlined in component using i18n
 function fmtMoeda(n: number, compact = false) {
   if (compact && Math.abs(n) >= 1000)
     return new Intl.NumberFormat('pt-BR',{ style:'currency',currency:'BRL',notation:'compact',maximumFractionDigits:1 }).format(n)
@@ -68,6 +65,9 @@ function MiniBarsSVG({ values, color, labels }: { values: number[]; color: strin
 
 // ── Habit Heatmap (12 semanas × 7 dias) ──────────────────────────────────────
 function HabitHeatmap({ habitos }: { habitos: { datasConcluidas: string[] }[] }) {
+  const { t } = useTranslation('dashboard')
+  const diasS = t('days_short', { returnObjects: true }) as string[]
+
   const total = habitos.length || 1
   const cells = useMemo(() => {
     const today = new Date()
@@ -90,15 +90,13 @@ function HabitHeatmap({ habitos }: { habitos: { datasConcluidas: string[] }[] })
     return '#10b981'
   }
 
-  // Divide em semanas (12 colunas de 7 dias)
   const weeks: typeof cells[] = []
   for (let w = 0; w < 12; w++) weeks.push(cells.slice(w * 7, w * 7 + 7))
 
   return (
     <div style={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
-      {/* Labels dos dias */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 1 }}>
-        {DIAS_S.map((d, i) => (
+        {diasS.map((d, i) => (
           <div key={i} style={{ width: 12, height: 12, fontSize: 8, color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {i % 2 === 0 ? d : ''}
           </div>
@@ -124,15 +122,15 @@ function HabitHeatmap({ habitos }: { habitos: { datasConcluidas: string[] }[] })
 }
 
 // ── Score Trend Chart (Recharts) ──────────────────────────────────────────────
-function ScoreTrendChart({ data, color }: { data: { data: string; score: number }[]; color: string }) {
+function ScoreTrendChart({ data, color, historyHint }: { data: { data: string; score: number }[]; color: string; historyHint: string }) {
   if (data.length < 2) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 80, fontSize: 12, color: 'var(--text-2)' }}>
-      Histórico aparece após 2+ dias de uso
+      {historyHint}
     </div>
   )
 
   const chartData = data.map(d => ({
-    label: d.data.slice(5),  // "MM-DD"
+    label: d.data.slice(5),
     score: d.score,
   }))
 
@@ -188,12 +186,11 @@ function gerarInsightsAutomaticos(state: {
   score: number
   focosHoje: number
   habitosHoje: number
-}) {
-  const { habitos, tarefas, transacoes, scoreHistorico, score, focosHoje, habitosHoje } = state
+}, t: TFn) {
+  const { habitos, tarefas, transacoes, scoreHistorico, focosHoje, habitosHoje } = state
   const hoje = hojeStr()
   const insights: { emoji: string; titulo: string; corpo: string; cor: string }[] = []
 
-  // Tendência de score (última semana vs anterior)
   if (scoreHistorico.length >= 7) {
     const recente = scoreHistorico.slice(-7).map(e => e.score)
     const anterior = scoreHistorico.slice(-14, -7).map(e => e.score)
@@ -202,14 +199,13 @@ function gerarInsightsAutomaticos(state: {
       const mediaAnt = anterior.reduce((s, v) => s + v, 0) / anterior.length
       const diff = Math.round(mediaRec - mediaAnt)
       if (diff > 0) {
-        insights.push({ emoji: '📈', titulo: `+${diff} pts esta semana`, corpo: `Sua pontuação média melhorou ${diff} pontos em relação à semana anterior. Consistência gerando resultados.`, cor: '#10b981' })
+        insights.push({ emoji: '📈', titulo: t('insight_score_up_title', { diff }), corpo: t('insight_score_up_body', { diff }), cor: '#10b981' })
       } else if (diff < -5) {
-        insights.push({ emoji: '⚠️', titulo: `Queda de ${Math.abs(diff)} pts`, corpo: `Sua pontuação médias caiu ${Math.abs(diff)} pontos esta semana. Revise seus hábitos e tarefas pendentes.`, cor: '#f59e0b' })
+        insights.push({ emoji: '⚠️', titulo: t('insight_score_drop_title', { abs: Math.abs(diff) }), corpo: t('insight_score_drop_body', { abs: Math.abs(diff) }), cor: '#f59e0b' })
       }
     }
   }
 
-  // Melhor dia da semana
   if (habitos.length > 0 && scoreHistorico.length >= 14) {
     const porDia: number[] = Array(7).fill(0).map((_, d) => {
       const dias = scoreHistorico.filter(e => new Date(e.data).getDay() === d)
@@ -217,57 +213,53 @@ function gerarInsightsAutomaticos(state: {
     })
     const melhorDia = porDia.indexOf(Math.max(...porDia.filter(v => v > 0)))
     if (melhorDia >= 0 && porDia[melhorDia] > 0) {
-      insights.push({ emoji: '🗓️', titulo: `${DIAS[melhorDia]} é seu melhor dia`, corpo: `Sua performance média às ${DIAS[melhorDia].toLowerCase()} é ${Math.round(porDia[melhorDia])}/100 — ${Math.round(porDia[melhorDia] - score + score * 0)} pts acima da sua média.`, cor: '#3b82f6' })
+      const dayName = t(`day_${melhorDia}`)
+      const dayFull = t(`day_${melhorDia}_full`)
+      insights.push({ emoji: '🗓️', titulo: t('insight_best_day_title', { day: dayName }), corpo: t('insight_best_day_body', { day_lc: dayFull, avg: Math.round(porDia[melhorDia]) }), cor: '#3b82f6' })
     }
   }
 
-  // Streak mais alto
   const melhorStreak = habitos.reduce((m, h) => Math.max(m, h.streak), 0)
   if (melhorStreak >= 7) {
     const campeao = habitos.find(h => h.streak === melhorStreak)
-    insights.push({ emoji: '🔥', titulo: `${melhorStreak} dias de streak`, corpo: `${campeao?.nome} está em sequência há ${melhorStreak} dias. Não quebre a corrente!`, cor: '#f59e0b' })
+    insights.push({ emoji: '🔥', titulo: t('insight_streak_title', { days: melhorStreak }), corpo: t('insight_streak_body', { name: campeao?.nome ?? '', days: melhorStreak }), cor: '#f59e0b' })
   }
 
-  // Finanças do mês
   const mesAtual = hoje.slice(0, 7)
-  const transacoesMes = transacoes.filter(t => t.dataLancamento?.startsWith(mesAtual))
-  const recMes = transacoesMes.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0)
-  const gasMes = transacoesMes.filter(t => t.tipo === 'gasto').reduce((s, t) => s + t.valor, 0)
+  const transacoesMes = transacoes.filter(tr => tr.dataLancamento?.startsWith(mesAtual))
+  const recMes = transacoesMes.filter(tr => tr.tipo === 'receita').reduce((s, tr) => s + tr.valor, 0)
+  const gasMes = transacoesMes.filter(tr => tr.tipo === 'gasto').reduce((s, tr) => s + tr.valor, 0)
   if (recMes > 0 && gasMes > 0) {
     const taxa = Math.round((gasMes / recMes) * 100)
     if (taxa < 70) {
-      insights.push({ emoji: '💰', titulo: `Taxa de gasto: ${taxa}%`, corpo: `Você está gastando ${taxa}% da sua receita deste mês — margem saudável. ${100 - taxa}% está sobrando.`, cor: '#10b981' })
+      insights.push({ emoji: '💰', titulo: t('insight_spend_ok_title', { rate: taxa }), corpo: t('insight_spend_ok_body', { rate: taxa, rest: 100 - taxa }), cor: '#10b981' })
     } else if (taxa > 90) {
-      insights.push({ emoji: '💸', titulo: `Gastos elevados: ${taxa}%`, corpo: `Você gastou ${taxa}% da receita deste mês. Identifique onde cortar para aumentar sua margem.`, cor: '#ef4444' })
+      insights.push({ emoji: '💸', titulo: t('insight_spend_high_title', { rate: taxa }), corpo: t('insight_spend_high_body', { rate: taxa }), cor: '#ef4444' })
     }
   }
 
-  // Foco
   if (focosHoje >= 3) {
-    insights.push({ emoji: '🎯', titulo: `${focosHoje} sessões de foco hoje`, corpo: 'Excelente concentração! Múltiplas sessões de foco profundo são o diferencial de quem entrega resultados.', cor: '#8b5cf6' })
+    insights.push({ emoji: '🎯', titulo: t('insight_focus_title', { count: focosHoje }), corpo: t('insight_focus_body'), cor: '#8b5cf6' })
   }
 
-  // Hábitos de hoje
   if (habitos.length > 0 && habitosHoje === habitos.length) {
-    insights.push({ emoji: '✅', titulo: 'Hábitos 100% hoje!', corpo: 'Você concluiu todos os hábitos do dia. Este dia vai contar no seu histórico como uma vitória perfeita.', cor: '#10b981' })
+    insights.push({ emoji: '✅', titulo: t('insight_habits_all_title'), corpo: t('insight_habits_all_body'), cor: '#10b981' })
   }
 
-  // Tarefas alta prioridade
-  const altasPend = tarefas.filter(t => !t.concluida && t.prioridade === 'alta').length
+  const altasPend = tarefas.filter(tr => !tr.concluida && tr.prioridade === 'alta').length
   if (altasPend > 0 && focosHoje === 0) {
-    insights.push({ emoji: '⚡', titulo: `${altasPend} tarefa${altasPend > 1 ? 's' : ''} urgente${altasPend > 1 ? 's' : ''}`, corpo: 'Nenhuma sessão de foco ainda. Entre no Modo Foco e ataque a tarefa mais crítica — 25 minutos de profundidade total.', cor: '#ef4444' })
+    insights.push({ emoji: '⚡', titulo: t('insight_urgent_title', { count: altasPend }), corpo: t('insight_urgent_body'), cor: '#ef4444' })
   }
 
-  // Fallback
   if (insights.length === 0) {
-    insights.push({ emoji: '🚀', titulo: 'Continue construindo', corpo: 'Adicione hábitos, defina metas e registre seu progresso para ver insights personalizados aqui.', cor: '#3b82f6' })
+    insights.push({ emoji: '🚀', titulo: t('insight_build_title'), corpo: t('insight_build_body'), cor: '#3b82f6' })
   }
 
   return insights.slice(0, 3)
 }
 
 export default function DashboardPage() {
-  const { t } = useTranslation(['dashboard', 'common'])
+  const { t, i18n } = useTranslation(['dashboard', 'common'])
   const navigate           = useNavigate()
   const perfil             = useFlowStore(s => s.perfil)
   const habitos            = useFlowStore(s => s.habitos)
@@ -301,14 +293,22 @@ export default function DashboardPage() {
   const nome = perfil?.nome ?? 'você'
   const saudacao = h < 12 ? t('greeting_morning', { name: nome }) : h < 18 ? t('greeting_afternoon', { name: nome }) : t('greeting_evening', { name: nome })
 
-  // Registra score do dia atual (uma vez por render do dashboard)
+  // Locale-aware date string
+  const dateStr = agora.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+
+  // Month name for finance header
+  const monthName = (() => {
+    const raw = agora.toLocaleDateString(i18n.language, { month: 'short' }).replace('.', '')
+    return raw.charAt(0).toUpperCase() + raw.slice(1)
+  })()
+
   useEffect(() => {
     registrarScore(score)
   }, [score])
 
-  // Hábitos
   const habitosHoje  = habitos.filter(h => h.datasConcluidas.includes(hoje)).length
   const melhorStreak = useMemo(() => habitos.reduce((m, h) => Math.max(m, h.streak), 0), [habitos])
+  const diasS        = t('days_short', { returnObjects: true }) as string[]
   const habitosChart = useMemo(() => Array.from({length:7},(_,i)=>{
     const d = new Date(); d.setDate(d.getDate()-(6-i))
     const s = d.toISOString().split('T')[0]
@@ -316,7 +316,6 @@ export default function DashboardPage() {
     return habitos.length ? Math.round((feitos/habitos.length)*100) : 0
   }), [habitos])
 
-  // Tarefas
   const tarefasFiltradas = useMemo(() => {
     const pend = tarefas.filter(t => !t.concluida)
     if (filtroP === 'alta')  return pend.filter(t => t.prioridade === 'alta')
@@ -330,7 +329,6 @@ export default function DashboardPage() {
     ?? null
   , [tarefas])
 
-  // Finanças
   const mesAtual    = hoje.slice(0,7)
   const transMes    = transacoes.filter(t => t.dataLancamento?.startsWith(mesAtual))
   const receitasMes = transMes.filter(t=>t.tipo==='receita').reduce((s,t)=>s+t.valor,0)
@@ -349,16 +347,13 @@ export default function DashboardPage() {
   const ultimoSono  = registrosSono[0]
   const ultimoSaude = registrosSaude[0]
 
-  // Score ring
   const cx=54, r=46, circ=2*Math.PI*r, filled=(score/100)*circ
 
-  // Score trend (últimos 30 dias)
   const scoreTrend = useMemo(() => {
     const sorted = [...scoreHistorico].sort((a,b) => a.data.localeCompare(b.data))
     return sorted.slice(-30)
   }, [scoreHistorico])
 
-  // Score vs semana passada
   const scoreDelta = useMemo(() => {
     if (scoreHistorico.length < 2) return null
     const sorted = [...scoreHistorico].sort((a,b) => a.data.localeCompare(b.data))
@@ -370,15 +365,15 @@ export default function DashboardPage() {
     return Math.round(m1 - m2)
   }, [scoreHistorico])
 
-  const insights = useMemo(() => gerarInsightsAutomaticos({
-    habitos, tarefas, transacoes, scoreHistorico, score, focosHoje, habitosHoje
-  }), [habitos, tarefas, transacoes, scoreHistorico, score, focosHoje, habitosHoje])
+  const insights = useMemo(() => gerarInsightsAutomaticos(
+    { habitos, tarefas, transacoes, scoreHistorico, score, focosHoje, habitosHoje }, t
+  ), [habitos, tarefas, transacoes, scoreHistorico, score, focosHoje, habitosHoje, t])
 
   function handleAdd(e: FormEvent) {
     e.preventDefault()
     if (!novaTarefa.trim()) return
     adicionarTarefa(novaTarefa.trim(), 'media')
-    toast.success(`"${novaTarefa.trim()}" adicionada!`, '✅')
+    toast.success(t('task_added', { name: novaTarefa.trim() }), '✅')
     setNovaTarefa('')
   }
 
@@ -394,13 +389,23 @@ export default function DashboardPage() {
 
       const totalFeitos = habitos.filter(h => h.id !== habitoId ? h.datasConcluidas.includes(hoje) : true).length
       if (totalFeitos === habitos.length && habitos.length > 0) {
-        toast.success('Todos os hábitos concluídos hoje! 🏆', '🎉')
+        toast.success(t('habits_all_done'), '🎉')
         setTimeout(() => dispararConfetti({ y: window.innerHeight * 0.4 }), 100)
       }
     }
   }
 
-  const insight = gerarInsightRapido({ habitos, tarefas, score, habitosHoje, treinoHoje: treinoHoje?.nome })
+  const insight = gerarInsightRapido({ habitos, tarefas, score, habitosHoje, treinoHoje: treinoHoje?.nome }, t)
+
+  const scoreLabels = [
+    { label: t('score_habits'),  val: habitos.length ? Math.round((habitosHoje/habitos.length)*100) : 0,                cor:'var(--amber)' },
+    { label: t('score_tasks'),   val: tarefas.length ? Math.round((tarefas.filter(t=>t.concluida).length/tarefas.length)*100) : 0, cor:'var(--blue)' },
+    { label: t('score_focus'),   val: Math.min(focosHoje*20,100),                                                        cor:'var(--purple)' },
+    { label: t('score_finance'), val: saldoLiq>=0?100:Math.max(0,100+Math.round((saldoLiq/Math.max(totalRec,1))*100)),  cor:'var(--green)' },
+  ]
+
+  const pendentes = tarefas.filter(tv=>!tv.concluida).length
+  const concluidas = tarefas.filter(tv=>tv.concluida).length
 
   return (
     <div className="page-container animate-in">
@@ -412,7 +417,7 @@ export default function DashboardPage() {
             {saudacao} 👋
           </h1>
           <p style={{ fontSize:13, color:'var(--text-1)', letterSpacing:'-0.01em' }}>
-            {DIAS[agora.getDay()]}, {agora.getDate()} de {MESES[agora.getMonth()]} · {agora.getFullYear()}
+            {dateStr}
           </p>
           {perfil?.mantra && (
             <p style={{ fontSize:12, color:'var(--text-2)', fontStyle:'italic', marginTop:5 }}>"{perfil.mantra}"</p>
@@ -421,10 +426,10 @@ export default function DashboardPage() {
         {!isMobile && (
           <div style={{ display:'flex', gap:8 }}>
             <button className="btn-ghost" onClick={()=>navigate('/saude')} style={{ gap:6, fontSize:13 }}>
-              <Heart size={14}/> Saúde
+              <Heart size={14}/> {t('go_health')}
             </button>
             <button className="btn-primary" onClick={()=>navigate('/foco')} style={{ gap:6 }}>
-              <Target size={14}/> Iniciar Foco
+              <Target size={14}/> {t('btn_focus')}
             </button>
           </div>
         )}
@@ -452,7 +457,7 @@ export default function DashboardPage() {
             onClick={() => { alternarTarefa(tarefaPrincipal.id); navigate('/foco') }}
             style={{ gap: 6, fontSize: 12, padding: '6px 14px', flexShrink: 0 }}
           >
-            <Target size={12} /> Focar
+            <Target size={12} /> {t('btn_focus')}
           </button>
         </div>
       )}
@@ -497,12 +502,7 @@ export default function DashboardPage() {
               <div style={{ fontSize:13, fontWeight:700, color:scoreClr, marginBottom:12, letterSpacing:'-0.02em' }}>
                 {score>=80?t('common:score_excellent'):score>=60?t('common:score_ontrack'):score>=40?t('common:score_building'):t('common:score_starting')}
               </div>
-              {[
-                { label:'Hábitos',  val: habitos.length ? Math.round((habitosHoje/habitos.length)*100) : 0,                cor:'var(--amber)' },
-                { label:'Tarefas',  val: tarefas.length ? Math.round((tarefas.filter(t=>t.concluida).length/tarefas.length)*100) : 0, cor:'var(--blue)' },
-                { label:'Foco',     val: Math.min(focosHoje*20,100),                                                        cor:'var(--purple)' },
-                { label:'Finanças', val: saldoLiq>=0?100:Math.max(0,100+Math.round((saldoLiq/Math.max(totalRec,1))*100)),  cor:'var(--green)' },
-              ].map(({ label, val, cor }) => (
+              {scoreLabels.map(({ label, val, cor }) => (
                 <div key={label} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
                   <span style={{ fontSize:10, color:'var(--text-2)', width:44, flexShrink:0 }}>{label}</span>
                   <div className="prog-track" style={{ flex:1 }}>
@@ -514,13 +514,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Score trend mini chart */}
           {scoreTrend.length >= 2 && (
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
               <div style={{ fontSize: 9, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Activity size={9} /> Histórico — últimos {scoreTrend.length} dias
+                <Activity size={9} /> {t('score_history', { count: scoreTrend.length })}
               </div>
-              <ScoreTrendChart data={scoreTrend} color={scoreClr} />
+              <ScoreTrendChart data={scoreTrend} color={scoreClr} historyHint={t('history_hint')} />
             </div>
           )}
         </div>
@@ -543,7 +542,7 @@ export default function DashboardPage() {
 
           {habitos.length > 0 && (
             <div style={{ marginBottom:10 }}>
-              <MiniBarsSVG values={habitosChart} color="var(--amber)" labels={Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));return DIAS_S[d.getDay()]})} />
+              <MiniBarsSVG values={habitosChart} color="var(--amber)" labels={Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));return diasS[d.getDay()]})} />
             </div>
           )}
 
@@ -572,7 +571,7 @@ export default function DashboardPage() {
           </div>
           {habitos.length>3 && (
             <button onClick={()=>navigate('/habitos')} style={{ fontSize:11, color:'var(--blue)', background:'none', border:'none', cursor:'pointer', marginTop:8, padding:0 }}>
-              +{habitos.length-3} mais →
+              {t('more_habits', { count: habitos.length - 3 })}
             </button>
           )}
         </div>
@@ -581,7 +580,7 @@ export default function DashboardPage() {
         <div className="card animate-in-delay-1">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
             <div>
-              <div className="label" style={{ marginBottom:2 }}>{t('finance_month', { month: MESES[agora.getMonth()] })}</div>
+              <div className="label" style={{ marginBottom:2 }}>{t('finance_month', { month: monthName })}</div>
               <div style={{ fontSize:22, fontWeight:900, color:saldoMes>=0?'var(--green)':'var(--red)', letterSpacing:'-0.045em' }}>
                 {saldoMes>=0?'+':''}{fmtMoeda(saldoMes,true)}
               </div>
@@ -591,7 +590,6 @@ export default function DashboardPage() {
               : <TrendingDown size={15} color="var(--red)"/>}
           </div>
 
-          {/* Barra receita vs gasto */}
           {(receitasMes > 0 || gastosMes > 0) && (
             <div style={{ marginBottom: 10 }}>
               <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 4 }}>
@@ -603,26 +601,26 @@ export default function DashboardPage() {
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 9, color: 'var(--text-2)' }}>Gastos {receitasMes > 0 ? Math.min(100, Math.round((gastosMes/receitasMes)*100)) : 0}%</span>
-                <span style={{ fontSize: 9, color: 'var(--text-2)' }}>Sobra {receitasMes > 0 ? Math.max(0, 100 - Math.round((gastosMes/receitasMes)*100)) : 0}%</span>
+                <span style={{ fontSize: 9, color: 'var(--text-2)' }}>{t('spending_pct', { pct: receitasMes > 0 ? Math.min(100, Math.round((gastosMes/receitasMes)*100)) : 0 })}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-2)' }}>{t('saving_pct', { pct: receitasMes > 0 ? Math.max(0, 100 - Math.round((gastosMes/receitasMes)*100)) : 0 })}</span>
               </div>
             </div>
           )}
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, marginBottom:10 }}>
             <div style={{ padding:'6px 8px', background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.14)', borderRadius:8 }}>
-              <div style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>Receitas</div>
+              <div style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>{t('income_label')}</div>
               <div style={{ fontSize:12, fontWeight:700, color:'var(--green)' }}>{fmtMoeda(receitasMes,true)}</div>
             </div>
             <div style={{ padding:'6px 8px', background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.14)', borderRadius:8 }}>
-              <div style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>Gastos</div>
+              <div style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>{t('expenses_label')}</div>
               <div style={{ fontSize:12, fontWeight:700, color:'var(--red)' }}>{fmtMoeda(gastosMes,true)}</div>
             </div>
           </div>
 
           {(() => { const p=transacoes.filter(t=>t.status==='pendente').length; return p>0 ? (
             <div style={{ padding:'4px 8px', background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.18)', borderRadius:6, marginBottom:8 }}>
-              <span style={{ fontSize:11, color:'var(--amber)' }}>⚠ {p} pendente{p>1?'s':''}</span>
+              <span style={{ fontSize:11, color:'var(--amber)' }}>{t('pending_items', { count: p })}</span>
             </div>
           ):null })()}
 
@@ -644,7 +642,7 @@ export default function DashboardPage() {
           {treinoHoje&&!treinoHoje.isDescanso ? (
             <>
               <div style={{ fontSize:14, fontWeight:700, letterSpacing:'-0.02em', marginBottom:4 }}>{treinoHoje.nome}</div>
-              <div style={{ fontSize:12, color:'var(--text-1)', marginBottom:10 }}>{treinoHoje.grupos.join(' · ')} · {treinoHoje.exercicios.length} exercícios</div>
+              <div style={{ fontSize:12, color:'var(--text-1)', marginBottom:10 }}>{treinoHoje.grupos.join(' · ')} · {t('exercises_count', { count: treinoHoje.exercicios.length })}</div>
               <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
                 {treinoHoje.exercicios.slice(0,3).map((ex,i)=>(
                   <span key={i} className="badge badge-blue" style={{ textTransform:'none', letterSpacing:0, fontSize:10, fontWeight:400 }}>{ex.nome}</span>
@@ -655,13 +653,13 @@ export default function DashboardPage() {
           ) : treinoHoje?.isDescanso ? (
             <div style={{ textAlign:'center', padding:'8px 0' }}>
               <div style={{ fontSize:26, marginBottom:5 }}>😴</div>
-              <div style={{ fontSize:13, fontWeight:600, letterSpacing:'-0.02em', marginBottom:3 }}>Dia de Descanso</div>
-              <div style={{ fontSize:11, color:'var(--text-2)' }}>Recuperação é parte do treino.</div>
+              <div style={{ fontSize:13, fontWeight:600, letterSpacing:'-0.02em', marginBottom:3 }}>{t('rest_day')}</div>
+              <div style={{ fontSize:11, color:'var(--text-2)' }}>{t('rest_day_sub')}</div>
             </div>
           ) : (
             <div>
-              <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:8 }}>Configure um plano com seu Personal Trainer.</div>
-              <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>Ir para Saúde <ChevronRight size={11}/></span>
+              <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:8 }}>{t('no_workout_plan')}</div>
+              <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>{t('go_health')} <ChevronRight size={11}/></span>
             </div>
           )}
         </div>
@@ -677,7 +675,7 @@ export default function DashboardPage() {
               <div style={{ fontSize:14, fontWeight:700, letterSpacing:'-0.02em', marginBottom:3, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{metaAtiva.titulo}</div>
               <div style={{ fontSize:11, color:'var(--text-2)', marginBottom:9 }}>{metaAtiva.categoria}</div>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
-                <span style={{ fontSize:10, color:'var(--text-2)' }}>Progresso</span>
+                <span style={{ fontSize:10, color:'var(--text-2)' }}>{t('goal_progress')}</span>
                 <span style={{ fontSize:10, fontWeight:700, color:'var(--purple)' }}>{metaAtiva.progresso}%</span>
               </div>
               <div className="prog-track" style={{ marginBottom:9 }}>
@@ -690,14 +688,14 @@ export default function DashboardPage() {
               )}
               {metaAtiva.prazo&&(
                 <div style={{ fontSize:11, color:diasAte(metaAtiva.prazo)<=7?'var(--red)':'var(--text-2)' }}>
-                  {diasAte(metaAtiva.prazo)>0?`⏳ ${diasAte(metaAtiva.prazo)} dias restantes`:'⚠ Prazo atingido'}
+                  {diasAte(metaAtiva.prazo)>0 ? t('days_left', { count: diasAte(metaAtiva.prazo) }) : t('deadline_passed')}
                 </div>
               )}
             </>
           ) : (
             <div>
-              <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:9 }}>Defina metas com prazo para acompanhar aqui.</div>
-              <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>Criar meta <ChevronRight size={11}/></span>
+              <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:9 }}>{t('no_goal')}</div>
+              <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>{t('create_goal')} <ChevronRight size={11}/></span>
             </div>
           )}
         </div>
@@ -713,35 +711,33 @@ export default function DashboardPage() {
               <div style={{ flex:1, padding:'8px 10px', background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.14)', borderRadius:9 }}>
                 <div style={{ display:'flex', alignItems:'center', gap:4, marginBottom:3 }}>
                   <Moon size={10} color="var(--blue)"/>
-                  <span style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Sono</span>
+                  <span style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{t('sleep_label')}</span>
                 </div>
                 <div style={{ fontSize:20, fontWeight:900, color:ultimoSono.horasDormidas>=7?'var(--green)':'var(--amber)', letterSpacing:'-0.04em' }}>{ultimoSono.horasDormidas}h</div>
-                <div style={{ fontSize:10, color:'var(--text-2)' }}>{['','😫','😞','😐','😊','🌟'][ultimoSono.qualidade]} qualidade</div>
+                <div style={{ fontSize:10, color:'var(--text-2)' }}>{['','😫','😞','😐','😊','🌟'][ultimoSono.qualidade]} {t('sleep_quality')}</div>
               </div>
               {ultimoSaude&&(
                 <div style={{ flex:1, padding:'8px 10px', background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.14)', borderRadius:9 }}>
-                  <div style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:3 }}>Humor</div>
+                  <div style={{ fontSize:9, color:'var(--text-2)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:3 }}>{t('mood_label')}</div>
                   <div style={{ fontSize:20, fontWeight:900 }}>{['','😫','😞','😐','😊','🔥'][ultimoSaude.humor]}</div>
-                  <div style={{ fontSize:10, color:'var(--text-2)' }}>Energia {['','😩','😕','😐','⚡','🚀'][ultimoSaude.energia]}</div>
+                  <div style={{ fontSize:10, color:'var(--text-2)' }}>{t('energy_label')} {['','😩','😕','😐','⚡','🚀'][ultimoSaude.energia]}</div>
                 </div>
               )}
             </div>
           ) : (
-            <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:10 }}>Registre sono e humor para acompanhar aqui.</div>
+            <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:10 }}>{t('no_wellness')}</div>
           )}
           <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>{t('see_health')} <ChevronRight size={11}/></span>
         </div>
       </div>
 
-      {/* ── Atividade Heatmap + Quick Stats ────────────────────────────────── */}
+      {/* ── Atividade Heatmap ───────────────────────────────────────────────── */}
       {habitos.length > 0 && (
         <div className="card animate-in-delay-2" style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div>
               <div className="label" style={{ marginBottom: 1 }}>{t('activity')}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-2)' }}>
-                {t('daily_completion')}
-              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-2)' }}>{t('daily_completion')}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--text-2)' }}>
               <span>0%</span>
@@ -766,8 +762,8 @@ export default function DashboardPage() {
             <div>
               <div className="label" style={{ marginBottom:2 }}>{t('tasks')}</div>
               <div style={{ fontSize:13, color:'var(--text-1)' }}>
-                <span style={{ fontWeight:700, color:'var(--text-0)' }}>{tarefas.filter(t=>!t.concluida).length}</span> pendentes
-                <span style={{ color:'var(--text-2)' }}> · {tarefas.filter(t=>t.concluida).length} concluídas</span>
+                <span style={{ fontWeight:700, color:'var(--text-0)' }}>{pendentes}</span> {t('pending_label', { count: pendentes })}
+                <span style={{ color:'var(--text-2)' }}> · {concluidas} {t('done_label', { count: concluidas })}</span>
               </div>
             </div>
             <div style={{ display:'flex', gap:3 }}>
@@ -780,15 +776,15 @@ export default function DashboardPage() {
                   transition:'all var(--t-fast)',
                   boxShadow:filtroP===f?'0 2px 8px rgba(59,130,246,0.3)':'none',
                 }}>
-                  {f==='todas'?'Todas':f==='alta'?'🔴 Alta':'🟡 Média'}
+                  {f==='todas' ? t('filter_all') : f==='alta' ? t('filter_high') : t('filter_mid')}
                 </button>
               ))}
             </div>
           </div>
 
           <div style={{ display:'flex', flexDirection:'column', gap:4, marginBottom:12, minHeight:110 }}>
-            {tarefasFiltradas.slice(0,6).map(t=>(
-              <button key={t.id} onClick={()=>alternarTarefa(t.id)} style={{
+            {tarefasFiltradas.slice(0,6).map(tv=>(
+              <button key={tv.id} onClick={()=>alternarTarefa(tv.id)} style={{
                 display:'flex', alignItems:'center', gap:8, padding:'7px 10px',
                 background:'rgba(255,255,255,0.025)', border:'1px solid var(--border-0)',
                 borderRadius:7, cursor:'pointer', width:'100%', textAlign:'left',
@@ -798,19 +794,19 @@ export default function DashboardPage() {
               onMouseLeave={e=>(e.currentTarget.style.background='rgba(255,255,255,0.025)')}
               >
                 <Circle size={14} color="var(--text-2)"/>
-                <span style={{ flex:1, fontSize:12, color:'var(--text-0)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'-0.01em' }}>{t.titulo}</span>
-                <PrioridadeBadge p={t.prioridade}/>
+                <span style={{ flex:1, fontSize:12, color:'var(--text-0)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'-0.01em' }}>{tv.titulo}</span>
+                <PrioridadeBadge p={tv.prioridade}/>
               </button>
             ))}
             {tarefasFiltradas.length===0&&(
               <div style={{ fontSize:13, color:'var(--text-2)', textAlign:'center', padding:'22px 0' }}>
-                {filtroP==='todas'?'✅ Tudo concluído!':`Nenhuma tarefa de prioridade ${filtroP}.`}
+                {filtroP==='todas' ? t('empty_all') : t('empty_filter', { priority: filtroP })}
               </div>
             )}
           </div>
 
           <form onSubmit={handleAdd} style={{ display:'flex', gap:7 }}>
-            <input className="input-field" placeholder="Adicionar tarefa rápida..." value={novaTarefa} onChange={e=>setNovaTarefa(e.target.value)} style={{ fontSize:12 }}/>
+            <input className="input-field" placeholder={t('task_placeholder')} value={novaTarefa} onChange={e=>setNovaTarefa(e.target.value)} style={{ fontSize:12 }}/>
             <button type="submit" style={{
               width:34, height:34, background:'var(--grad-brand)', border:'none', borderRadius:8,
               cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
@@ -821,7 +817,7 @@ export default function DashboardPage() {
           </form>
           {tarefasFiltradas.length>6&&(
             <button onClick={()=>navigate('/projetos')} style={{ fontSize:11, color:'var(--blue)', background:'none', border:'none', cursor:'pointer', marginTop:8, padding:0, display:'flex', alignItems:'center', gap:4 }}>
-              +{tarefasFiltradas.length-6} mais <ArrowRight size={11}/>
+              {t('more_tasks', { count: tarefasFiltradas.length - 6 })} <ArrowRight size={11}/>
             </button>
           )}
         </div>
@@ -846,13 +842,13 @@ export default function DashboardPage() {
             </div>
             <p style={{ fontSize:13, color:'var(--text-0)', lineHeight:1.7, marginBottom:13, letterSpacing:'-0.01em' }}>{insight}</p>
             <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:12, color:'var(--purple)', fontWeight:500 }}>
-              Perguntar à IA <ArrowRight size={12}/>
+              {t('btn_ask_ai')} <ArrowRight size={12}/>
             </div>
           </div>
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-            <QuickStat icon={<Zap size={13} color="var(--amber)"/>} label="Focos hoje" val={String(focosHoje)} cor="var(--amber)" onClick={()=>navigate('/foco')}/>
-            <QuickStat icon={<Trophy size={13} color="var(--purple)"/>} label="Streak máx." val={melhorStreak>0?`${melhorStreak}d`:'—'} cor="var(--purple)" onClick={()=>navigate('/habitos')}/>
+            <QuickStat icon={<Zap size={13} color="var(--amber)"/>} label={t('quick_focuses')} val={String(focosHoje)} cor="var(--amber)" onClick={()=>navigate('/foco')}/>
+            <QuickStat icon={<Trophy size={13} color="var(--purple)"/>} label={t('quick_best_streak')} val={melhorStreak>0?`${melhorStreak}d`:'—'} cor="var(--purple)" onClick={()=>navigate('/habitos')}/>
           </div>
         </div>
       </div>
@@ -861,8 +857,8 @@ export default function DashboardPage() {
       <div style={{ marginBottom: 4 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <BrainCircuit size={14} color="var(--blue)" />
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em' }}>Insights Automáticos</span>
-          <span style={{ fontSize: 10, color: 'var(--text-2)', marginLeft: 4 }}>baseados na sua atividade</span>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em' }}>{t('auto_insights')}</span>
+          <span style={{ fontSize: 10, color: 'var(--text-2)', marginLeft: 4 }}>{t('auto_insights_sub')}</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 }}>
           {insights.map((ins, i) => (
@@ -895,9 +891,10 @@ function QuickStat({ icon, label, val, cor, onClick }: { icon: React.ReactNode; 
 const PRIO_CLR = { alta:'var(--red)', media:'var(--amber)', baixa:'var(--blue)' }
 const PRIO_BG  = { alta:'rgba(239,68,68,0.1)', media:'rgba(245,158,11,0.1)', baixa:'rgba(59,130,246,0.1)' }
 const PRIO_BD  = { alta:'rgba(239,68,68,0.2)', media:'rgba(245,158,11,0.2)', baixa:'rgba(59,130,246,0.2)' }
-const PRIO_LBL = { alta:'Alta', media:'Média', baixa:'Baixa' }
 
 function PrioridadeBadge({ p }: { p: string }) {
+  const { t } = useTranslation('dashboard')
+  const PRIO_LBL = { alta: t('prio_high'), media: t('prio_mid'), baixa: t('prio_low') }
   const k = (p as keyof typeof PRIO_CLR) in PRIO_CLR ? p as keyof typeof PRIO_CLR : 'baixa'
   return (
     <span style={{ padding:'2px 6px', background:PRIO_BG[k], color:PRIO_CLR[k], border:`1px solid ${PRIO_BD[k]}`, borderRadius:4, fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.04em', flexShrink:0 }}>
@@ -906,15 +903,21 @@ function PrioridadeBadge({ p }: { p: string }) {
   )
 }
 
-function gerarInsightRapido({ habitos, tarefas, score, habitosHoje, treinoHoje }:{habitos:{datasConcluidas:string[];nome:string}[];tarefas:{concluida:boolean;prioridade:string}[];score:number;habitosHoje:number;treinoHoje?:string}) {
-  if (treinoHoje) return `Seu treino de hoje é ${treinoHoje}. Combinar consistência na academia com seus hábitos diários separa resultados mediocres de transformações reais.`
-  if (habitosHoje===0&&habitos.length>0) return `Você ainda não marcou nenhum hábito hoje. Iniciar sua rotina agora pode elevar sua Pontuação de Vida em até 30 pontos.`
-  if (score>=80) return `Performance excelente — ${score}/100. Você está operando em alto nível. O efeito composto desta consistência se manifestará em resultados concretos.`
-  const alta=tarefas.filter(t=>!t.concluida&&t.prioridade==='alta').length
-  if (alta>2) return `${alta} tarefas de alta prioridade pendentes. Entre no Modo Foco e ataque uma por vez — 25 minutos de foco total vale mais que 2h de distração.`
-  if (habitosHoje>0&&habitos.length>0) {
-    const pct=Math.round((habitosHoje/habitos.length)*100)
-    return `${pct}% dos hábitos concluídos. ${pct>=60?'Ótima consistência — você está no caminho certo.':'Cada hábito é um voto em quem você está se tornando. Empurre os restantes hoje.'}`
+function gerarInsightRapido({ habitos, tarefas, score, habitosHoje, treinoHoje }: {
+  habitos: { datasConcluidas: string[]; nome: string }[]
+  tarefas: { concluida: boolean; prioridade: string }[]
+  score: number
+  habitosHoje: number
+  treinoHoje?: string
+}, t: TFn) {
+  if (treinoHoje) return t('quick_workout', { workout: treinoHoje })
+  if (habitosHoje === 0 && habitos.length > 0) return t('quick_no_habits')
+  if (score >= 80) return t('quick_excellent', { score })
+  const alta = tarefas.filter(tv => !tv.concluida && tv.prioridade === 'alta').length
+  if (alta > 2) return t('quick_urgent', { count: alta })
+  if (habitosHoje > 0 && habitos.length > 0) {
+    const pct = Math.round((habitosHoje / habitos.length) * 100)
+    return pct >= 60 ? t('quick_habits_ok', { pct }) : t('quick_habits_low', { pct })
   }
-  return `Configure hábitos, defina metas e registre seus treinos para que o FLOWOS gere insights personalizados sobre sua performance.`
+  return t('quick_empty')
 }
