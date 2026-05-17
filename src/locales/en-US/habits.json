@@ -1,0 +1,16 @@
+{
+  "title": "Habits",
+  "new_habit": "New Habit",
+  "done_today": "{{done}}/{{total}} done today",
+  "avg_streak": "avg streak: {{days}} days",
+  "habit_name": "Habit Name",
+  "habit_name_placeholder": "e.g. Morning run",
+  "icon": "Icon",
+  "color": "Color",
+  "add_habit": "Add",
+  "no_habits_title": "No habits yet",
+  "no_habits_desc": "Build powerful routines by tracking habits daily",
+  "no_habits_quote": "Small actions, compounded over time, create extraordinary results",
+  "suggestions": "💪 Exercise · 📚 Reading · 💧 Hydration · 🧘 Meditation",
+  "days_ago_21": "21 days ago"
+}

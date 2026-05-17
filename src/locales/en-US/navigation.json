@@ -1,0 +1,14 @@
+{
+  "dashboard": "Dashboard",
+  "ai": "AI Hub",
+  "habits": "Habits",
+  "projects": "Projects",
+  "finance": "Finances",
+  "focus": "Focus Mode",
+  "health": "Health",
+  "growth": "Growth",
+  "profile": "Profile",
+  "more": "More",
+  "home": "Home",
+  "user_fallback": "User"
+}

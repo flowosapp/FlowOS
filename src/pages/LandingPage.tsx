@@ -435,7 +435,8 @@ export default function LandingPage() {
     return () => cancelAnimationFrame(raf)
   }, [scoreInView])
 
-  const go = (source = 'cta') => { track(Events.CHECKOUT_STARTED, { source }); navigate('/login') }
+  const go = (source = 'hero') => { track(Events.CHECKOUT_STARTED, { source }); navigate('/login') }
+  const goClick = () => go('hero')
 
   const scrollTo = (sel: string) => {
     document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -578,8 +579,8 @@ export default function LandingPage() {
           transition={{ duration: 0.7, delay: 0.3 }}
           style={{ display: 'flex', gap: 8, alignItems: 'center' }}
         >
-          <motion.button className="lp-btn-ghost lp-btn-sm" onClick={go} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>Entrar</motion.button>
-          <motion.button className="lp-btn-primary lp-btn-sm" onClick={go} whileHover={{ scale: 1.04, y: -1 }} whileTap={{ scale: 0.97 }}>Começar grátis →</motion.button>
+          <motion.button className="lp-btn-ghost lp-btn-sm" onClick={goClick} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>Entrar</motion.button>
+          <motion.button className="lp-btn-primary lp-btn-sm" onClick={goClick} whileHover={{ scale: 1.04, y: -1 }} whileTap={{ scale: 0.97 }}>Começar grátis →</motion.button>
         </motion.div>
 
         <button className="lp-nav-mobile" onClick={() => setMenuOpen(v => !v)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 8 }}>
@@ -600,7 +601,7 @@ export default function LandingPage() {
             {['Recursos', 'Como funciona', 'Preços', 'FAQ'].map(l => (
               <span key={l} style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setMenuOpen(false)}>{l}</span>
             ))}
-            <motion.button className="lp-btn-primary" onClick={() => { go(); setMenuOpen(false) }} style={{ marginTop: 8 }} whileTap={{ scale: 0.97 }}>
+            <motion.button className="lp-btn-primary" onClick={() => { goClick(); setMenuOpen(false) }} style={{ marginTop: 8 }} whileTap={{ scale: 0.97 }}>
               Começar grátis <ArrowRight size={16} />
             </motion.button>
           </motion.div>
@@ -671,10 +672,10 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 1.2 }}
               style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 52 }}
             >
-              <motion.button className="lp-btn-primary" onClick={go} style={{ fontSize: 15, padding: '16px 36px' }} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}>
+              <motion.button className="lp-btn-primary" onClick={goClick} style={{ fontSize: 15, padding: '16px 36px' }} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}>
                 Começar grátis — 15 dias <ArrowRight size={16} />
               </motion.button>
-              <motion.button className="lp-btn-ghost" onClick={go} whileHover={{ scale: 1.04, borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.75)' }} whileTap={{ scale: 0.97 }}>
+              <motion.button className="lp-btn-ghost" onClick={goClick} whileHover={{ scale: 1.04, borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.75)' }} whileTap={{ scale: 0.97 }}>
                 Ver demo
               </motion.button>
             </motion.div>
@@ -1244,7 +1245,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <motion.button
-                  onClick={go}
+                  onClick={goClick}
                   whileHover={{ opacity: 0.9, scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   style={{ width: '100%', padding: '15px', background: highlight ? `linear-gradient(135deg, #3b82f6, #06b6d4)` : 'transparent', border: `1px solid ${highlight ? 'transparent' : 'rgba(255,255,255,0.1)'}`, borderRadius: 12, color: highlight ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: highlight ? 600 : 400, letterSpacing: '0.03em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', boxShadow: highlight ? '0 0 30px rgba(59,130,246,0.35)' : 'none', fontFamily: 'inherit' }}
@@ -1320,7 +1321,7 @@ export default function LandingPage() {
           <motion.button
             variants={scaleIn}
             className="lp-btn-primary"
-            onClick={go}
+            onClick={goClick}
             style={{ fontSize: 16, padding: '20px 60px', borderRadius: 14, boxShadow: '0 0 80px rgba(59,130,246,0.5), 0 0 160px rgba(59,130,246,0.18)', marginBottom: 24 }}
             whileHover={{ scale: 1.06, y: -3 }}
             whileTap={{ scale: 0.97 }}

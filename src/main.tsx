@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/react'
 import App from './App'
 import { ToastProvider } from './contexts/ToastContext'
 import { initAnalytics } from './services/analytics'
+import './i18n'
 import './index.css'
 
 initAnalytics()

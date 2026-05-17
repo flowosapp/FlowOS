@@ -1,0 +1,85 @@
+{
+  "title": "Plans & Pricing",
+  "subtitle": "Invest in your life system",
+  "desc": "Start free for 15 days. No commitment. Cancel anytime.",
+  "most_popular": "Most popular",
+  "compare": "Full comparison",
+  "faq_title": "Frequently asked questions",
+  "bottom_cta": "Ready to start?",
+  "bottom_desc": "15-day free trial. No charge now.",
+  "cta_start_free": "Start free",
+  "cta_subscribe_pro": "Subscribe to Pro",
+  "cta_contact": "Talk to team",
+  "starter_price": "$9",
+  "pro_price": "$19",
+  "flowplus_price": "$49",
+  "per_month": "/mo",
+  "trial_badge": "15-day free trial",
+  "starter_desc": "For those who want to start with the essentials and feel the power of a life system.",
+  "pro_desc": "For those who are serious and want unlocked AI with deep life insights.",
+  "flowplus_desc": "For high-performers who demand the best in technology, control and dedicated support.",
+  "starter_features": [
+    "Dashboard + Life Score",
+    "Unlimited habits & projects",
+    "Focus Mode (Pomodoro)",
+    "Basic finances",
+    "Mobile app (PWA)",
+    "Email support"
+  ],
+  "pro_features": [
+    "Everything in Starter",
+    "Unlimited AI Hub",
+    "Advanced finances + goals",
+    "Weekly AI reports",
+    "Advanced health & sleep",
+    "Priority support"
+  ],
+  "flowplus_features": [
+    "Everything in Pro",
+    "Advanced AI (Gemini 3.1 Pro)",
+    "Multiple profiles/families",
+    "Public API access",
+    "Personalized 1:1 onboarding",
+    "Dedicated SLA support"
+  ],
+  "compare_rows": [
+    { "label": "Daily Life Score", "s": true, "p": true, "f": true },
+    { "label": "Unlimited habits", "s": true, "p": true, "f": true },
+    { "label": "Focus Mode (Pomodoro)", "s": true, "p": true, "f": true },
+    { "label": "Basic finances", "s": true, "p": true, "f": true },
+    { "label": "AI Hub", "s": false, "p": true, "f": true },
+    { "label": "Advanced finances + goals", "s": false, "p": true, "f": true },
+    { "label": "Weekly AI reports", "s": false, "p": true, "f": true },
+    { "label": "Advanced health + HRV", "s": false, "p": true, "f": true },
+    { "label": "Gemini 3.1 Pro (premium AI)", "s": false, "p": false, "f": true },
+    { "label": "Multiple profiles", "s": false, "p": false, "f": true },
+    { "label": "API access", "s": false, "p": false, "f": true },
+    { "label": "1:1 onboarding", "s": false, "p": false, "f": true }
+  ],
+  "faqs": [
+    {
+      "q": "How does the free trial work?",
+      "a": "You get 15 full days of the Starter plan with full access. A credit card is required to activate the trial — but no amount is charged now. On day 15 you choose to continue or cancel, with no surprise charges."
+    },
+    {
+      "q": "Does FlowOS work offline?",
+      "a": "Yes. FlowOS is a PWA with intelligent caching. You can log habits, focus sessions and transactions without internet. Data syncs automatically when connection returns."
+    },
+    {
+      "q": "Is my data safe?",
+      "a": "All data is encrypted in transit and at rest via Supabase with Row Level Security. We never sell data to third parties. You can export or delete everything at any time."
+    },
+    {
+      "q": "How is the Life Score calculated?",
+      "a": "The Life Score (0-100) is calculated daily: Habits 30% + Tasks & Projects 25% + Streak 20% + Focus Sessions 15% + Financial Health 10%."
+    },
+    {
+      "q": "Can I change plans at any time?",
+      "a": "Yes, upgrade or downgrade at any time. Upgrades take effect immediately with proportional credit. No cancellation fees."
+    },
+    {
+      "q": "Which AI model does the AI Hub use?",
+      "a": "The Pro plan uses Gemini 3.1 Flash Lite — fast, efficient and very capable for daily analysis. Flow+ uses Gemini 3.1 Pro — Google's most advanced model, with deep reasoning and long-term strategic analysis."
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "welcome": "Bem-vindo ao FLOWOS",
+  "subtitle": "Vamos personalizar seu sistema operacional de vida em 60 segundos",
+  "step_name": "Como podemos te chamar?",
+  "name_placeholder": "Seu nome",
+  "step_goals": "O que você quer dominar?",
+  "step_challenges": "O que te trava hoje?",
+  "step_habits": "Seus primeiros hábitos",
+  "habits_hint": "Escolha pelo menos um para começar",
+  "selected": "{{count}} selecionado(s)",
+  "cta_start": "Começar",
+  "cta_continue": "Continuar",
+  "cta_create": "Criar meu sistema",
+  "cta_enter": "Entrar no FLOWOS",
+  "system_created": "Sistema criado, {{name}}!",
+  "system_ready": "Seu FLOWOS foi personalizado com base nas suas escolhas",
+  "goals": {
+    "productivity": "Produtividade",
+    "finance": "Finanças",
+    "health": "Saúde",
+    "habits": "Hábitos",
+    "focus": "Foco",
+    "mindset": "Mentalidade",
+    "relationships": "Relacionamentos",
+    "career": "Carreira"
+  },
+  "challenges": {
+    "procrastination": "Procrastinação",
+    "focus": "Foco",
+    "discipline": "Disciplina",
+    "finance_control": "Controle financeiro",
+    "sleep": "Sono irregular",
+    "motivation": "Motivação",
+    "anxiety": "Ansiedade",
+    "time": "Gestão de tempo"
+  },
+  "habits_suggestions": {
+    "exercise": "Exercício",
+    "reading": "Leitura",
+    "water": "Hidratação",
+    "meditation": "Meditação",
+    "sleep": "Sono regulado",
+    "journal": "Diário",
+    "no_social": "Sem redes sociais",
+    "cold_shower": "Banho frio"
+  }
+}

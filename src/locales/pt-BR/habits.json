@@ -1,0 +1,16 @@
+{
+  "title": "Hábitos",
+  "new_habit": "Novo Hábito",
+  "done_today": "{{done}}/{{total}} concluídos hoje",
+  "avg_streak": "streak médio: {{days}} dias",
+  "habit_name": "Nome do Hábito",
+  "habit_name_placeholder": "ex: Corrida matinal",
+  "icon": "Ícone",
+  "color": "Cor",
+  "add_habit": "Adicionar",
+  "no_habits_title": "Nenhum hábito ainda",
+  "no_habits_desc": "Construa rotinas poderosas acompanhando hábitos diariamente",
+  "no_habits_quote": "Pequenas ações, compostas ao longo do tempo, criam resultados extraordinários",
+  "suggestions": "💪 Exercício · 📚 Leitura · 💧 Hidratação · 🧘 Meditação",
+  "days_ago_21": "21 dias atrás"
+}

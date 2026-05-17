@@ -1,0 +1,85 @@
+{
+  "title": "Planos & Preços",
+  "subtitle": "Invista no seu sistema de vida",
+  "desc": "Comece grátis por 15 dias. Sem compromisso. Cancele quando quiser.",
+  "most_popular": "Mais popular",
+  "compare": "Comparativo completo",
+  "faq_title": "Perguntas frequentes",
+  "bottom_cta": "Pronto para começar?",
+  "bottom_desc": "15 dias grátis. Sem cobrança agora.",
+  "cta_start_free": "Começar grátis",
+  "cta_subscribe_pro": "Assinar Pro",
+  "cta_contact": "Falar com time",
+  "starter_price": "R$ 29",
+  "pro_price": "R$ 49",
+  "flowplus_price": "R$ 129",
+  "per_month": "/mês",
+  "trial_badge": "15 dias grátis",
+  "starter_desc": "Para quem quer começar com o essencial e sentir o poder de um sistema de vida.",
+  "pro_desc": "Para quem leva a sério e quer IA desbloqueada com análises profundas da sua vida.",
+  "flowplus_desc": "Para high-performers que exigem o máximo de tecnologia, controle e suporte dedicado.",
+  "starter_features": [
+    "Dashboard + Life Score",
+    "Hábitos e Projetos ilimitados",
+    "Modo Foco (Pomodoro)",
+    "Finanças básicas",
+    "App mobile (PWA)",
+    "Suporte por e-mail"
+  ],
+  "pro_features": [
+    "Tudo do Starter",
+    "Central IA ilimitada",
+    "Finanças avançadas + metas",
+    "Relatórios semanais com IA",
+    "Saúde & Sono avançados",
+    "Suporte prioritário"
+  ],
+  "flowplus_features": [
+    "Tudo do Pro",
+    "IA avançada (Gemini 3.1 Pro)",
+    "Múltiplos perfis/famílias",
+    "Acesso à API pública",
+    "Onboarding 1:1 personalizado",
+    "SLA de suporte dedicado"
+  ],
+  "compare_rows": [
+    { "label": "Life Score diário", "s": true, "p": true, "f": true },
+    { "label": "Hábitos ilimitados", "s": true, "p": true, "f": true },
+    { "label": "Modo Foco (Pomodoro)", "s": true, "p": true, "f": true },
+    { "label": "Finanças básicas", "s": true, "p": true, "f": true },
+    { "label": "Central IA", "s": false, "p": true, "f": true },
+    { "label": "Finanças avançadas + metas", "s": false, "p": true, "f": true },
+    { "label": "Relatórios semanais IA", "s": false, "p": true, "f": true },
+    { "label": "Saúde avançada + HRV", "s": false, "p": true, "f": true },
+    { "label": "Gemini 3.1 Pro (IA premium)", "s": false, "p": false, "f": true },
+    { "label": "Múltiplos perfis", "s": false, "p": false, "f": true },
+    { "label": "Acesso à API", "s": false, "p": false, "f": true },
+    { "label": "Onboarding 1:1", "s": false, "p": false, "f": true }
+  ],
+  "faqs": [
+    {
+      "q": "Como funciona o período de teste gratuito?",
+      "a": "Você tem 15 dias completos do plano Starter com acesso total. Um cartão de crédito é necessário para ativar o trial — mas nenhum valor é cobrado agora. No D+15 você escolhe continuar ou cancelar, sem cobranças surpresa."
+    },
+    {
+      "q": "O FlowOS funciona offline?",
+      "a": "Sim. O FlowOS é um PWA com cache inteligente. Você pode registrar hábitos, sessões de foco e transações sem internet. Os dados sincronizam automaticamente quando a conexão retorna."
+    },
+    {
+      "q": "Meus dados ficam seguros?",
+      "a": "Todos os dados são criptografados em trânsito e em repouso via Supabase com Row Level Security. Nunca vendemos dados para terceiros. Você pode exportar ou deletar tudo a qualquer momento."
+    },
+    {
+      "q": "Como o Life Score é calculado?",
+      "a": "O Life Score (0-100) é calculado diariamente: Hábitos 30% + Tarefas & Projetos 25% + Streak 20% + Sessões de Foco 15% + Saúde Financeira 10%."
+    },
+    {
+      "q": "Posso migrar de plano a qualquer momento?",
+      "a": "Sim, upgrade ou downgrade a qualquer momento. Upgrades têm efeito imediato com crédito proporcional. Sem taxas de cancelamento."
+    },
+    {
+      "q": "A Central IA usa qual modelo?",
+      "a": "O plano Pro usa Gemini 3.1 Flash Lite — rápido, eficiente e muito capaz para análises do dia a dia. O Flow+ usa Gemini 3.1 Pro — o modelo mais avançado do Google, com raciocínio profundo e análises estratégicas de longo prazo."
+    }
+  ]
+}

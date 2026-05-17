@@ -1,0 +1,14 @@
+{
+  "dashboard": "Dashboard",
+  "ai": "Central IA",
+  "habits": "Hábitos",
+  "projects": "Projetos",
+  "finance": "Finanças",
+  "focus": "Modo Foco",
+  "health": "Saúde",
+  "growth": "Crescimento",
+  "profile": "Perfil",
+  "more": "Mais",
+  "home": "Início",
+  "user_fallback": "Usuário"
+}
