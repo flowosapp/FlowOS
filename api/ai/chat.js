@@ -1,11 +1,61 @@
-const GEMINI_KEY  = process.env.GEMINI_API_KEY
-const GEMINI_MODEL = 'gemini-2.0-flash'
+import { createClient } from '@supabase/supabase-js'
 
-const SYSTEM_INSTRUCTION = `Você é o assistente de IA do FLOWOS, um sistema operacional de vida pessoal premium.
+const GEMINI_KEY = process.env.GEMINI_API_KEY
+
+const MODELS = {
+  starter:  process.env.GEMINI_MODEL_STARTER  ?? 'gemini-2.0-flash',
+  pro:      process.env.GEMINI_MODEL_PRO       ?? 'gemini-2.5-flash-preview-05-20',
+  flowplus: process.env.GEMINI_MODEL_FLOWPLUS  ?? 'gemini-2.5-pro-preview-06-05',
+}
+
+const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    })
+  : null
+
+const SYSTEM_STARTER = `Você é o assistente de IA do FLOWOS, um sistema operacional de vida pessoal premium.
 Sempre responda em português brasileiro.
 Seja direto, específico e motivador. Nunca dê conselhos genéricos — use sempre os dados reais do usuário.
 Quando o usuário perguntar algo, cite os nomes reais dos hábitos, tarefas, valores financeiros e metas dele.
 Formate com markdown (negrito, listas) quando ajudar na leitura. Máximo 400 palavras.`
+
+const SYSTEM_PRO = `${SYSTEM_STARTER}
+
+Você está no modo PRO: faça análises mais profundas, identifique padrões entre hábitos e finanças,
+sugira otimizações concretas baseadas nos dados. Pode usar até 600 palavras quando a análise justificar.`
+
+const SYSTEM_FLOWPLUS = `Você é o assistente de IA premium do FLOWOS — Flow+.
+Sempre responda em português brasileiro.
+Você tem capacidades de raciocínio avançado. Use os dados completos do usuário para:
+- Identificar correlações não óbvias (ex: produtividade cai quando sono < 7h E gastos sobem)
+- Construir planos estratégicos de 30/60/90 dias com base nos padrões históricos
+- Antecipar riscos (saúde, financeiros, produtividade) antes que aconteçam
+- Sugerir experimentos mensuráveis para testar hipóteses sobre a vida do usuário
+Cite sempre dados reais. Formate com markdown. Pode usar até 800 palavras quando necessário.`
+
+function getSystemInstruction(plan) {
+  if (plan === 'flowplus') return SYSTEM_FLOWPLUS
+  if (plan === 'pro') return SYSTEM_PRO
+  return SYSTEM_STARTER
+}
+
+function getModel(plan) {
+  if (plan === 'flowplus') return MODELS.flowplus
+  if (plan === 'pro') return MODELS.pro
+  return MODELS.starter
+}
+
+async function getPlan(userId) {
+  if (!supabase || !userId) return 'starter'
+  const { data } = await supabase
+    .from('subscriptions')
+    .select('plan, status')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .maybeSingle()
+  return data?.plan ?? 'starter'
+}
 
 function buildContext(ctx) {
   if (!ctx) return null
@@ -61,8 +111,13 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   if (!GEMINI_KEY) return res.status(501).json({ error: 'GEMINI_API_KEY não configurada.' })
 
-  const { messages, userContext } = req.body ?? {}
+  const { messages, userContext, userId } = req.body ?? {}
   if (!messages?.length) return res.status(400).json({ error: 'messages é obrigatório.' })
+
+  // Verifica plano server-side (seguro — não confia no cliente)
+  const plan = await getPlan(userId)
+  const model = getModel(plan)
+  const systemInstruction = getSystemInstruction(plan)
 
   const contextBlock = buildContext(userContext)
 
@@ -78,15 +133,17 @@ export default async function handler(req, res) {
     return msg
   })
 
+  const maxTokens = plan === 'flowplus' ? 2048 : plan === 'pro' ? 1536 : 1024
+
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`
     const geminiRes = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+        system_instruction: { parts: [{ text: systemInstruction }] },
         contents,
-        generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
       }),
     })
 
@@ -97,7 +154,7 @@ export default async function handler(req, res) {
 
     const data = await geminiRes.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
-    res.json({ content: text })
+    res.json({ content: text, model, plan })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

@@ -43,7 +43,7 @@ const PLANS: Plan[] = [
   {
     name: 'Flow+', price: 'R$ 129', priceNote: '/mês',
     desc: 'Para high-performers que exigem o máximo de tecnologia, controle e suporte dedicado.',
-    features: ['Tudo do Pro', 'IA avançada (Claude Opus)', 'Múltiplos perfis/famílias', 'Acesso à API pública', 'Onboarding 1:1 personalizado', 'SLA de suporte dedicado'],
+    features: ['Tudo do Pro', 'IA avançada (Gemini 2.5 Pro)', 'Múltiplos perfis/famílias', 'Acesso à API pública', 'Onboarding 1:1 personalizado', 'SLA de suporte dedicado'],
     cta: 'Falar com time', accent: '#8b5cf6',
   },
 ]
@@ -63,7 +63,7 @@ const FAQS: FaqItem[] = [
   { q: 'Meus dados ficam seguros?', a: 'Todos os dados são criptografados em trânsito e em repouso via Supabase com Row Level Security. Nunca vendemos dados para terceiros. Você pode exportar ou deletar tudo a qualquer momento.' },
   { q: 'Como o Life Score é calculado?', a: 'O Life Score (0-100) é calculado diariamente: Hábitos 30% + Tarefas & Projetos 25% + Streak 20% + Sessões de Foco 15% + Saúde Financeira 10%.' },
   { q: 'Posso migrar de plano a qualquer momento?', a: 'Sim, upgrade ou downgrade a qualquer momento. Upgrades têm efeito imediato com crédito proporcional. Sem taxas de cancelamento.' },
-  { q: 'A Central IA usa qual modelo?', a: 'O plano Pro usa Claude Sonnet com contexto completo da sua vida. O Flow+ tem acesso ao Claude Opus — o modelo mais avançado — com memória de longo prazo.' },
+  { q: 'A Central IA usa qual modelo?', a: 'O plano Pro usa Gemini 2.5 Flash com contexto completo da sua vida — rápido e muito capaz. O Flow+ usa Gemini 2.5 Pro — o modelo mais avançado do Google, com raciocínio profundo e análises estratégicas de longo prazo.' },
 ]
 
 const HOW_STEPS = [
@@ -81,7 +81,7 @@ const COMPARE = [
   { label: 'Finanças avançadas + metas', s: false, p: true, f: true },
   { label: 'Relatórios semanais IA', s: false, p: true, f: true },
   { label: 'Saúde avançada + HRV', s: false, p: true, f: true },
-  { label: 'Claude Opus (IA premium)', s: false, p: false, f: true },
+  { label: 'Gemini 2.5 Pro (IA premium)', s: false, p: false, f: true },
   { label: 'Múltiplos perfis', s: false, p: false, f: true },
   { label: 'Acesso à API', s: false, p: false, f: true },
   { label: 'Onboarding 1:1', s: false, p: false, f: true },

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, useContext, type KeyboardEvent } from 'react'
 import { useFlowStore } from '../store'
 import { Send, Sparkles, Trash2, Zap } from 'lucide-react'
 import { track, Events } from '../services/analytics'
+import { AuthContext } from '../contexts/AuthContext'
 
 const API_URL = (import.meta.env.VITE_FLOWOS_API_URL as string | undefined) ?? ''
 
@@ -230,6 +231,7 @@ Estou aqui para te ajudar a rodar sua vida como um sistema.`
 }
 
 export default function AIPage() {
+  const user = useContext(AuthContext)
   const mensagens = useFlowStore(s => s.mensagens)
   const adicionarMensagem = useFlowStore(s => s.adicionarMensagem)
   const limparMensagens = useFlowStore(s => s.limparMensagens)
@@ -237,6 +239,7 @@ export default function AIPage() {
 
   const [input, setInput] = useState('')
   const [carregando, setCarregando] = useState(false)
+  const [activeModel, setActiveModel] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -283,12 +286,13 @@ export default function AIPage() {
         const res = await fetch(`${API_URL}/api/ai/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: apiMessages, userContext }),
+          body: JSON.stringify({ messages: apiMessages, userContext, userId: user?.id }),
         })
 
         if (res.ok) {
-          const data = await res.json() as { content: string }
+          const data = await res.json() as { content: string; model?: string }
           resposta = data.content
+          if (data.model) setActiveModel(data.model)
         }
       } catch {
         // fall through to local
@@ -407,7 +411,9 @@ export default function AIPage() {
           </button>
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 8, textAlign: 'center' }}>
-          {API_URL ? 'Powered by Gemini · contexto completo do seu FLOWOS' : 'A IA do FLOWOS conhece seus hábitos, tarefas, projetos e finanças.'}
+          {API_URL
+            ? `Powered by ${activeModel ?? 'Gemini'} · contexto completo do seu FLOWOS`
+            : 'A IA do FLOWOS conhece seus hábitos, tarefas, projetos e finanças.'}
         </p>
       </div>
 
