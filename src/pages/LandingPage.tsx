@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { track, Events } from '../services/analytics'
 import {
   motion, AnimatePresence, useScroll, useTransform,
   useSpring, useMotionValue, useInView, type Variants,
@@ -57,7 +58,7 @@ const TESTIMONIALS: Testimonial[] = [
 ]
 
 const FAQS: FaqItem[] = [
-  { q: 'Como funciona o período de teste gratuito?', a: 'Você tem 15 dias completos do plano Starter sem precisar de cartão de crédito. Acesso total a todos os recursos. No D+15 você escolhe continuar ou cancelar — sem cobranças surpresa.' },
+  { q: 'Como funciona o período de teste gratuito?', a: 'Você tem 15 dias completos do plano Starter com acesso total. Um cartão de crédito é necessário para ativar o trial — mas nenhum valor é cobrado agora. No D+15 você escolhe continuar ou cancelar, sem cobranças surpresa.' },
   { q: 'O FlowOS funciona offline?', a: 'Sim. O FlowOS é um PWA com cache inteligente. Você pode registrar hábitos, sessões de foco e transações sem internet. Os dados sincronizam automaticamente quando a conexão retorna.' },
   { q: 'Meus dados ficam seguros?', a: 'Todos os dados são criptografados em trânsito e em repouso via Supabase com Row Level Security. Nunca vendemos dados para terceiros. Você pode exportar ou deletar tudo a qualquer momento.' },
   { q: 'Como o Life Score é calculado?', a: 'O Life Score (0-100) é calculado diariamente: Hábitos 30% + Tarefas & Projetos 25% + Streak 20% + Sessões de Foco 15% + Saúde Financeira 10%.' },
@@ -434,7 +435,7 @@ export default function LandingPage() {
     return () => cancelAnimationFrame(raf)
   }, [scoreInView])
 
-  const go = () => navigate('/login')
+  const go = (source = 'cta') => { track(Events.CHECKOUT_STARTED, { source }); navigate('/login') }
 
   const scrollTo = (sel: string) => {
     document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -698,7 +699,7 @@ export default function LandingPage() {
                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>+2.400 usuários · 4.9/5</span>
               </div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', borderLeft: '1px solid rgba(255,255,255,0.08)', paddingLeft: 20 }}>
-                Sem cartão · Cancele quando quiser
+                Sem cobrança agora · Cancele quando quiser
               </div>
             </motion.div>
           </div>
@@ -1197,7 +1198,7 @@ export default function LandingPage() {
             <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>sistema de vida.</span>
           </h2>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)', maxWidth: 480, margin: '0 auto' }}>
-            15 dias grátis no Starter. Sem cartão de crédito. Cancele quando quiser.
+            15 dias grátis no Starter. Sem cobrança agora. Cancele quando quiser.
           </p>
         </motion.div>
 
@@ -1327,7 +1328,7 @@ export default function LandingPage() {
             Criar conta grátis <ArrowRight size={18} />
           </motion.button>
           <motion.p variants={fadeIn} style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-            15 dias grátis · Sem cartão · Cancele quando quiser
+            15 dias grátis · Sem cobrança agora · Cancele quando quiser
           </motion.p>
         </motion.div>
       </section>
