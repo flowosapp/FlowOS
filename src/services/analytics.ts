@@ -11,6 +11,13 @@ export function initAnalytics() {
     capture_pageleave: true,
     autocapture: false,
     persistence: 'localStorage',
+    disable_session_recording: import.meta.env.DEV,
+    session_recording: {
+      maskAllInputs: false,
+      maskInputOptions: { password: true },
+      maskTextSelector: '.ph-mask',
+      blockSelector: '.ph-no-capture',
+    },
   })
 }
 
