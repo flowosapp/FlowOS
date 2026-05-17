@@ -3,9 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 const GEMINI_KEY = process.env.GEMINI_API_KEY
 
 const MODELS = {
-  starter:  process.env.GEMINI_MODEL_STARTER  ?? 'gemini-2.0-flash',
-  pro:      process.env.GEMINI_MODEL_PRO       ?? 'gemini-2.5-flash-preview-05-20',
-  flowplus: process.env.GEMINI_MODEL_FLOWPLUS  ?? 'gemini-2.5-pro-preview-06-05',
+  starter:  process.env.GEMINI_MODEL_STARTER  ?? 'gemini-2.5-flash',
+  pro:      process.env.GEMINI_MODEL_PRO       ?? 'gemini-3.1-flash-lite',
+  flowplus: process.env.GEMINI_MODEL_FLOWPLUS  ?? 'gemini-3.1-pro',
 }
 
 const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
