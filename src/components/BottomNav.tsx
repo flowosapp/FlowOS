@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Flame, Target, Sparkles, MoreHorizontal,
   DollarSign, Layers, Heart, TrendingUp, Settings, LogOut, X, Crown,
@@ -10,24 +11,25 @@ import { isSupabaseConfigured, signOut } from '../services/supabase'
 import { createCheckoutSession } from '../services/billing'
 import AvatarImage from './AvatarImage'
 
-const PRIMARY = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Início' },
-  { to: '/habitos',   icon: Flame,           label: 'Hábitos' },
-  { to: '/foco',      icon: Target,          label: 'Foco' },
-  { to: '/ia',        icon: Sparkles,        label: 'IA' },
-]
-
-const MORE_ITEMS = [
-  { to: '/financas',    icon: DollarSign, label: 'Finanças' },
-  { to: '/projetos',    icon: Layers,     label: 'Projetos' },
-  { to: '/saude',       icon: Heart,      label: 'Saúde' },
-  { to: '/crescimento', icon: TrendingUp, label: 'Crescimento' },
-  { to: '/perfil',      icon: Settings,   label: 'Perfil' },
-]
-
 export default function BottomNav() {
+  const { t } = useTranslation(['navigation', 'common'])
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [upgrading, setUpgrading]   = useState(false)
+
+  const PRIMARY = [
+    { to: '/dashboard', icon: LayoutDashboard, label: t('home') },
+    { to: '/habitos',   icon: Flame,           label: t('habits') },
+    { to: '/foco',      icon: Target,          label: t('focus') },
+    { to: '/ia',        icon: Sparkles,        label: t('ai') },
+  ]
+
+  const MORE_ITEMS = [
+    { to: '/financas',    icon: DollarSign, label: t('finance') },
+    { to: '/projetos',    icon: Layers,     label: t('projects') },
+    { to: '/saude',       icon: Heart,      label: t('health') },
+    { to: '/crescimento', icon: TrendingUp, label: t('growth') },
+    { to: '/perfil',      icon: Settings,   label: t('profile') },
+  ]
 
   const location   = useLocation()
   const navigate   = useNavigate()
@@ -44,7 +46,7 @@ export default function BottomNav() {
 
   const score      = calcularPontuacaoVida({ habitos, tarefas, transacoes, focosHoje })
   const clr        = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)'
-  const label      = score >= 80 ? 'Excelente 🔥' : score >= 60 ? 'No caminho ⚡' : score >= 40 ? 'Construindo 💪' : 'Iniciando 🌱'
+  const scoreLabel = score >= 80 ? t('common:score_excellent') : score >= 60 ? t('common:score_ontrack') : score >= 40 ? t('common:score_building') : t('common:score_starting')
 
   const isMoreActive = MORE_ITEMS.some(item => location.pathname.startsWith(item.to))
 
@@ -61,7 +63,7 @@ export default function BottomNav() {
     setDrawerOpen(false)
     if (isSupabaseConfigured) {
       await signOut()
-    } else if (confirm('Redefinir o FLOWOS? Todos os dados serão apagados.')) {
+    } else if (confirm(t('common:reset_confirm'))) {
       resetStore(); window.location.reload()
     }
   }
@@ -126,8 +128,8 @@ export default function BottomNav() {
           }}>
             <span style={{ fontSize: 22, fontWeight: 900, color: clr, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums' }}>{score}</span>
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Life Score</div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: clr }}>{label}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('common:life_score')}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: clr }}>{scoreLabel}</div>
             </div>
           </div>
 
@@ -171,10 +173,10 @@ export default function BottomNav() {
             />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-0)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {perfil?.nome ?? 'Usuário'}
+                {perfil?.nome ?? t('user_fallback')}
               </div>
               <div style={{ fontSize: 11, color: isPro ? 'var(--amber)' : 'var(--text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {authUser?.email ?? (isPro ? '⭐ Pro' : 'Starter')}
+                {authUser?.email ?? (isPro ? '⭐ Pro' : t('common:plan_starter'))}
               </div>
             </div>
           </div>
@@ -193,7 +195,7 @@ export default function BottomNav() {
               }}
             >
               <Crown size={13} />
-              {upgrading ? 'Redirecionando...' : 'Upgrade para Pro'}
+              {upgrading ? t('common:redirecting') : t('common:upgrade_pro')}
             </button>
           )}
 
@@ -208,7 +210,7 @@ export default function BottomNav() {
             }}
           >
             <LogOut size={13} />
-            {isSupabaseConfigured ? 'Sair' : 'Redefinir'}
+            {isSupabaseConfigured ? t('common:sign_out') : t('common:reset')}
           </button>
         </div>
       </div>
@@ -260,7 +262,7 @@ export default function BottomNav() {
           <MoreHorizontal size={20} strokeWidth={isMoreActive || drawerOpen ? 2.2 : 1.6}
             style={{ filter: isMoreActive || drawerOpen ? 'drop-shadow(0 0 5px rgba(59,130,246,0.6))' : 'none' }}
           />
-          <span style={{ fontSize: 9.5, fontWeight: isMoreActive || drawerOpen ? 700 : 400 }}>Mais</span>
+          <span style={{ fontSize: 9.5, fontWeight: isMoreActive || drawerOpen ? 700 : 400 }}>{t('more')}</span>
           {(isMoreActive || drawerOpen) && (
             <div style={{ position: 'absolute', top: 0, width: 24, height: 2, background: 'linear-gradient(90deg,#3b82f6,#06b6d4)', borderRadius: '0 0 2px 2px' }} />
           )}

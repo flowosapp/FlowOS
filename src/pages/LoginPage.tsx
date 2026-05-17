@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react'
 import {
   signInWithPassword, signUpWithPassword, signInWithGoogle, sendPasswordReset,
@@ -70,6 +71,7 @@ function InputField({
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation(['auth', 'common'])
   const [mode, setMode] = useState<Mode>('login')
 
   // Login
@@ -104,8 +106,8 @@ export default function LoginPage() {
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
-    if (signupPassword !== signupConfirm) { setError('As senhas não coincidem.'); return }
-    if (signupPassword.length < 6) { setError('A senha deve ter pelo menos 6 caracteres.'); return }
+    if (signupPassword !== signupConfirm) { setError(t('passwords_no_match')); return }
+    if (signupPassword.length < 6) { setError(t('password_too_short')); return }
     setLoading(true); setError('')
     const res = await signUpWithPassword(signupEmail.trim(), signupPassword, signupName.trim())
     if (res.ok) setMode('confirm')
@@ -165,16 +167,12 @@ export default function LoginPage() {
               <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                 <CheckCircle size={26} color="#10b981" />
               </div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.02em' }}>Conta criada!</h2>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 8 }}>
-                Enviamos um e-mail de confirmação para
-              </p>
-              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 24 }}>{signupEmail}</p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 28 }}>
-                Clique no link do e-mail para ativar sua conta e começar a operar sua vida com o FlowOS.
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.02em' }}>{t('account_created')}</h2>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 28 }}>
+                {t('check_email_confirm', { email: signupEmail })}
               </p>
               <button onClick={() => { setMode('login'); setError('') }} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                Ir para o login
+                {t('sign_in')}
               </button>
             </div>
           )}
@@ -185,12 +183,12 @@ export default function LoginPage() {
               <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                 <Mail size={26} color={BLUE} />
               </div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>E-mail enviado!</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>{t('email_sent')}</h2>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 28 }}>
-                Verifique sua caixa de entrada em <strong style={{ color: 'var(--text-primary)' }}>{resetEmail}</strong> e siga as instruções para redefinir sua senha.
+                {t('check_inbox')} — <strong style={{ color: 'var(--text-primary)' }}>{resetEmail}</strong>
               </p>
               <button onClick={() => { setMode('login'); setResetSent(false) }} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                Voltar ao login
+                {t('sign_in')}
               </button>
             </div>
           )}
@@ -198,23 +196,23 @@ export default function LoginPage() {
           {/* ─── RESET FORM ─────────────────────────────────────────────── */}
           {mode === 'reset' && !resetSent && (
             <>
-              <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.025em' }}>Redefinir senha</h1>
+              <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6, letterSpacing: '-0.025em' }}>{t('reset_password')}</h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
-                Informe seu e-mail e enviaremos um link para criar uma nova senha.
+                {t('enter_email')}
               </p>
               <form onSubmit={handleReset}>
-                <label className="label">E-mail</label>
+                <label className="label">{t('email')}</label>
                 <div style={{ marginBottom: 16 }}>
                   <InputField icon={Mail} type="email" placeholder="seu@email.com" value={resetEmail} onChange={v => { setResetEmail(v); clearError() }} autoFocus />
                 </div>
                 {error && <ErrorBox msg={error} />}
                 <button type="submit" className="btn-primary" disabled={loading || !resetEmail.trim()} style={{ width: '100%', justifyContent: 'center', gap: 8, opacity: loading || !resetEmail.trim() ? 0.65 : 1 }}>
                   {loading ? <Spinner /> : <Mail size={14} />}
-                  Enviar link de redefinição
+                  {t('send_reset_link')}
                 </button>
               </form>
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-dim)', marginTop: 20 }}>
-                <button onClick={() => { setMode('login'); setError('') }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 13, cursor: 'pointer' }}>← Voltar ao login</button>
+                <button onClick={() => { setMode('login'); setError('') }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 13, cursor: 'pointer' }}>← {t('sign_in')}</button>
               </p>
             </>
           )}
@@ -236,7 +234,7 @@ export default function LoginPage() {
                       marginBottom: -1, transition: 'all 0.2s',
                     }}
                   >
-                    {m === 'login' ? 'Entrar' : 'Criar conta'}
+                    {m === 'login' ? t('sign_in') : t('sign_up')}
                   </button>
                 ))}
               </div>
@@ -256,36 +254,36 @@ export default function LoginPage() {
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)' }}
               >
                 <GoogleIcon />
-                Continuar com Google
+                {t('continue_google')}
               </button>
 
               {/* Divider */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                 <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>OU</span>
+                <span style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.08em' }}>{t('common:or')}</span>
                 <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
               </div>
 
               {/* ── LOGIN FORM ──────────────────────────────────────────── */}
               {mode === 'login' && (
                 <form onSubmit={handleLogin}>
-                  <label className="label">E-mail</label>
+                  <label className="label">{t('email')}</label>
                   <div style={{ marginBottom: 14 }}>
                     <InputField icon={Mail} type="email" placeholder="seu@email.com" value={loginEmail} onChange={v => { setLoginEmail(v); clearError() }} autoFocus />
                   </div>
-                  <label className="label">Senha</label>
+                  <label className="label">{t('password')}</label>
                   <div style={{ marginBottom: error ? 12 : 6 }}>
                     <InputField icon={Lock} type={showLoginPwd ? 'text' : 'password'} placeholder="••••••••" value={loginPassword} onChange={v => { setLoginPassword(v); clearError() }} rightSlot={pwdToggle(showLoginPwd, () => setShowLoginPwd(v => !v))} />
                   </div>
                   <div style={{ textAlign: 'right', marginBottom: error ? 0 : 20 }}>
                     <button type="button" onClick={() => { setMode('reset'); setResetEmail(loginEmail); setError('') }} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: 12, cursor: 'pointer' }}>
-                      Esqueceu a senha?
+                      {t('forgot_password')}
                     </button>
                   </div>
                   {error && <ErrorBox msg={error} />}
                   <button type="submit" className="btn-primary" disabled={loading || !loginEmail.trim() || !loginPassword} style={{ width: '100%', justifyContent: 'center', gap: 8, marginTop: 4, opacity: loading || !loginEmail.trim() || !loginPassword ? 0.65 : 1 }}>
                     {loading ? <Spinner /> : <ArrowRight size={14} />}
-                    {loading ? 'Entrando...' : 'Entrar'}
+                    {loading ? t('signing_in') : t('sign_in')}
                   </button>
                 </form>
               )}
@@ -293,26 +291,26 @@ export default function LoginPage() {
               {/* ── SIGNUP FORM ─────────────────────────────────────────── */}
               {mode === 'signup' && (
                 <form onSubmit={handleSignup}>
-                  <label className="label">Nome completo</label>
+                  <label className="label">{t('full_name')}</label>
                   <div style={{ marginBottom: 14 }}>
-                    <InputField icon={User} placeholder="Seu nome" value={signupName} onChange={v => { setSignupName(v); clearError() }} autoFocus />
+                    <InputField icon={User} placeholder={t('your_name')} value={signupName} onChange={v => { setSignupName(v); clearError() }} autoFocus />
                   </div>
-                  <label className="label">E-mail</label>
+                  <label className="label">{t('email')}</label>
                   <div style={{ marginBottom: 14 }}>
                     <InputField icon={Mail} type="email" placeholder="seu@email.com" value={signupEmail} onChange={v => { setSignupEmail(v); clearError() }} />
                   </div>
-                  <label className="label">Senha</label>
+                  <label className="label">{t('password')}</label>
                   <div style={{ marginBottom: 14 }}>
-                    <InputField icon={Lock} type={showSignupPwd ? 'text' : 'password'} placeholder="Mínimo 6 caracteres" value={signupPassword} onChange={v => { setSignupPassword(v); clearError() }} rightSlot={pwdToggle(showSignupPwd, () => setShowSignupPwd(v => !v))} />
+                    <InputField icon={Lock} type={showSignupPwd ? 'text' : 'password'} placeholder={t('min_6_chars')} value={signupPassword} onChange={v => { setSignupPassword(v); clearError() }} rightSlot={pwdToggle(showSignupPwd, () => setShowSignupPwd(v => !v))} />
                   </div>
-                  <label className="label">Confirmar senha</label>
+                  <label className="label">{t('password')}</label>
                   <div style={{ marginBottom: error ? 12 : 20 }}>
-                    <InputField icon={Lock} type={showSignupPwd ? 'text' : 'password'} placeholder="Repita a senha" value={signupConfirm} onChange={v => { setSignupConfirm(v); clearError() }} />
+                    <InputField icon={Lock} type={showSignupPwd ? 'text' : 'password'} placeholder={t('repeat_password')} value={signupConfirm} onChange={v => { setSignupConfirm(v); clearError() }} />
                   </div>
                   {error && <ErrorBox msg={error} />}
                   <button type="submit" className="btn-primary" disabled={loading || !signupName.trim() || !signupEmail.trim() || !signupPassword || !signupConfirm} style={{ width: '100%', justifyContent: 'center', gap: 8, opacity: loading || !signupName.trim() || !signupEmail.trim() || !signupPassword || !signupConfirm ? 0.65 : 1 }}>
                     {loading ? <Spinner /> : <ArrowRight size={14} />}
-                    {loading ? 'Criando conta...' : 'Criar conta'}
+                    {loading ? t('signing_up') : t('sign_up')}
                   </button>
                 </form>
               )}
@@ -321,10 +319,10 @@ export default function LoginPage() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-dim)', marginTop: 20, lineHeight: 1.5 }}>
-          Ao entrar, você concorda com os{' '}
-          <a href="/termos" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Termos de Uso</a>
-          {' '}e{' '}
-          <a href="/privacidade" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Política de Privacidade</a>.
+          {t('legal').split(t('terms'))[0]}
+          <a href="/termos" style={{ color: 'var(--accent)', textDecoration: 'none' }}>{t('terms')}</a>
+          {t('legal').split(t('terms'))[1]?.split(t('privacy'))[0]}
+          <a href="/privacidade" style={{ color: 'var(--accent)', textDecoration: 'none' }}>{t('privacy')}</a>.
         </p>
       </div>
     </div>

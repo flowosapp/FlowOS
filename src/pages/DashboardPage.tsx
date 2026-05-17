@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore, calcularPontuacaoVida } from '../store'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useToast } from '../contexts/ToastContext'
@@ -22,10 +23,7 @@ function hojeStr() { return new Date().toISOString().split('T')[0] }
 function diaAtualKey(): DiaSemana {
   return (['dom','seg','ter','qua','qui','sex','sab'] as DiaSemana[])[new Date().getDay()]
 }
-function saudacao(nome: string) {
-  const h = new Date().getHours()
-  return h < 12 ? `Bom dia, ${nome}` : h < 18 ? `Boa tarde, ${nome}` : `Boa noite, ${nome}`
-}
+// saudacao is now inlined in component using i18n
 function fmtMoeda(n: number, compact = false) {
   if (compact && Math.abs(n) >= 1000)
     return new Intl.NumberFormat('pt-BR',{ style:'currency',currency:'BRL',notation:'compact',maximumFractionDigits:1 }).format(n)
@@ -269,6 +267,7 @@ function gerarInsightsAutomaticos(state: {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation(['dashboard', 'common'])
   const navigate           = useNavigate()
   const perfil             = useFlowStore(s => s.perfil)
   const habitos            = useFlowStore(s => s.habitos)
@@ -297,6 +296,10 @@ export default function DashboardPage() {
   const isMobile  = useIsMobile()
   const score     = calcularPontuacaoVida({ habitos, tarefas, transacoes, focosHoje })
   const scoreClr  = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)'
+
+  const h = agora.getHours()
+  const nome = perfil?.nome ?? 'você'
+  const saudacao = h < 12 ? t('greeting_morning', { name: nome }) : h < 18 ? t('greeting_afternoon', { name: nome }) : t('greeting_evening', { name: nome })
 
   // Registra score do dia atual (uma vez por render do dashboard)
   useEffect(() => {
@@ -406,7 +409,7 @@ export default function DashboardPage() {
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom: tarefaPrincipal ? 16 : 26 }}>
         <div>
           <h1 style={{ fontSize: isMobile ? 20 : 26, fontWeight:800, letterSpacing:'-0.04em', marginBottom:3, lineHeight:1 }}>
-            {saudacao(perfil?.nome ?? 'você')} 👋
+            {saudacao} 👋
           </h1>
           <p style={{ fontSize:13, color:'var(--text-1)', letterSpacing:'-0.01em' }}>
             {DIAS[agora.getDay()]}, {agora.getDate()} de {MESES[agora.getMonth()]} · {agora.getFullYear()}
@@ -438,7 +441,7 @@ export default function DashboardPage() {
           <Zap size={15} color="#3b82f6" style={{ flexShrink: 0, filter: 'drop-shadow(0 0 6px rgba(59,130,246,0.5))' }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>
-              Foco do Dia
+              {t('focus_today')}
             </div>
             <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {tarefaPrincipal.titulo}
@@ -480,7 +483,7 @@ export default function DashboardPage() {
             </div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
-                <div className="label">Pontuação de Vida</div>
+                <div className="label">{t('life_score')}</div>
                 {scoreDelta !== null && (
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4,
@@ -492,7 +495,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <div style={{ fontSize:13, fontWeight:700, color:scoreClr, marginBottom:12, letterSpacing:'-0.02em' }}>
-                {score>=80?'Excelente 🔥':score>=60?'No caminho ⚡':score>=40?'Construindo 💪':'Iniciando 🌱'}
+                {score>=80?t('common:score_excellent'):score>=60?t('common:score_ontrack'):score>=40?t('common:score_building'):t('common:score_starting')}
               </div>
               {[
                 { label:'Hábitos',  val: habitos.length ? Math.round((habitosHoje/habitos.length)*100) : 0,                cor:'var(--amber)' },
@@ -526,7 +529,7 @@ export default function DashboardPage() {
         <div className="card animate-in-delay-1">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
             <div>
-              <div className="label" style={{ marginBottom:2 }}>Hábitos Hoje</div>
+              <div className="label" style={{ marginBottom:2 }}>{t('habits_today')}</div>
               <div style={{ display:'flex', alignItems:'baseline', gap:4 }}>
                 <span style={{ fontSize:22, fontWeight:800, color:'var(--amber)', letterSpacing:'-0.04em' }}>{habitosHoje}</span>
                 <span style={{ fontSize:13, color:'var(--text-2)' }}>/ {habitos.length}</span>
@@ -564,7 +567,7 @@ export default function DashboardPage() {
               )
             })}
             {habitos.length===0 && (
-              <button className="btn-ghost" onClick={()=>navigate('/habitos')} style={{ width:'100%', fontSize:12 }}>Adicionar hábitos →</button>
+              <button className="btn-ghost" onClick={()=>navigate('/habitos')} style={{ width:'100%', fontSize:12 }}>{t('add_habits')}</button>
             )}
           </div>
           {habitos.length>3 && (
@@ -578,7 +581,7 @@ export default function DashboardPage() {
         <div className="card animate-in-delay-1">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
             <div>
-              <div className="label" style={{ marginBottom:2 }}>Finanças — {MESES[agora.getMonth()]}</div>
+              <div className="label" style={{ marginBottom:2 }}>{t('finance_month', { month: MESES[agora.getMonth()] })}</div>
               <div style={{ fontSize:22, fontWeight:900, color:saldoMes>=0?'var(--green)':'var(--red)', letterSpacing:'-0.045em' }}>
                 {saldoMes>=0?'+':''}{fmtMoeda(saldoMes,true)}
               </div>
@@ -624,7 +627,7 @@ export default function DashboardPage() {
           ):null })()}
 
           <button onClick={()=>navigate('/financas')} style={{ fontSize:11, color:'var(--blue)', background:'none', border:'none', cursor:'pointer', padding:0, display:'flex', alignItems:'center', gap:4 }}>
-            Ver finanças <ArrowRight size={11}/>
+            {t('see_finance')} <ArrowRight size={11}/>
           </button>
         </div>
       </div>
@@ -635,7 +638,7 @@ export default function DashboardPage() {
         {/* Treino */}
         <div className="card card-clickable animate-in-delay-2" onClick={()=>navigate('/saude')}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-            <div className="label">Treino de Hoje</div>
+            <div className="label">{t('workout_today')}</div>
             <Dumbbell size={14} color="var(--blue)" style={{ filter:'drop-shadow(0 0 5px rgba(59,130,246,0.5))' }}/>
           </div>
           {treinoHoje&&!treinoHoje.isDescanso ? (
@@ -666,7 +669,7 @@ export default function DashboardPage() {
         {/* Meta */}
         <div className="card card-clickable animate-in-delay-2" onClick={()=>metaAtiva&&navigate('/crescimento')}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-            <div className="label">Meta em Andamento</div>
+            <div className="label">{t('active_goal')}</div>
             <CalendarCheck size={14} color="var(--purple)" style={{ filter:'drop-shadow(0 0 5px rgba(139,92,246,0.5))' }}/>
           </div>
           {metaAtiva ? (
@@ -702,7 +705,7 @@ export default function DashboardPage() {
         {/* Bem-estar */}
         <div className="card card-clickable animate-in-delay-2" onClick={()=>navigate('/saude')}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-            <div className="label">Bem-estar</div>
+            <div className="label">{t('wellbeing')}</div>
             <Heart size={14} color="var(--red)" style={{ filter:'drop-shadow(0 0 5px rgba(239,68,68,0.5))' }}/>
           </div>
           {ultimoSono ? (
@@ -726,7 +729,7 @@ export default function DashboardPage() {
           ) : (
             <div style={{ fontSize:13, color:'var(--text-1)', marginBottom:10 }}>Registre sono e humor para acompanhar aqui.</div>
           )}
-          <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>Ver saúde completa <ChevronRight size={11}/></span>
+          <span style={{ fontSize:11, color:'var(--blue)', display:'flex', alignItems:'center', gap:3 }}>{t('see_health')} <ChevronRight size={11}/></span>
         </div>
       </div>
 
@@ -735,9 +738,9 @@ export default function DashboardPage() {
         <div className="card animate-in-delay-2" style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div>
-              <div className="label" style={{ marginBottom: 1 }}>Atividade — Últimas 12 Semanas</div>
+              <div className="label" style={{ marginBottom: 1 }}>{t('activity')}</div>
               <div style={{ fontSize: 11, color: 'var(--text-2)' }}>
-                Completude diária de hábitos
+                {t('daily_completion')}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--text-2)' }}>
@@ -761,7 +764,7 @@ export default function DashboardPage() {
         <div className="card animate-in-delay-3">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:13 }}>
             <div>
-              <div className="label" style={{ marginBottom:2 }}>Tarefas</div>
+              <div className="label" style={{ marginBottom:2 }}>{t('tasks')}</div>
               <div style={{ fontSize:13, color:'var(--text-1)' }}>
                 <span style={{ fontWeight:700, color:'var(--text-0)' }}>{tarefas.filter(t=>!t.concluida).length}</span> pendentes
                 <span style={{ color:'var(--text-2)' }}> · {tarefas.filter(t=>t.concluida).length} concluídas</span>
@@ -837,7 +840,7 @@ export default function DashboardPage() {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:9 }}>
               <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                 <div className="pulse-dot"/>
-                <span style={{ fontSize:10, fontWeight:700, color:'var(--purple)', textTransform:'uppercase', letterSpacing:'0.08em' }}>Insight de IA</span>
+                <span style={{ fontSize:10, fontWeight:700, color:'var(--purple)', textTransform:'uppercase', letterSpacing:'0.08em' }}>{t('ai_insight')}</span>
               </div>
               <Sparkles size={14} color="var(--purple)" style={{ filter:'drop-shadow(0 0 4px rgba(139,92,246,0.6))' }}/>
             </div>

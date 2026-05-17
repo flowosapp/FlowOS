@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Zap } from 'lucide-react'
 import { useFlowStore, calcularPontuacaoVida } from '../store'
 import { useAuthUser } from '../contexts/AuthContext'
 import AvatarImage from './AvatarImage'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function TopBar() {
+  const { t }      = useTranslation('common')
   const navigate   = useNavigate()
   const habitos    = useFlowStore(s => s.habitos)
   const tarefas    = useFlowStore(s => s.tarefas)
@@ -15,7 +18,7 @@ export default function TopBar() {
 
   const score      = calcularPontuacaoVida({ habitos, tarefas, transacoes, focosHoje })
   const clr        = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)'
-  const label      = score >= 80 ? 'Excelente 🔥' : score >= 60 ? 'No caminho ⚡' : score >= 40 ? 'Construindo 💪' : 'Iniciando 🌱'
+  const label      = score >= 80 ? t('score_excellent') : score >= 60 ? t('score_ontrack') : score >= 40 ? t('score_building') : t('score_starting')
 
   return (
     <div style={{
@@ -68,6 +71,8 @@ export default function TopBar() {
           <span style={{ fontSize: 15, fontWeight: 800, color: clr, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>{score}</span>
           <span style={{ fontSize: 10, color: 'var(--text-2)' }}>{label}</span>
         </div>
+
+        <LanguageSwitcher />
 
         <button
           onClick={() => navigate('/perfil')}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore, calcularPontuacaoVida } from '../store'
 import {
   LayoutDashboard, Sparkles, Flame, Layers, DollarSign,
@@ -9,19 +10,22 @@ import { useAuthUser } from '../contexts/AuthContext'
 import { isSupabaseConfigured, signOut } from '../services/supabase'
 import { createCheckoutSession } from '../services/billing'
 import AvatarImage from './AvatarImage'
-
-const NAV = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/ia',        icon: Sparkles,         label: 'Central IA' },
-  { to: '/habitos',   icon: Flame,            label: 'Hábitos' },
-  { to: '/projetos',  icon: Layers,           label: 'Projetos' },
-  { to: '/financas',  icon: DollarSign,       label: 'Finanças' },
-  { to: '/foco',      icon: Target,           label: 'Modo Foco' },
-  { to: '/saude',     icon: Heart,            label: 'Saúde' },
-  { to: '/crescimento', icon: TrendingUp,     label: 'Crescimento' },
-]
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Sidebar() {
+  const { t } = useTranslation(['navigation', 'common'])
+
+  const NAV = [
+    { to: '/dashboard',    icon: LayoutDashboard, label: t('dashboard') },
+    { to: '/ia',           icon: Sparkles,         label: t('ai') },
+    { to: '/habitos',      icon: Flame,            label: t('habits') },
+    { to: '/projetos',     icon: Layers,           label: t('projects') },
+    { to: '/financas',     icon: DollarSign,       label: t('finance') },
+    { to: '/foco',         icon: Target,           label: t('focus') },
+    { to: '/saude',        icon: Heart,            label: t('health') },
+    { to: '/crescimento',  icon: TrendingUp,       label: t('growth') },
+  ]
+
   const perfil     = useFlowStore(s => s.perfil)
   const habitos    = useFlowStore(s => s.habitos)
   const tarefas    = useFlowStore(s => s.tarefas)
@@ -34,8 +38,9 @@ export default function Sidebar() {
   const authUser   = useAuthUser()
   const [upgrading, setUpgrading] = useState(false)
 
-  const score     = calcularPontuacaoVida({ habitos, tarefas, transacoes, focosHoje })
+  const score      = calcularPontuacaoVida({ habitos, tarefas, transacoes, focosHoje })
   const scoreColor = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)'
+  const scoreLabel = score >= 80 ? t('common:score_excellent') : score >= 60 ? t('common:score_ontrack') : score >= 40 ? t('common:score_building') : t('common:score_starting')
 
   // SVG ring
   const R = 17, cx = 22, circ = 2 * Math.PI * R
@@ -53,7 +58,7 @@ export default function Sidebar() {
   async function handleSair() {
     if (isSupabaseConfigured) {
       await signOut()
-    } else if (confirm('Redefinir o FLOWOS? Todos os dados serão apagados.')) {
+    } else if (confirm(t('common:reset_confirm'))) {
       resetStore(); window.location.reload()
     }
   }
@@ -131,10 +136,8 @@ export default function Sidebar() {
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Life Score</div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: scoreColor }}>
-            {score >= 80 ? 'Excelente 🔥' : score >= 60 ? 'No caminho ⚡' : score >= 40 ? 'Construindo 💪' : 'Iniciando 🌱'}
-          </div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{t('common:life_score')}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: scoreColor }}>{scoreLabel}</div>
         </div>
       </div>
 
@@ -158,9 +161,9 @@ export default function Sidebar() {
           onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.1)')}
         >
           {upgrading ? (
-            <><span style={{ width: 12, height: 12, border: '2px solid rgba(245,158,11,0.3)', borderTopColor: 'var(--amber)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> Redirecionando...</>
+            <><span style={{ width: 12, height: 12, border: '2px solid rgba(245,158,11,0.3)', borderTopColor: 'var(--amber)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> {t('common:redirecting')}</>
           ) : (
-            <><Crown size={13} /> Upgrade para Pro</>
+            <><Crown size={13} /> {t('common:upgrade_pro')}</>
           )}
         </button>
       )}
@@ -187,23 +190,26 @@ export default function Sidebar() {
           />
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text-0)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
-              {perfil?.nome ?? 'Usuário'}
+              {perfil?.nome ?? t('user_fallback')}
             </div>
             <div style={{ fontSize: 11, color: isPro ? 'var(--amber)' : 'var(--text-2)', fontWeight: isPro ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {authUser?.email ?? (isPro ? '⭐ Pro' : 'Starter')}
+              {authUser?.email ?? (isPro ? '⭐ Pro' : t('common:plan_starter'))}
             </div>
           </div>
           <Settings size={12} color="var(--text-2)" style={{ flexShrink: 0 }} />
         </button>
-        <button
-          onClick={handleSair}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: 'transparent', border: 'none', borderRadius: 6, color: 'var(--text-2)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'color var(--t-fast)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--red)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-2)')}
-        >
-          <LogOut size={13} />
-          {isSupabaseConfigured ? 'Sair' : 'Redefinir'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 2 }}>
+          <button
+            onClick={handleSair}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: 'transparent', border: 'none', borderRadius: 6, color: 'var(--text-2)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', transition: 'color var(--t-fast)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--red)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-2)')}
+          >
+            <LogOut size={13} />
+            {isSupabaseConfigured ? t('common:sign_out') : t('common:reset')}
+          </button>
+          <LanguageSwitcher />
+        </div>
       </div>
     </aside>
   )
