@@ -226,6 +226,7 @@ interface AbaTransacoesProps {
 }
 
 function AbaTransacoes({ transacoesFiltradas, categorias, filterTipo, setFilterTipo, filterStatus, setFilterStatus, filterCatId, setFilterCatId, onToggleStatus, onRemover, onEditar }: AbaTransacoesProps) {
+  const { t } = useTranslation('finance')
   return (
     <div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -363,6 +364,7 @@ function ModalTransacao({ transacao, categorias, contas, tags, isPro, onClose }:
   isPro: boolean
   onClose: () => void
 }) {
+  const { t } = useTranslation('finance')
   const adicionarTransacao = useFlowStore(s => s.adicionarTransacao)
   const atualizarTransacao = useFlowStore(s => s.atualizarTransacao)
   const toast = useToast()
@@ -453,11 +455,11 @@ function ModalTransacao({ transacao, categorias, contas, tags, isPro, onClose }:
         <form onSubmit={handleSubmit} style={{ padding: '0 24px 24px' }}>
           {/* Tipo */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 18 }}>
-            {(['receita', 'gasto'] as TipoTransacao[]).map(t => (
-              <button key={t} type="button" onClick={() => { setTipo(t); setCategoriaId(''); setSubcategoriaId('') }}
-                style={{ padding: '10px', background: tipo === t ? (t === 'receita' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)') : 'rgba(255,255,255,0.04)', border: `1px solid ${tipo === t ? (t === 'receita' ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)') : 'var(--border)'}`, borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: tipo === t ? (t === 'receita' ? '#10b981' : '#ef4444') : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.15s' }}>
-                {t === 'receita' ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
-                {t === 'receita' ? 'Receita' : 'Gasto'}
+            {(['receita', 'gasto'] as TipoTransacao[]).map(tv => (
+              <button key={tv} type="button" onClick={() => { setTipo(tv); setCategoriaId(''); setSubcategoriaId('') }}
+                style={{ padding: '10px', background: tipo === tv ? (tv === 'receita' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)') : 'rgba(255,255,255,0.04)', border: `1px solid ${tipo === tv ? (tv === 'receita' ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)') : 'var(--border)'}`, borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: tipo === tv ? (tv === 'receita' ? '#10b981' : '#ef4444') : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.15s' }}>
+                {tv === 'receita' ? <TrendingUp size={15} /> : <TrendingDown size={15} />}
+                {tv === 'receita' ? 'Receita' : 'Gasto'}
               </button>
             ))}
           </div>

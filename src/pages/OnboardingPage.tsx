@@ -1,45 +1,9 @@
 import { useState, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore } from '../store'
 import { ArrowRight, ArrowLeft, Check, Zap } from 'lucide-react'
 import { useIsMobile } from '../hooks/useIsMobile'
-
-// ── Dados ─────────────────────────────────────────────────────────────────────
-
-const OBJETIVOS = [
-  { id: 'Produtividade',            emoji: '⚡', label: 'Produtividade' },
-  { id: 'Crescimento Financeiro',   emoji: '💰', label: 'Finanças' },
-  { id: 'Saúde & Condicionamento',  emoji: '💪', label: 'Saúde' },
-  { id: 'Aprendizado',              emoji: '🧠', label: 'Aprendizado' },
-  { id: 'Carreira',                 emoji: '🚀', label: 'Carreira' },
-  { id: 'Clareza Mental',           emoji: '🧘', label: 'Clareza Mental' },
-  { id: 'Relacionamentos',          emoji: '❤️', label: 'Relacionamentos' },
-  { id: 'Criatividade',             emoji: '🎨', label: 'Criatividade' },
-]
-
-const DESAFIOS = [
-  { id: 'Procrastinação',    emoji: '⏳', label: 'Procrastinação' },
-  { id: 'Falta de Foco',     emoji: '🌀', label: 'Falta de Foco' },
-  { id: 'Sono Ruim',         emoji: '😴', label: 'Sono Ruim' },
-  { id: 'Estresse Financeiro', emoji: '😰', label: 'Estresse Financeiro' },
-  { id: 'Desorganização',    emoji: '📦', label: 'Desorganização' },
-  { id: 'Sobrecarga',        emoji: '🌊', label: 'Sobrecarga' },
-  { id: 'Inconsistência',    emoji: '🎲', label: 'Inconsistência' },
-  { id: 'Baixa Energia',     emoji: '🔋', label: 'Baixa Energia' },
-]
-
-const HABITOS = [
-  { id: 'Rotina Matinal',       emoji: '☀️', label: 'Rotina Matinal' },
-  { id: 'Exercício Físico',     emoji: '💪', label: 'Exercício' },
-  { id: 'Meditação',            emoji: '🧘', label: 'Meditação' },
-  { id: 'Leitura',              emoji: '📚', label: 'Leitura' },
-  { id: 'Journaling',           emoji: '✍️', label: 'Journaling' },
-  { id: 'Trabalho Profundo',    emoji: '🎯', label: 'Deep Work' },
-  { id: 'Alimentação Saudável', emoji: '🥗', label: 'Alimentação' },
-  { id: 'Horário de Dormir',    emoji: '🌙', label: 'Dormir no Horário' },
-  { id: 'Hidratação',           emoji: '💧', label: 'Hidratação' },
-  { id: 'Sem Redes Sociais',    emoji: '🚫', label: 'Detox Digital' },
-]
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -146,15 +110,19 @@ function GradeSelecao({
 
 // ── Tela de conclusão — ring animado ─────────────────────────────────────────
 
-function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
+function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar, habitos }: {
   nome: string
   objetivos: string[]
   habitosSelecionados: string[]
   onFinalizar: () => void
+  habitos: { id: string; emoji: string; label: string }[]
 }) {
-  const score = 52 // score base com perfil configurado
+  const { t } = useTranslation('onboarding')
+  const score = 52
   const cx = 60, r = 50, circ = 2 * Math.PI * r
   const filled = (score / 100) * circ
+
+  const systemCreatedLines = t('system_created', { name: nome }).split('\n')
 
   return (
     <div style={{ textAlign: 'center' }}>
@@ -188,11 +156,11 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
         animation: 'countUp 0.4s ease both 0.5s', opacity: 0,
       }}>
-        Sistema criado,<br />{nome}!
+        {systemCreatedLines[0]}<br />{systemCreatedLines[1]}
       </h2>
 
       <p style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 24, animation: 'countUp 0.4s ease both 0.65s', opacity: 0 }}>
-        Seu FLOWOS foi personalizado com base nas suas escolhas.
+        {t('system_ready')}
       </p>
 
       {/* Stats */}
@@ -201,9 +169,9 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
         animation: 'countUp 0.4s ease both 0.75s', opacity: 0,
       }}>
         {[
-          { emoji: '🎯', val: objetivos.length, label: 'Objetivos' },
-          { emoji: '💪', val: habitosSelecionados.length, label: 'Hábitos' },
-          { emoji: '⚡', val: score, label: 'Score Inicial' },
+          { emoji: '🎯', val: objetivos.length, label: t('label_objectives') },
+          { emoji: '💪', val: habitosSelecionados.length, label: t('label_habits') },
+          { emoji: '⚡', val: score, label: t('label_initial_score') },
         ].map(s => (
           <div key={s.label} style={{
             padding: '12px 8px',
@@ -226,7 +194,7 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
           animation: 'countUp 0.4s ease both 0.85s', opacity: 0,
         }}>
           {habitosSelecionados.slice(0, 5).map(id => {
-            const h = HABITOS.find(x => x.id === id)
+            const h = habitos.find(x => x.id === id)
             return h ? (
               <span key={id} style={{
                 padding: '4px 12px', borderRadius: 999,
@@ -240,7 +208,7 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
           })}
           {habitosSelecionados.length > 5 && (
             <span style={{ padding: '4px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 12, color: 'var(--text-2)' }}>
-              +{habitosSelecionados.length - 5} mais
+              {t('more_items', { count: habitosSelecionados.length - 5 })}
             </span>
           )}
         </div>
@@ -255,7 +223,7 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
           animation: 'countUp 0.4s ease both 1s', opacity: 0,
         }}
       >
-        Entrar no FLOWOS <ArrowRight size={18} />
+        {t('cta_enter')} <ArrowRight size={18} />
       </button>
     </div>
   )
@@ -264,6 +232,7 @@ function TelaConclusa({ nome, objetivos, habitosSelecionados, onFinalizar }: {
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
+  const { t } = useTranslation(['onboarding', 'common'])
   const completarOnboarding = useFlowStore(s => s.completarOnboarding)
   const navigate = useNavigate()
   const isMobile = useIsMobile()
@@ -275,6 +244,41 @@ export default function OnboardingPage() {
   const [objetivos, setObjetivos]                   = useState<string[]>([])
   const [desafios, setDesafios]                     = useState<string[]>([])
   const [habitosSelecionados, setHabitosSelecionados] = useState<string[]>([])
+
+  const OBJETIVOS = [
+    { id: 'Produtividade',            emoji: '⚡', label: t('goals.productivity') },
+    { id: 'Crescimento Financeiro',   emoji: '💰', label: t('goals.finance') },
+    { id: 'Saúde & Condicionamento',  emoji: '💪', label: t('goals.health') },
+    { id: 'Aprendizado',              emoji: '🧠', label: t('goals.learning') },
+    { id: 'Carreira',                 emoji: '🚀', label: t('goals.career') },
+    { id: 'Clareza Mental',           emoji: '🧘', label: t('goals.clarity') },
+    { id: 'Relacionamentos',          emoji: '❤️', label: t('goals.relationships') },
+    { id: 'Criatividade',             emoji: '🎨', label: t('goals.creativity') },
+  ]
+
+  const DESAFIOS = [
+    { id: 'Procrastinação',    emoji: '⏳', label: t('challenges.procrastination') },
+    { id: 'Falta de Foco',     emoji: '🌀', label: t('challenges.focus') },
+    { id: 'Sono Ruim',         emoji: '😴', label: t('challenges.sleep') },
+    { id: 'Estresse Financeiro', emoji: '😰', label: t('challenges.financial') },
+    { id: 'Desorganização',    emoji: '📦', label: t('challenges.disorganization') },
+    { id: 'Sobrecarga',        emoji: '🌊', label: t('challenges.overload') },
+    { id: 'Inconsistência',    emoji: '🎲', label: t('challenges.inconsistency') },
+    { id: 'Baixa Energia',     emoji: '🔋', label: t('challenges.energy') },
+  ]
+
+  const HABITOS = [
+    { id: 'Rotina Matinal',       emoji: '☀️', label: t('habits_list.morning') },
+    { id: 'Exercício Físico',     emoji: '💪', label: t('habits_list.exercise') },
+    { id: 'Meditação',            emoji: '🧘', label: t('habits_list.meditation') },
+    { id: 'Leitura',              emoji: '📚', label: t('habits_list.reading') },
+    { id: 'Journaling',           emoji: '✍️', label: t('habits_list.journaling') },
+    { id: 'Trabalho Profundo',    emoji: '🎯', label: t('habits_list.deep_work') },
+    { id: 'Alimentação Saudável', emoji: '🥗', label: t('habits_list.eating') },
+    { id: 'Horário de Dormir',    emoji: '🌙', label: t('habits_list.sleep') },
+    { id: 'Hidratação',           emoji: '💧', label: t('habits_list.hydration') },
+    { id: 'Sem Redes Sociais',    emoji: '🚫', label: t('habits_list.detox') },
+  ]
 
   const stepIndex = STEPS.indexOf(step)
 
@@ -303,6 +307,15 @@ export default function OnboardingPage() {
 
   const cols4 = isMobile ? 2 : 4
   const cols5 = isMobile ? 3 : 5
+
+  const welcomeLines = t('welcome').split('\n')
+  const modules = [
+    ['⚡', t('module_lifescore')],
+    ['🧠', t('module_ai')],
+    ['💰', t('module_finance')],
+    ['🎯', t('module_focus')],
+    ['❤️', t('module_health')],
+  ]
 
   return (
     <div style={{
@@ -353,7 +366,7 @@ export default function OnboardingPage() {
                 <Zap size={30} color="#fff" strokeWidth={2} />
               </div>
               <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--blue)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 }}>
-                Life Operating System
+                {t('system_subtitle')}
               </p>
               <h1 style={{
                 fontSize: isMobile ? 36 : 48,
@@ -361,15 +374,15 @@ export default function OnboardingPage() {
                 background: 'linear-gradient(135deg,#fff 40%,#93c5fd 75%,#67e8f9)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
               }}>
-                Bem-vindo ao<br />FLOWOS
+                {welcomeLines[0]}<br />{welcomeLines[1]}
               </h1>
               <p style={{ fontSize: 16, color: 'var(--text-1)', lineHeight: 1.65, maxWidth: 360, margin: '0 auto 28px' }}>
-                Vamos personalizar seu sistema operacional de vida em <strong style={{ color: 'var(--text-0)' }}>60 segundos</strong>.
+                {t('subtitle', { seconds: 60 }).split('60')[0]}<strong style={{ color: 'var(--text-0)' }}>60</strong>{t('subtitle', { seconds: 60 }).split('60')[1]}
               </p>
 
               {/* Módulos preview */}
               <div style={{ display: 'flex', gap: 7, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
-                {[['⚡','Life Score'],['🧠','IA'],['💰','Finanças'],['🎯','Foco'],['❤️','Saúde']].map(([e,l]) => (
+                {modules.map(([e, l]) => (
                   <span key={l} style={{
                     padding: '5px 12px', borderRadius: 999,
                     background: 'rgba(255,255,255,0.04)',
@@ -384,10 +397,10 @@ export default function OnboardingPage() {
 
             {/* Input nome */}
             <div style={{ marginBottom: 18 }}>
-              <label className="label" style={{ textAlign: 'left', display: 'block', marginBottom: 8 }}>Como podemos te chamar?</label>
+              <label className="label" style={{ textAlign: 'left', display: 'block', marginBottom: 8 }}>{t('step_name')}</label>
               <input
                 className="input-field"
-                placeholder="Seu nome..."
+                placeholder={t('name_placeholder')}
                 value={nome}
                 onChange={e => setNome(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && nome.trim() && goTo('objetivos')}
@@ -401,7 +414,7 @@ export default function OnboardingPage() {
               disabled={!nome.trim()}
               style={{ width: '100%', padding: '14px', fontSize: 15, justifyContent: 'center', gap: 8, opacity: nome.trim() ? 1 : 0.4 }}
             >
-              Começar <ArrowRight size={16} />
+              {t('cta_start')} <ArrowRight size={16} />
             </button>
           </div>
         )}
@@ -411,21 +424,21 @@ export default function OnboardingPage() {
           <div>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <h2 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 6 }}>
-                O que você quer dominar?
+                {t('step_goals')}
               </h2>
               <p style={{ fontSize: 14, color: 'var(--text-2)' }}>
-                Selecione seus principais objetivos — o FLOWOS se adapta.
+                {t('goals_subtitle')}
               </p>
             </div>
             <GradeSelecao items={OBJETIVOS} selecionados={objetivos} onAlternar={id => alternar(objetivos, setObjetivos, id)} colunas={cols4} />
             {objetivos.length > 0 && (
               <div style={{ textAlign: 'center', marginTop: 10, fontSize: 12, color: 'var(--blue)', animation: 'fadeIn 0.2s ease' }}>
-                {objetivos.length} selecionado{objetivos.length > 1 ? 's' : ''}
+                {t('selected', { count: objetivos.length })}
               </div>
             )}
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button className="btn-ghost" onClick={() => goTo('welcome', 'left')} style={{ gap: 6 }}>
-                <ArrowLeft size={14} /> Voltar
+                <ArrowLeft size={14} /> {t('common:back')}
               </button>
               <button
                 className="btn-primary"
@@ -433,7 +446,7 @@ export default function OnboardingPage() {
                 disabled={objetivos.length === 0}
                 style={{ flex: 1, justifyContent: 'center', gap: 8, opacity: objetivos.length ? 1 : 0.4 }}
               >
-                Continuar <ArrowRight size={16} />
+                {t('cta_continue')} <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -444,23 +457,23 @@ export default function OnboardingPage() {
           <div>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <h2 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 6 }}>
-                O que te trava hoje?
+                {t('step_challenges')}
               </h2>
               <p style={{ fontSize: 14, color: 'var(--text-2)' }}>
-                Seja honesto — o FLOWOS vai trabalhar exatamente nestes pontos.
+                {t('challenges_subtitle')}
               </p>
             </div>
             <GradeSelecao items={DESAFIOS} selecionados={desafios} onAlternar={id => alternar(desafios, setDesafios, id)} colunas={cols4} />
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button className="btn-ghost" onClick={() => goTo('objetivos', 'left')} style={{ gap: 6 }}>
-                <ArrowLeft size={14} /> Voltar
+                <ArrowLeft size={14} /> {t('common:back')}
               </button>
               <button
                 className="btn-primary"
                 onClick={() => goTo('habitos')}
                 style={{ flex: 1, justifyContent: 'center', gap: 8 }}
               >
-                Continuar <ArrowRight size={16} />
+                {t('cta_continue')} <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -471,21 +484,21 @@ export default function OnboardingPage() {
           <div>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <h2 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 6 }}>
-                Seus primeiros hábitos
+                {t('step_habits')}
               </h2>
               <p style={{ fontSize: 14, color: 'var(--text-2)' }}>
-                Escolha pelo menos um para começar. Você pode adicionar mais depois.
+                {t('habits_hint')}
               </p>
             </div>
             <GradeSelecao items={HABITOS} selecionados={habitosSelecionados} onAlternar={id => alternar(habitosSelecionados, setHabitosSelecionados, id)} colunas={cols5} />
             {habitosSelecionados.length > 0 && (
               <div style={{ textAlign: 'center', marginTop: 10, fontSize: 12, color: 'var(--blue)', animation: 'fadeIn 0.2s ease' }}>
-                {habitosSelecionados.length} hábito{habitosSelecionados.length > 1 ? 's' : ''} selecionado{habitosSelecionados.length > 1 ? 's' : ''}
+                {t('selected_habits', { count: habitosSelecionados.length })}
               </div>
             )}
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button className="btn-ghost" onClick={() => goTo('desafios', 'left')} style={{ gap: 6 }}>
-                <ArrowLeft size={14} /> Voltar
+                <ArrowLeft size={14} /> {t('common:back')}
               </button>
               <button
                 className="btn-primary"
@@ -493,7 +506,7 @@ export default function OnboardingPage() {
                 disabled={habitosSelecionados.length === 0}
                 style={{ flex: 1, justifyContent: 'center', gap: 8, opacity: habitosSelecionados.length ? 1 : 0.4 }}
               >
-                Criar meu sistema <ArrowRight size={16} />
+                {t('cta_create')} <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -505,6 +518,7 @@ export default function OnboardingPage() {
             nome={nome.trim() || 'você'}
             objetivos={objetivos}
             habitosSelecionados={habitosSelecionados}
+            habitos={HABITOS}
             onFinalizar={finalizar}
           />
         )}
