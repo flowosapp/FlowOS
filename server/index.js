@@ -3,8 +3,13 @@ import dotenv from 'dotenv'
 import express from 'express'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { PostHog } from 'posthog-node'
 
 dotenv.config()
+
+const posthog = process.env.POSTHOG_API_KEY
+  ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST ?? 'https://us.i.posthog.com' })
+  : null
 
 const app = express()
 const port = Number(process.env.FLOWOS_API_PORT ?? 8787)
@@ -159,21 +164,32 @@ async function syncStripeEvent(event) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
+    const userId = session.client_reference_id || session.metadata?.userId
+    const plan = session.metadata?.plan ?? 'starter'
     await upsertSubscription({
-      userId: session.client_reference_id || session.metadata?.userId,
-      plan: session.metadata?.plan ?? 'starter',
+      userId,
+      plan,
       status: 'active',
       stripeCustomerId: session.customer,
       stripeSubscriptionId: session.subscription,
     })
+    if (posthog && userId) {
+      posthog.capture({
+        distinctId: userId,
+        event: 'checkout_session_completed',
+        properties: { plan, stripe_customer_id: session.customer },
+      })
+    }
     return
   }
 
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object
+    const userId = subscription.metadata?.userId
+    const plan = subscription.metadata?.plan ?? 'starter'
     await upsertSubscription({
-      userId: subscription.metadata?.userId,
-      plan: subscription.metadata?.plan ?? 'starter',
+      userId,
+      plan,
       status: subscription.status,
       stripeCustomerId: subscription.customer,
       stripeSubscriptionId: subscription.id,
@@ -182,6 +198,13 @@ async function syncStripeEvent(event) {
         ? new Date(subscription.current_period_end * 1000).toISOString()
         : null,
     })
+    if (posthog && userId) {
+      posthog.capture({
+        distinctId: userId,
+        event: event.type === 'customer.subscription.deleted' ? 'subscription_cancelled' : 'subscription_updated',
+        properties: { plan, status: subscription.status, stripe_customer_id: subscription.customer },
+      })
+    }
     return
   }
 
@@ -195,6 +218,13 @@ async function syncStripeEvent(event) {
         .from('subscriptions')
         .update({ status: 'past_due', updated_at: new Date().toISOString() })
         .eq('stripe_subscription_id', subscriptionId)
+    }
+    if (posthog && invoice.customer) {
+      posthog.capture({
+        distinctId: invoice.customer,
+        event: 'payment_failed',
+        properties: { stripe_subscription_id: subscriptionId, amount_due: invoice.amount_due },
+      })
     }
   }
 }
@@ -301,6 +331,13 @@ app.post('/api/beta/redeem', async (request, response) => {
       })
   }
 
+  if (posthog) {
+    posthog.capture({
+      distinctId: userId,
+      event: 'beta_code_redeemed',
+      properties: { plan: betaCode.plan, code: normalizedCode },
+    })
+  }
   console.log(`[BETA] Código ${normalizedCode} resgatado por ${userId} → plano ${betaCode.plan}`)
   response.json({ ok: true, plan: betaCode.plan })
 })
@@ -510,6 +547,11 @@ app.post('/api/push/send', async (req, res) => {
   res.json({ sent, total: subs.length })
 })
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`FLOWOS API listening on http://localhost:${port}`)
+})
+
+process.on('SIGTERM', async () => {
+  if (posthog) await posthog.shutdown()
+  server.close()
 })
