@@ -12,7 +12,7 @@ type CompareRow = { label: string; s: boolean; p: boolean; f: boolean }
 type FAQ = { q: string; a: string }
 
 export default function PrecosPage() {
-  const { t } = useTranslation(['pricing', 'common', 'auth'])
+  const { t, i18n } = useTranslation(['pricing', 'common', 'auth'])
   const navigate = useNavigate()
   const [loadingPlan, setLoadingPlan] = useState<BillingPlan | null>(null)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -68,7 +68,7 @@ export default function PrecosPage() {
     setLoadingPlan(plan)
     track(Events.CHECKOUT_STARTED, { plan })
     try {
-      const { url } = await createCheckoutSession({ plan })
+      const { url } = await createCheckoutSession({ plan, locale: i18n.language })
       window.location.href = url
     } catch {
       setLoadingPlan(null)

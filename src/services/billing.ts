@@ -4,6 +4,7 @@ type CheckoutPayload = {
   plan: BillingPlan
   email?: string
   userId?: string
+  locale?: string
 }
 
 async function postJson<TResponse>(path: string, payload: Record<string, unknown>): Promise<TResponse> {

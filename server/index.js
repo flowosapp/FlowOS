@@ -3,13 +3,19 @@ import dotenv from 'dotenv'
 import express from 'express'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { PostHog } from 'posthog-node'
 
 dotenv.config()
 
-const posthog = process.env.POSTHOG_API_KEY
-  ? new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST ?? 'https://us.i.posthog.com' })
-  : null
+let posthog = null
+try {
+  if (process.env.POSTHOG_API_KEY) {
+    const { PostHog } = await import('posthog-node')
+    posthog = new PostHog(process.env.POSTHOG_API_KEY, { host: process.env.POSTHOG_HOST ?? 'https://us.i.posthog.com' })
+    console.log('[FLOWOS] PostHog analytics ativo')
+  }
+} catch {
+  console.warn('[FLOWOS] posthog-node não instalado — analytics server-side desativado')
+}
 
 const app = express()
 const port = Number(process.env.FLOWOS_API_PORT ?? 8787)
@@ -29,15 +35,18 @@ const supabaseAdmin =
 
 const planConfig = {
   starter: {
-    priceId: process.env.STRIPE_PRICE_STARTER,
+    priceId:    process.env.STRIPE_PRICE_STARTER,
+    priceIdUsd: process.env.STRIPE_PRICE_STARTER_USD,
     trialDays: 15,
   },
   pro: {
-    priceId: process.env.STRIPE_PRICE_PRO,
+    priceId:    process.env.STRIPE_PRICE_PRO,
+    priceIdUsd: process.env.STRIPE_PRICE_PRO_USD,
     trialDays: 0,
   },
   flowplus: {
-    priceId: process.env.STRIPE_PRICE_FLOWPLUS,
+    priceId:    process.env.STRIPE_PRICE_FLOWPLUS,
+    priceIdUsd: process.env.STRIPE_PRICE_FLOWPLUS_USD,
     trialDays: 0,
   },
 }
@@ -85,10 +94,12 @@ app.post('/api/billing/checkout', async (request, response) => {
     return
   }
 
-  const { plan, email, userId } = request.body ?? {}
+  const { plan, email, userId, locale } = request.body ?? {}
   const selectedPlan = planConfig[plan]
+  const useUsd = locale === 'en-US' && selectedPlan?.priceIdUsd
+  const priceId = useUsd ? selectedPlan.priceIdUsd : selectedPlan?.priceId
 
-  if (!selectedPlan?.priceId) {
+  if (!priceId) {
     response.status(400).json({ error: 'Invalid or unconfigured plan.' })
     return
   }
@@ -109,7 +120,7 @@ app.post('/api/billing/checkout', async (request, response) => {
       mode: 'subscription',
       line_items: [
         {
-          price: selectedPlan.priceId,
+          price: priceId,
           quantity: 1,
         },
       ],
