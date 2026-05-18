@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail, buildBillingFailedHtml, buildCancelledHtml } from '../_resend.js'
 
 // Stripe requires the raw body to verify webhook signatures
 export const config = { api: { bodyParser: false } }
@@ -45,6 +46,14 @@ export default async function handler(req, res) {
     await syncEvent(event)
   }
 
+  // Emails transacionais
+  if (event.type === 'invoice.payment_failed') {
+    await handleBillingFailedEmail(event.data.object).catch(e => console.error('[email] billing_failed:', e.message))
+  }
+  if (event.type === 'customer.subscription.deleted') {
+    await handleCancelledEmail(event.data.object).catch(e => console.error('[email] cancelled:', e.message))
+  }
+
   res.json({ received: true })
 }
 
@@ -86,6 +95,64 @@ async function syncEvent(event) {
         .eq('stripe_subscription_id', subId)
     }
   }
+}
+
+async function getUserBySubscriptionId(subId) {
+  if (!supabase) return null
+  const { data } = await supabase.from('subscriptions').select('user_id').eq('stripe_subscription_id', subId).single()
+  if (!data?.user_id) return null
+  const { data: { user } } = await supabase.auth.admin.getUserById(data.user_id)
+  return user ?? null
+}
+
+function addDays(date, days) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d.toLocaleDateString('pt-BR')
+}
+
+async function handleBillingFailedEmail(inv) {
+  const subId = typeof inv.subscription === 'string' ? inv.subscription : inv.subscription?.id
+  if (!subId) return
+  const user = await getUserBySubscriptionId(subId)
+  if (!user?.email) return
+  const attemptDate = new Date(inv.created * 1000).toLocaleDateString('pt-BR')
+  const amount = inv.currency === 'brl'
+    ? `R$${(inv.amount_due / 100).toFixed(2).replace('.', ',')}`
+    : `$${(inv.amount_due / 100).toFixed(2)}`
+  await sendEmail({
+    to: user.email,
+    subject: 'Problema na cobrança do FlowOS',
+    html: buildBillingFailedHtml({
+      name: user.user_metadata?.full_name,
+      amount,
+      planName: inv.lines?.data?.[0]?.description ?? 'Starter',
+      attemptDate,
+      retry2: addDays(new Date(inv.created * 1000), 3),
+      retry3: addDays(new Date(inv.created * 1000), 5),
+    }),
+  })
+}
+
+async function handleCancelledEmail(sub) {
+  const user = await getUserBySubscriptionId(sub.id)
+  if (!user?.email) return
+  const accessUntil = sub.current_period_end
+    ? new Date(sub.current_period_end * 1000).toLocaleDateString('pt-BR')
+    : '—'
+  const deletionDate = sub.current_period_end
+    ? new Date((sub.current_period_end + 30 * 86400) * 1000).toLocaleDateString('pt-BR')
+    : '—'
+  await sendEmail({
+    to: user.email,
+    subject: 'Sua assinatura FlowOS foi cancelada',
+    html: buildCancelledHtml({
+      name: user.user_metadata?.full_name,
+      planName: sub.metadata?.plan ?? 'Starter',
+      accessUntil,
+      dataDeletionDate: deletionDate,
+    }),
+  })
 }
 
 async function upsert({ userId, plan, status, stripeCustomerId, stripeSubscriptionId, trialEndsAt, currentPeriodEnd }) {
