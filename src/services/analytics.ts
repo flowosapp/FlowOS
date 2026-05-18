@@ -3,14 +3,24 @@ import posthog from 'posthog-js'
 const KEY = import.meta.env.VITE_POSTHOG_KEY as string | undefined
 const HOST = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) ?? 'https://app.posthog.com'
 
+const CONSENT_KEY = 'flowos-cookie-consent'
+
+export type CookieConsent = 'all' | 'essential'
+
+export function getAnalyticsConsent(): CookieConsent | null {
+  return localStorage.getItem(CONSENT_KEY) as CookieConsent | null
+}
+
 export function initAnalytics() {
   if (!KEY) return
+  const hasConsent = getAnalyticsConsent() === 'all'
   posthog.init(KEY, {
     api_host: HOST,
     capture_pageview: true,
     capture_pageleave: true,
     autocapture: false,
     persistence: 'localStorage',
+    opt_out_capturing_by_default: !hasConsent,
     disable_session_recording: import.meta.env.DEV,
     session_recording: {
       maskAllInputs: false,
@@ -19,6 +29,18 @@ export function initAnalytics() {
       blockSelector: '.ph-no-capture',
     },
   })
+}
+
+export function optInAnalytics() {
+  if (!KEY) return
+  localStorage.setItem(CONSENT_KEY, 'all')
+  posthog.opt_in_capturing()
+}
+
+export function optOutAnalytics() {
+  if (!KEY) return
+  localStorage.setItem(CONSENT_KEY, 'essential')
+  posthog.opt_out_capturing()
 }
 
 export function identifyUser(userId: string, email?: string) {

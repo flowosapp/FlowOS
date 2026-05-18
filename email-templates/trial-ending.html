@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seu trial termina em 2 dias — FlowOS</title>
+</head>
+<body style="margin:0;padding:0;background:#060608;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#060608;min-height:100vh;">
+    <tr>
+      <td align="center" style="padding:48px 16px;">
+        <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:32px;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:14px;padding:10px 14px;">
+                    <span style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Flow</span><span style="font-size:20px;font-weight:800;color:rgba(255,255,255,0.6);letter-spacing:-0.5px;">OS</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Main card -->
+          <tr>
+            <td style="background:#0b0b0f;border:1px solid rgba(245,158,11,0.2);border-radius:20px;padding:40px 40px 36px;text-align:center;">
+
+              <!-- Icon -->
+              <div style="margin-bottom:24px;">
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                  <tr>
+                    <td style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:50%;width:64px;height:64px;text-align:center;vertical-align:middle;">
+                      <span style="font-size:28px;line-height:64px;">⏳</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Heading -->
+              <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#f2f2f5;letter-spacing:-0.5px;">
+                Seu trial termina em 2 dias.
+              </h1>
+              <p style="margin:0 0 28px;font-size:15px;color:#9898a8;line-height:1.6;">
+                Olá {{ .UserName }}, você começou a usar o FlowOS há 13 dias. Seu período gratuito termina em <strong style="color:#fbbf24;">{{ .TrialEndDate }}</strong>.
+              </p>
+
+              <!-- Score highlight -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                <tr>
+                  <td style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:14px;padding:20px;">
+                    <p style="margin:0 0 4px;font-size:11px;color:#9898a8;letter-spacing:0.1em;text-transform:uppercase;">Seu Life Score atual</p>
+                    <p style="margin:0;font-size:42px;font-weight:900;color:#60a5fa;letter-spacing:-2px;">{{ .LifeScore }}</p>
+                    <p style="margin:4px 0 0;font-size:12px;color:#62627a;">{{ .LifeScoreDiff }} desde o início do trial</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA -->
+              <a href="{{ .UpgradeURL }}"
+                 style="display:inline-block;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 36px;border-radius:12px;letter-spacing:0.2px;">
+                Continuar por R$29/mês →
+              </a>
+
+              <p style="margin:16px 0 0;font-size:12px;color:#62627a;">
+                Cancele a qualquer momento. Sem fidelidade.
+              </p>
+            </td>
+          </tr>
+
+          <!-- What you'll lose -->
+          <tr>
+            <td style="padding:20px 0 0;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#0b0b0f;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px 28px;">
+                    <p style="margin:0 0 16px;font-size:13px;font-weight:600;color:#fff;">O que você mantém no Starter</p>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr><td style="padding:7px 0;"><span style="font-size:12px;color:#9898a8;"><span style="color:#10b981;margin-right:10px;">✓</span>Dashboard + Life Score diário</span></td></tr>
+                      <tr><td style="padding:7px 0;"><span style="font-size:12px;color:#9898a8;"><span style="color:#10b981;margin-right:10px;">✓</span>Hábitos ilimitados + streak automático</span></td></tr>
+                      <tr><td style="padding:7px 0;"><span style="font-size:12px;color:#9898a8;"><span style="color:#10b981;margin-right:10px;">✓</span>Modo Foco (Pomodoro)</span></td></tr>
+                      <tr><td style="padding:7px 0;"><span style="font-size:12px;color:#9898a8;"><span style="color:#10b981;margin-right:10px;">✓</span>Controle financeiro básico</span></td></tr>
+                      <tr><td style="padding:7px 0;"><span style="font-size:12px;color:#9898a8;"><span style="color:#10b981;margin-right:10px;">✓</span>App mobile (PWA)</span></td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:28px 0 0;">
+              <p style="margin:0 0 6px;font-size:12px;color:#3e3e52;">FlowOS · flowosapp.io</p>
+              <p style="margin:0;font-size:11px;color:#2e2e42;">
+                <a href="{{ .CancelURL }}" style="color:#3e3e52;">Cancelar trial</a> · <a href="{{ .UnsubscribeURL }}" style="color:#3e3e52;">Cancelar notificações</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

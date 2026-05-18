@@ -47,9 +47,10 @@ const FOOTER_SECTIONS = [
 ]
 
 const LEGAL_LINKS = [
-  { key: 'privacy', path: '/privacidade' },
-  { key: 'terms',   path: '/termos' },
-  { key: 'cookies', path: '/cookies' },
+  { key: 'privacy',  path: '/privacidade' },
+  { key: 'terms',    path: '/termos' },
+  { key: 'cookies',  path: '/cookies' },
+  { key: 'contract', path: '/contrato' },
 ]
 
 // ─── Design tokens ────────────────────────────────────────────────────────────

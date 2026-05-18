@@ -35,6 +35,7 @@ import TermosPage from './pages/public/TermosPage'
 import CookiesPage from './pages/public/CookiesPage'
 import ContratoPage from './pages/public/ContratoPage'
 import PrecosPage from './pages/PrecosPage'
+import { CookieBanner } from './components/CookieBanner'
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -241,6 +242,7 @@ export default function App() {
     <AuthContext.Provider value={user}>
       <OfflineBanner />
       <UpdatePrompt />
+      <CookieBanner />
       {installModal}
       <Routes>
         {/* Páginas públicas acessíveis mesmo logado */}
