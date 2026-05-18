@@ -1,17 +1,16 @@
 import { type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Zap, ArrowLeft } from 'lucide-react'
 
 const grad = 'linear-gradient(135deg, #3b82f6, #06b6d4)'
 const sans = "'Inter', -apple-system, sans-serif"
 
-interface PublicShellProps {
-  children: ReactNode
-  title?: string
-}
+interface PublicShellProps { children: ReactNode }
 
 export function PublicShell({ children }: PublicShellProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation('common')
 
   return (
     <div style={{ background: '#04040e', color: '#e2e8f0', minHeight: '100vh', fontFamily: sans }}>
@@ -29,43 +28,29 @@ export function PublicShell({ children }: PublicShellProps) {
         .pub-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 48px 0; }
       `}</style>
 
-      {/* Sticky nav */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        padding: '14px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(4,4,14,0.92)', backdropFilter: 'blur(24px) saturate(1.5)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        <button
-          onClick={() => navigate('/')}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff', padding: 0 }}
-        >
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, padding: '14px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(4,4,14,0.92)', backdropFilter: 'blur(24px) saturate(1.5)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff', padding: 0 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: grad, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(59,130,246,0.4)' }}>
             <Zap size={12} color="#fff" fill="#fff" />
           </div>
           <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>FLOWOS</span>
         </button>
-
         <button
           onClick={() => navigate(-1)}
           style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 9, padding: '8px 14px', color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer', transition: 'background 0.2s, color 0.2s' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.8)' }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)' }}
         >
-          <ArrowLeft size={13} /> Voltar
+          <ArrowLeft size={13} /> {t('back')}
         </button>
       </nav>
 
-      {/* Content */}
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '72px 48px 120px' }}>
         {children}
       </main>
 
-      {/* Footer */}
       <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '28px 48px', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.1)' }}>
-          © 2026 FlowOS · Todos os direitos reservados
-        </p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.1)' }}>© 2026 FlowOS</p>
       </footer>
     </div>
   )

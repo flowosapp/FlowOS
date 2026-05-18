@@ -33,6 +33,7 @@ import StatusPage from './pages/public/StatusPage'
 import PrivacidadePage from './pages/public/PrivacidadePage'
 import TermosPage from './pages/public/TermosPage'
 import CookiesPage from './pages/public/CookiesPage'
+import ContratoPage from './pages/public/ContratoPage'
 import PrecosPage from './pages/PrecosPage'
 
 export default function App() {
@@ -225,6 +226,7 @@ export default function App() {
         <Route path="/privacidade" element={<PrivacidadePage />} />
         <Route path="/termos" element={<TermosPage />} />
         <Route path="/cookies" element={<CookiesPage />} />
+        <Route path="/contrato" element={<ContratoPage />} />
         <Route path="/precos" element={<PrecosPage />} />
         <Route path="*" element={<LoginPage />} />
       </Routes>
@@ -319,6 +321,7 @@ export default function App() {
                 <Route path="/privacidade" element={<PrivacidadePage />} />
                 <Route path="/termos" element={<TermosPage />} />
                 <Route path="/cookies" element={<CookiesPage />} />
+                <Route path="/contrato" element={<ContratoPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </AppLayout>
