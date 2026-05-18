@@ -180,7 +180,11 @@ export default async function handler(req, res) {
     return res.status(501).json({ error: 'RESEND_API_KEY não configurada.' })
   }
 
-  const { email, name } = req.body ?? {}
+  // Aceita chamada direta { email, name } ou payload de Database Webhook do Supabase { record: { email, full_name } }
+  const body = req.body ?? {}
+  const record = body.record ?? body
+  const email = record.email
+  const name = record.full_name ?? record.name
   if (!email) return res.status(400).json({ error: 'email obrigatório.' })
 
   const firstName = (name ?? email).split(' ')[0]
