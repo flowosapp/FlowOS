@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0b0f"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="500" fill="url(#bg)" rx="28"/>
+
+  <!-- Glow orb -->
+  <circle cx="250" cy="200" r="200" fill="#3b82f6" opacity="0.10" filter="url(#blur)"/>
+
+  <!-- Border -->
+  <rect width="498" height="498" x="1" y="1" fill="none" stroke="url(#brand)" stroke-opacity="0.25" stroke-width="1.5" rx="27"/>
+
+  <!-- Icon background circle -->
+  <circle cx="250" cy="175" r="64" fill="url(#brand)" opacity="0.12"/>
+  <circle cx="250" cy="175" r="64" fill="none" stroke="url(#brand)" stroke-opacity="0.35" stroke-width="1.5"/>
+
+  <!-- Zap icon -->
+  <g transform="translate(222, 145)">
+    <polygon points="36,0 14,34 28,34 20,60 56,24 38,24 48,0" fill="url(#brand)" stroke="none"/>
+  </g>
+
+  <!-- Plan name -->
+  <text x="250" y="286" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" font-size="32" font-weight="800" fill="#f2f2f5" text-anchor="middle" letter-spacing="-1">Starter</text>
+
+  <!-- Price -->
+  <text x="250" y="330" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" font-size="56" font-weight="900" fill="url(#brand)" text-anchor="middle" letter-spacing="-2">$9</text>
+  <text x="250" y="356" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" font-size="14" font-weight="400" fill="#62627a" text-anchor="middle">/month · 15-day free trial</text>
+
+  <!-- Divider -->
+  <line x1="100" y1="378" x2="400" y2="378" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+  <!-- Tagline -->
+  <text x="250" y="408" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" font-size="14" font-weight="500" fill="#9898a8" text-anchor="middle">Habits · Tasks · Focus · AI Coach</text>
+
+  <!-- FlowOS brand -->
+  <text x="250" y="458" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" font-size="13" font-weight="700" fill="#3b82f6" text-anchor="middle" letter-spacing="2" opacity="0.7">FLOWOS</text>
+</svg>
