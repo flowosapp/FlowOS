@@ -36,6 +36,8 @@ import CookiesPage from './pages/public/CookiesPage'
 import ContratoPage from './pages/public/ContratoPage'
 import PrecosPage from './pages/PrecosPage'
 import { CookieBanner } from './components/CookieBanner'
+import { Sentry } from './services/sentry'
+import { ErrorFallback } from './components/ErrorFallback'
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -239,6 +241,7 @@ export default function App() {
   }
 
   return (
+    <Sentry.ErrorBoundary fallback={({ error, resetError }) => <ErrorFallback error={error as Error} resetError={resetError} />}>
     <AuthContext.Provider value={user}>
       <OfflineBanner />
       <UpdatePrompt />
@@ -331,5 +334,6 @@ export default function App() {
         } />
       </Routes>
     </AuthContext.Provider>
+    </Sentry.ErrorBoundary>
   )
 }

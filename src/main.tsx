@@ -5,9 +5,11 @@ import { Analytics } from '@vercel/analytics/react'
 import App from './App'
 import { ToastProvider } from './contexts/ToastContext'
 import { initAnalytics } from './services/analytics'
+import { initSentry } from './services/sentry'
 import './i18n'
 import './index.css'
 
+initSentry()
 initAnalytics()
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
