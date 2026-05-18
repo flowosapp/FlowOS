@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { track, Events } from '../services/analytics'
 import {
   motion, AnimatePresence, useScroll, useTransform,
@@ -12,114 +13,78 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Plan = {
-  name: string; price: string; priceNote: string
-  trial?: string; badge?: string; desc: string
-  features: string[]; highlight?: boolean; cta: string; accent: string
-}
-type Testimonial = { name: string; role: string; avatar: string; text: string; score: number }
-type FaqItem = { q: string; a: string }
+type PlanT      = { name: string; price: string; price_note: string; trial?: string; badge?: string; desc: string; features: string[]; cta: string }
+type TestimonialT = { name: string; role: string; avatar: string; text: string; score: number }
+type FaqItemT   = { q: string; a: string }
+type HowStepT   = { title: string; desc: string }
+type CompareItemT = { label: string }
+type ChatMsgT   = { from: string; text: string }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Structural constants (language-independent) ──────────────────────────────
 
-const MARQUEE = [
-  'Life Score', 'Hábitos', 'Inteligência Artificial', 'Finanças',
-  'Modo Foco', 'Saúde', 'Crescimento', 'Sono', 'Produtividade', 'Streaks', 'Metas', 'Bem-estar',
+const MANIFESTO_DIM = [false, false, true, true, true, true, false, false]
+
+const PLAN_META = [
+  { highlight: false, accent: 'rgba(255,255,255,0.06)' },
+  { highlight: true,  accent: '#3b82f6' },
+  { highlight: false, accent: '#8b5cf6' },
 ]
 
-const PLANS: Plan[] = [
-  {
-    name: 'Starter', price: 'R$ 29', priceNote: '/mês', trial: '15 dias grátis',
-    desc: 'Para quem quer começar com o essencial e sentir o poder de um sistema de vida.',
-    features: ['Dashboard + Life Score', 'Hábitos e Projetos ilimitados', 'Modo Foco (Pomodoro)', 'Finanças básicas', 'App mobile (PWA)', 'Suporte por e-mail'],
-    cta: 'Começar grátis', accent: 'rgba(255,255,255,0.06)',
-  },
-  {
-    name: 'Pro', price: 'R$ 49', priceNote: '/mês', badge: 'Mais popular',
-    desc: 'Para quem leva a sério e quer IA desbloqueada com análises profundas da sua vida.',
-    features: ['Tudo do Starter', 'Central IA ilimitada', 'Finanças avançadas + metas', 'Relatórios semanais com IA', 'Saúde & Sono avançados', 'Suporte prioritário'],
-    highlight: true, cta: 'Assinar Pro', accent: '#3b82f6',
-  },
-  {
-    name: 'Flow+', price: 'R$ 129', priceNote: '/mês',
-    desc: 'Para high-performers que exigem o máximo de tecnologia, controle e suporte dedicado.',
-    features: ['Tudo do Pro', 'IA avançada (Gemini 3.1 Pro)', 'Múltiplos perfis/famílias', 'Acesso à API pública', 'Onboarding 1:1 personalizado', 'SLA de suporte dedicado'],
-    cta: 'Falar com time', accent: '#8b5cf6',
-  },
+const COMPARE_FLAGS: [boolean, boolean, boolean][] = [
+  [true,true,true], [true,true,true], [true,true,true], [true,true,true],
+  [false,true,true], [false,true,true], [false,true,true], [false,true,true],
+  [false,false,true], [false,false,true], [false,false,true], [false,false,true],
 ]
 
-const TESTIMONIALS: Testimonial[] = [
-  { name: 'Lucas Ferreira', role: 'CTO · Startup de Fintech', avatar: 'LF', text: 'Em 3 semanas meu Life Score saiu de 42 para 78. O FlowOS conecta produtividade com saúde de forma que nenhum outro app consegue.', score: 78 },
-  { name: 'Mariana Costa', role: 'Product Manager · Scale-up', avatar: 'MC', text: 'A Central IA entende meu contexto real. Ela sabe que quando durmo mal minha produtividade cai — e me avisa antes de acontecer.', score: 85 },
-  { name: 'Rafael Oliveira', role: 'Empreendedor Serial', avatar: 'RO', text: 'Testei 11 apps nos últimos 2 anos. O FlowOS é o primeiro que cria hábito real. Meu streak de 60 dias fala por si só.', score: 91 },
-  { name: 'Juliana Santos', role: 'Designer · Agência Criativa', avatar: 'JS', text: 'Finalmente um app bonito que também funciona. O Modo Foco com o Life Score dobrou minha produtividade criativa.', score: 72 },
-  { name: 'Pedro Alves', role: 'Engenheiro de Software', avatar: 'PA', text: 'Controle financeiro integrado com hábitos foi um game-changer. Economizei R$2.400 no primeiro mês com os insights da IA.', score: 88 },
-  { name: 'Ana Lima', role: 'Médica · Residência', avatar: 'AL', text: 'Como médica com 12h/dia de trabalho, o FlowOS me ajuda a manter saúde mental e física em equilíbrio. O módulo de sono é preciso.', score: 83 },
+const HOW_ICONS  = [Brain, TrendingUp, Zap]
+const HOW_COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4']
+const HOW_NUMS   = ['01', '02', '03']
+
+const FOOTER_SECTIONS = [
+  { key: 'product', links: [{ key: 'features', path: '/features' }, { key: 'pricing', path: '/pricing' }, { key: 'changelog', path: '/changelog' }] },
+  { key: 'company', links: [{ key: 'about', path: '/sobre' }, { key: 'blog', path: '/blog' }, { key: 'careers', path: '/carreiras' }] },
+  { key: 'support', links: [{ key: 'docs', path: '/docs' }, { key: 'faq', path: '#faq' }, { key: 'status', path: '/status' }] },
 ]
 
-const FAQS: FaqItem[] = [
-  { q: 'Como funciona o período de teste gratuito?', a: 'Você tem 15 dias completos do plano Starter com acesso total. Um cartão de crédito é necessário para ativar o trial — mas nenhum valor é cobrado agora. No D+15 você escolhe continuar ou cancelar, sem cobranças surpresa.' },
-  { q: 'O FlowOS funciona offline?', a: 'Sim. O FlowOS é um PWA com cache inteligente. Você pode registrar hábitos, sessões de foco e transações sem internet. Os dados sincronizam automaticamente quando a conexão retorna.' },
-  { q: 'Meus dados ficam seguros?', a: 'Todos os dados são criptografados em trânsito e em repouso via Supabase com Row Level Security. Nunca vendemos dados para terceiros. Você pode exportar ou deletar tudo a qualquer momento.' },
-  { q: 'Como o Life Score é calculado?', a: 'O Life Score (0-100) é calculado diariamente: Hábitos 30% + Tarefas & Projetos 25% + Streak 20% + Sessões de Foco 15% + Saúde Financeira 10%.' },
-  { q: 'Posso migrar de plano a qualquer momento?', a: 'Sim, upgrade ou downgrade a qualquer momento. Upgrades têm efeito imediato com crédito proporcional. Sem taxas de cancelamento.' },
-  { q: 'A Central IA usa qual modelo?', a: 'O plano Pro usa Gemini 3.1 Flash Lite — rápido, eficiente e muito capaz para análises do dia a dia. O Flow+ usa Gemini 3.1 Pro — o modelo mais avançado do Google, com raciocínio profundo e análises estratégicas de longo prazo.' },
-]
-
-const HOW_STEPS = [
-  { num: '01', icon: Brain, title: 'Conecte sua vida', desc: 'Registre hábitos, finanças, sono e sessões de foco. O FlowOS estrutura tudo em um sistema unificado e inteligente.' },
-  { num: '02', icon: TrendingUp, title: 'A IA aprende com você', desc: 'Em dias, a Central IA identifica padrões e correlações que você nunca perceberia sozinho — entre sono, produtividade e finanças.' },
-  { num: '03', icon: Zap, title: 'Opere em modo elite', desc: 'Com o Life Score como bússola, cada decisão passa a ser guiada por dados reais da sua vida. Não por intuição.' },
-]
-
-const COMPARE = [
-  { label: 'Life Score diário', s: true, p: true, f: true },
-  { label: 'Hábitos ilimitados', s: true, p: true, f: true },
-  { label: 'Modo Foco (Pomodoro)', s: true, p: true, f: true },
-  { label: 'Finanças básicas', s: true, p: true, f: true },
-  { label: 'Central IA', s: false, p: true, f: true },
-  { label: 'Finanças avançadas + metas', s: false, p: true, f: true },
-  { label: 'Relatórios semanais IA', s: false, p: true, f: true },
-  { label: 'Saúde avançada + HRV', s: false, p: true, f: true },
-  { label: 'Gemini 3.1 Pro (IA premium)', s: false, p: false, f: true },
-  { label: 'Múltiplos perfis', s: false, p: false, f: true },
-  { label: 'Acesso à API', s: false, p: false, f: true },
-  { label: 'Onboarding 1:1', s: false, p: false, f: true },
+const LEGAL_LINKS = [
+  { key: 'privacy', path: '/privacidade' },
+  { key: 'terms',   path: '/termos' },
+  { key: 'cookies', path: '/cookies' },
 ]
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
-const BG = '#04040e'
-const BLUE = '#3b82f6'
+const BG     = '#04040e'
+const BLUE   = '#3b82f6'
 const PURPLE = '#8b5cf6'
-const CYAN = '#06b6d4'
-const GREEN = '#10b981'
-const AMBER = '#f59e0b'
-const grad = 'linear-gradient(135deg, #3b82f6, #06b6d4)'
-const sans = "'Inter', -apple-system, sans-serif"
+const CYAN   = '#06b6d4'
+const GREEN  = '#10b981'
+const AMBER  = '#f59e0b'
+const grad   = 'linear-gradient(135deg, #3b82f6, #06b6d4)'
+const sans   = "'Inter', -apple-system, sans-serif"
 
 // ─── Framer Motion variants ───────────────────────────────────────────────────
 
 const vp = { once: false as const, amount: 0.18 }
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 48, filter: 'blur(10px)' },
+  hidden:  { opacity: 0, y: 48, filter: 'blur(10px)' },
   visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.85, ease: 'easeOut' as const } },
 }
 const fadeIn: Variants = {
-  hidden: { opacity: 0 },
+  hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.7, ease: 'easeOut' as const } },
 }
 const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.86, filter: 'blur(12px)' },
+  hidden:  { opacity: 0, scale: 0.86, filter: 'blur(12px)' },
   visible: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 1.1, ease: 'easeOut' as const } },
 }
 const slideLeft: Variants = {
-  hidden: { opacity: 0, x: 64, filter: 'blur(8px)' },
+  hidden:  { opacity: 0, x: 64, filter: 'blur(8px)' },
   visible: { opacity: 1, x: 0, filter: 'blur(0px)', transition: { duration: 0.9, ease: 'easeOut' as const } },
 }
 const stagger = (d = 0.1): Variants => ({
-  hidden: {},
+  hidden:  {},
   visible: { transition: { staggerChildren: d } },
 })
 
@@ -219,7 +184,7 @@ function Scene3D({ opacity = 0.7 }: { opacity?: number }) {
   return <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity, pointerEvents: 'none', zIndex: 1 }} />
 }
 
-// ─── BentoCard — FM tilt + spotlight ─────────────────────────────────────────
+// ─── BentoCard ────────────────────────────────────────────────────────────────
 
 function BentoCard({ children, className = '', style = {} }: {
   children: React.ReactNode; className?: string; style?: React.CSSProperties
@@ -262,11 +227,11 @@ function BentoCard({ children, className = '', style = {} }: {
 
 // ─── FaqAccordion ─────────────────────────────────────────────────────────────
 
-function FaqAccordion() {
+function FaqAccordion({ items }: { items: FaqItemT[] }) {
   const [open, setOpen] = useState<number | null>(null)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {FAQS.map(({ q, a }, i) => {
+      {items.map(({ q, a }, i) => {
         const isOpen = open === i
         return (
           <motion.div
@@ -304,16 +269,15 @@ function FaqAccordion() {
 
 // ─── KineticTicker ────────────────────────────────────────────────────────────
 
-function KineticTicker() {
-  const WORDS = ['hábitos', 'finanças', 'saúde', 'foco', 'sono', 'energia', 'metas']
+function KineticTicker({ words, prefix, suffix }: { words: string[]; prefix: string; suffix: string }) {
   const [idx, setIdx] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setIdx(i => (i + 1) % WORDS.length), 2200)
+    const id = setInterval(() => setIdx(i => (i + 1) % words.length), 2200)
     return () => clearInterval(id)
-  }, [])
+  }, [words.length])
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(255,255,255,0.35)', marginBottom: 36 }}>
-      <span>Sistema para</span>
+      <span>{prefix}</span>
       <span style={{ position: 'relative', minWidth: 80, display: 'inline-block', height: '1.2em' }}>
         <AnimatePresence mode="wait">
           <motion.span
@@ -324,11 +288,11 @@ function KineticTicker() {
             transition={{ duration: 0.28, ease: 'easeOut' as const }}
             style={{ position: 'absolute', left: 0, color: '#93c5fd', fontWeight: 600 }}
           >
-            {WORDS[idx]}
+            {words[idx]}
           </motion.span>
         </AnimatePresence>
       </span>
-      <span>e mais.</span>
+      <span>{suffix}</span>
     </span>
   )
 }
@@ -360,34 +324,54 @@ function Label({ children }: { children: string }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  const { t } = useTranslation('landing')
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // Translated data
+  const heroWords      = t('hero.words',              { returnObjects: true }) as string[]
+  const marquee        = t('marquee',                 { returnObjects: true }) as string[]
+  const tickerWords    = t('ticker.words',            { returnObjects: true }) as string[]
+  const manifestoLines = t('manifesto.lines',         { returnObjects: true }) as string[]
+  const scoreBars      = t('score_section.breakdown', { returnObjects: true }) as string[]
+  const aiTags         = t('bento.ai_tags',           { returnObjects: true }) as string[]
+  const aiChat         = t('bento.ai_chat',           { returnObjects: true }) as ChatMsgT[]
+  const bentoHabits    = t('bento.habits',            { returnObjects: true }) as string[]
+  const finCats        = t('bento.finance_cats',      { returnObjects: true }) as string[]
+  const howSteps       = t('how.steps',               { returnObjects: true }) as HowStepT[]
+  const testimonials   = t('testimonials.items',      { returnObjects: true }) as TestimonialT[]
+  const plans          = t('pricing.plans',           { returnObjects: true }) as PlanT[]
+  const compareItems   = t('pricing.compare',         { returnObjects: true }) as CompareItemT[]
+  const faqs           = t('faq.items',               { returnObjects: true }) as FaqItemT[]
+
+  const NAV_ITEMS = [
+    { label: t('nav.features'), target: '.lp-bento'   },
+    { label: t('nav.how'),      target: '.lp-how'     },
+    { label: t('nav.pricing'),  target: '.lp-pricing' },
+    { label: t('nav.faq'),      target: '.lp-faq'     },
+  ]
+
   // Nav scroll effect
   const { scrollY, scrollYProgress } = useScroll()
-  const navBg = useTransform(scrollY, [0, 80], ['rgba(4,4,14,0)', 'rgba(4,4,14,0.92)'])
-  const navBd = useTransform(scrollY, [0, 80], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.06)'])
+  const navBg   = useTransform(scrollY, [0, 80], ['rgba(4,4,14,0)', 'rgba(4,4,14,0.92)'])
+  const navBd   = useTransform(scrollY, [0, 80], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.06)'])
   const navBlur = useTransform(scrollY, [0, 80], ['blur(0px)', 'blur(24px) saturate(1.4)'])
 
-  // Progress bar
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
 
-  // Custom cursor
   const cx = useMotionValue(-100)
   const cy = useMotionValue(-100)
-  const dotX = useSpring(cx, { stiffness: 800, damping: 35 })
-  const dotY = useSpring(cy, { stiffness: 800, damping: 35 })
+  const dotX  = useSpring(cx, { stiffness: 800, damping: 35 })
+  const dotY  = useSpring(cy, { stiffness: 800, damping: 35 })
   const ringX = useSpring(cx, { stiffness: 160, damping: 22 })
   const ringY = useSpring(cy, { stiffness: 160, damping: 22 })
 
-  // Hero dashboard tilt
-  const dashMx = useMotionValue(0)
-  const dashMy = useMotionValue(0)
+  const dashMx   = useMotionValue(0)
+  const dashMy   = useMotionValue(0)
   const dashRotX = useTransform(dashMy, [-0.5, 0.5], [10, -10])
   const dashRotY = useTransform(dashMx, [-0.5, 0.5], [-12, 12])
 
-  // Score section
-  const scoreRef = useRef<HTMLElement>(null)
+  const scoreRef    = useRef<HTMLElement>(null)
   const scoreNumRef = useRef<HTMLSpanElement>(null)
   const scoreInView = useInView(scoreRef, { once: false, amount: 0.25 })
 
@@ -397,12 +381,12 @@ export default function LandingPage() {
 
     const isMobile = window.matchMedia('(pointer: coarse)').matches
     if (!isMobile) {
-      const onMove = (e: MouseEvent) => { cx.set(e.clientX - 3); cy.set(e.clientY - 3) }
-      window.addEventListener('mousemove', onMove)
-      const onTilt = (e: MouseEvent) => {
+      const onMove  = (e: MouseEvent) => { cx.set(e.clientX - 3); cy.set(e.clientY - 3) }
+      const onTilt  = (e: MouseEvent) => {
         dashMx.set((e.clientX / window.innerWidth) - 0.5)
         dashMy.set((e.clientY / window.innerHeight) - 0.5)
       }
+      window.addEventListener('mousemove', onMove)
       window.addEventListener('mousemove', onTilt)
       return () => {
         document.documentElement.style.overflow = ''
@@ -414,7 +398,6 @@ export default function LandingPage() {
     return () => { document.documentElement.style.overflow = ''; document.body.style.overflow = '' }
   }, [])
 
-  // Score counter — animates on every scroll-in
   useEffect(() => {
     const numEl = scoreNumRef.current
     if (!numEl) return
@@ -435,15 +418,13 @@ export default function LandingPage() {
     return () => cancelAnimationFrame(raf)
   }, [scoreInView])
 
-  const go = (source = 'hero') => { track(Events.CHECKOUT_STARTED, { source }); navigate('/login') }
+  const go      = (source = 'hero') => { track(Events.CHECKOUT_STARTED, { source }); navigate('/login') }
   const goClick = () => go('hero')
 
   const scrollTo = (sel: string) => {
     document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setMenuOpen(false)
   }
-
-  const HERO_WORDS = ['Opere', 'sua', 'vida', 'como', 'um', 'sistema.']
 
   return (
     <div style={{ background: BG, color: '#e2e8f0', overflowX: 'hidden', fontFamily: sans, position: 'relative' }}>
@@ -564,10 +545,10 @@ export default function LandingPage() {
           transition={{ duration: 0.7, delay: 0.2 }}
           style={{ display: 'flex', gap: 36, alignItems: 'center' }}
         >
-          {['Recursos', 'Como funciona', 'Preços', 'FAQ'].map(l => (
-            <span key={l} className="lp-nav-link lp-nav-ul" style={{ fontSize: 13, color: 'rgba(255,255,255,0.32)', cursor: 'none' }}
-              onClick={() => scrollTo(l === 'Recursos' ? '.lp-bento' : l === 'Como funciona' ? '.lp-how' : l === 'Preços' ? '.lp-pricing' : '.lp-faq')}>
-              {l}
+          {NAV_ITEMS.map(({ label, target }) => (
+            <span key={target} className="lp-nav-link lp-nav-ul" style={{ fontSize: 13, color: 'rgba(255,255,255,0.32)', cursor: 'none' }}
+              onClick={() => scrollTo(target)}>
+              {label}
             </span>
           ))}
         </motion.div>
@@ -579,8 +560,8 @@ export default function LandingPage() {
           transition={{ duration: 0.7, delay: 0.3 }}
           style={{ display: 'flex', gap: 8, alignItems: 'center' }}
         >
-          <motion.button className="lp-btn-ghost lp-btn-sm" onClick={goClick} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>Entrar</motion.button>
-          <motion.button className="lp-btn-primary lp-btn-sm" onClick={goClick} whileHover={{ scale: 1.04, y: -1 }} whileTap={{ scale: 0.97 }}>Começar grátis →</motion.button>
+          <motion.button className="lp-btn-ghost lp-btn-sm" onClick={goClick} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>{t('nav.login')}</motion.button>
+          <motion.button className="lp-btn-primary lp-btn-sm" onClick={goClick} whileHover={{ scale: 1.04, y: -1 }} whileTap={{ scale: 0.97 }}>{t('nav.cta')}</motion.button>
         </motion.div>
 
         <button className="lp-nav-mobile" onClick={() => setMenuOpen(v => !v)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 8 }}>
@@ -598,11 +579,11 @@ export default function LandingPage() {
             transition={{ duration: 0.25 }}
             style={{ position: 'fixed', top: 64, left: 0, right: 0, zIndex: 99, background: 'rgba(4,4,14,0.97)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '24px 24px 32px', display: 'flex', flexDirection: 'column', gap: 18 }}
           >
-            {['Recursos', 'Como funciona', 'Preços', 'FAQ'].map(l => (
-              <span key={l} style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setMenuOpen(false)}>{l}</span>
+            {NAV_ITEMS.map(({ label, target }) => (
+              <span key={target} style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => scrollTo(target)}>{label}</span>
             ))}
             <motion.button className="lp-btn-primary" onClick={() => { goClick(); setMenuOpen(false) }} style={{ marginTop: 8 }} whileTap={{ scale: 0.97 }}>
-              Começar grátis <ArrowRight size={16} />
+              {t('nav.cta_mobile')} <ArrowRight size={16} />
             </motion.button>
           </motion.div>
         )}
@@ -628,11 +609,11 @@ export default function LandingPage() {
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.28)', borderRadius: 100, fontSize: 11, color: '#93c5fd', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 40 }}
             >
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: BLUE, animation: 'pulse 2s infinite', boxShadow: `0 0 6px ${BLUE}` }} />
-              Life Operating System
+              {t('hero.badge')}
             </motion.div>
 
             <h1 style={{ fontSize: 'clamp(42px, 5.8vw, 88px)', fontWeight: 900, lineHeight: 0.98, letterSpacing: '-0.038em', marginBottom: 28 }}>
-              {HERO_WORDS.map((word, i) => (
+              {heroWords.map((word, i) => (
                 <motion.span
                   key={i}
                   initial={{ opacity: 0, y: 72, filter: 'blur(12px)' }}
@@ -640,7 +621,7 @@ export default function LandingPage() {
                   transition={{ duration: 1.2, delay: 0.3 + i * 0.1, ease: 'easeOut' as const }}
                   style={{
                     display: 'inline-block', marginRight: '0.28em',
-                    ...(i === 5 ? { background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}),
+                    ...(i === heroWords.length - 1 ? { background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}),
                   }}
                 >
                   {word}
@@ -654,7 +635,7 @@ export default function LandingPage() {
               transition={{ duration: 0.9, delay: 1.0 }}
               style={{ fontSize: 17, color: 'rgba(255,255,255,0.68)', lineHeight: 1.82, maxWidth: 430, marginBottom: 24, fontWeight: 300 }}
             >
-              Hábitos, finanças, saúde, foco e inteligência artificial — unificados em um número que mede o quanto você está operando no seu potencial máximo.
+              {t('hero.subtitle')}
             </motion.p>
 
             <motion.div
@@ -663,7 +644,11 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 1.1 }}
               style={{ marginBottom: 36 }}
             >
-              <KineticTicker />
+              <KineticTicker
+                words={tickerWords}
+                prefix={t('ticker.prefix')}
+                suffix={t('ticker.suffix')}
+              />
             </motion.div>
 
             <motion.div
@@ -673,10 +658,10 @@ export default function LandingPage() {
               style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 52 }}
             >
               <motion.button className="lp-btn-primary" onClick={goClick} style={{ fontSize: 15, padding: '16px 36px' }} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}>
-                Começar grátis — 15 dias <ArrowRight size={16} />
+                {t('hero.cta')} <ArrowRight size={16} />
               </motion.button>
               <motion.button className="lp-btn-ghost" onClick={goClick} whileHover={{ scale: 1.04, borderColor: 'rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.75)' }} whileTap={{ scale: 0.97 }}>
-                Ver demo
+                {t('hero.demo')}
               </motion.button>
             </motion.div>
 
@@ -687,9 +672,9 @@ export default function LandingPage() {
               style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}
             >
               <div style={{ display: 'flex' }}>
-                {['LF', 'MC', 'RO', 'PA', 'JS'].map((av, i) => (
-                  <div key={av} style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg,${i%2===0?BLUE:PURPLE},${i%2===0?CYAN:BLUE})`, border: '2px solid rgba(4,4,14,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', marginLeft: i > 0 ? -8 : 0, zIndex: 5 - i }}>
-                    {av}
+                {testimonials.slice(0, 5).map((tv, i) => (
+                  <div key={tv.avatar} style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg,${i%2===0?BLUE:PURPLE},${i%2===0?CYAN:BLUE})`, border: '2px solid rgba(4,4,14,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', marginLeft: i > 0 ? -8 : 0, zIndex: 5 - i }}>
+                    {tv.avatar}
                   </div>
                 ))}
               </div>
@@ -697,10 +682,10 @@ export default function LandingPage() {
                 <div style={{ display: 'flex', gap: 2, marginBottom: 2 }}>
                   {Array.from({ length: 5 }, (_, i) => <Star key={i} size={11} fill={AMBER} color={AMBER} />)}
                 </div>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>+2.400 usuários · 4.9/5</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>{t('hero.proof')}</span>
               </div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', borderLeft: '1px solid rgba(255,255,255,0.08)', paddingLeft: 20 }}>
-                Sem cobrança agora · Cancele quando quiser
+                {t('hero.no_charge')}
               </div>
             </motion.div>
           </div>
@@ -743,9 +728,13 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', marginBottom: 10 }}>Seu Life Score hoje</div>
-                    <span style={{ fontSize: 11, color: GREEN, background: 'rgba(16,185,129,0.1)', padding: '2px 9px', borderRadius: 4, display: 'inline-block', marginBottom: 12 }}>↑ +3.2 vs ontem</span>
-                    {[['Hábitos','88%',BLUE],['Foco','72%',CYAN],['Saúde','65%',GREEN]].map(([l,p,c]) => (
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.22)', marginBottom: 10 }}>{t('hero.dashboard.score_today')}</div>
+                    <span style={{ fontSize: 11, color: GREEN, background: 'rgba(16,185,129,0.1)', padding: '2px 9px', borderRadius: 4, display: 'inline-block', marginBottom: 12 }}>{t('hero.dashboard.score_vs')}</span>
+                    {[
+                      [t('hero.dashboard.bar_habits'), '88%', BLUE],
+                      [t('hero.dashboard.bar_focus'),  '72%', CYAN],
+                      [t('hero.dashboard.bar_health'), '65%', GREEN],
+                    ].map(([l, p, c]) => (
                       <div key={l as string} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', minWidth: 44 }}>{l}</span>
                         <div style={{ flex: 1, height: 2, background: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
@@ -757,8 +746,12 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 18 }}>
-                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Hábitos de hoje</div>
-                  {[{icon: Brain, l:'Meditação 10min', d:true},{icon:BookOpen,l:'Leitura 30min',d:true},{icon:Heart,l:'Treino',d:false}].map(({icon:Icon,l,d}) => (
+                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>{t('hero.dashboard.habits_today')}</div>
+                  {[
+                    { icon: Brain,    l: t('hero.dashboard.habit_1'), d: true  },
+                    { icon: BookOpen, l: t('hero.dashboard.habit_2'), d: true  },
+                    { icon: Heart,    l: t('hero.dashboard.habit_3'), d: false },
+                  ].map(({ icon: Icon, l, d }) => (
                     <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                       <div style={{ width: 18, height: 18, borderRadius: 5, background: d ? BLUE : 'rgba(255,255,255,0.04)', border: `1px solid ${d ? BLUE : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: d ? `0 0 8px rgba(59,130,246,0.5)` : 'none' }}>
                         {d && <Check size={9} color="#fff" strokeWidth={3} />}
@@ -777,9 +770,9 @@ export default function LandingPage() {
               transition={{ delay: 1.2, duration: 1 }}
               style={{ position: 'absolute', top: -36, right: -60, background: 'rgba(8,8,24,0.97)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 24px 70px rgba(0,0,0,0.7), 0 0 24px rgba(245,158,11,0.12)', whiteSpace: 'nowrap', animation: 'float-y 3.2s ease infinite' }}
             >
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 3 }}>Streak atual</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 3 }}>{t('hero.dashboard.streak_label')}</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Zap size={14} fill="#fbbf24" color="#fbbf24" />47 dias
+                <Zap size={14} fill="#fbbf24" color="#fbbf24" />{t('hero.dashboard.streak_value')}
               </div>
             </motion.div>
 
@@ -788,8 +781,8 @@ export default function LandingPage() {
               transition={{ delay: 1.4, duration: 1 }}
               style={{ position: 'absolute', bottom: -24, left: -68, background: 'rgba(8,8,24,0.97)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 24px 70px rgba(0,0,0,0.7)', whiteSpace: 'nowrap', animation: 'float-y 3.8s 0.4s ease infinite' }}
             >
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 3 }}>Economia este mês</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#34d399' }}>↑ R$ 847</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 3 }}>{t('hero.dashboard.savings_label')}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#34d399' }}>{t('hero.dashboard.savings_value')}</div>
             </motion.div>
 
             <motion.div
@@ -797,8 +790,8 @@ export default function LandingPage() {
               transition={{ delay: 1.6, duration: 1 }}
               style={{ position: 'absolute', top: '36%', left: -84, background: 'rgba(8,8,24,0.97)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 24px 70px rgba(0,0,0,0.7)', maxWidth: 190, animation: 'float-y 2.8s 0.8s ease infinite' }}
             >
-              <div style={{ fontSize: 9, color: PURPLE, marginBottom: 5, fontWeight: 600 }}>IA Insight</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Seu sono melhorou 18% após iniciar meditação diária.</div>
+              <div style={{ fontSize: 9, color: PURPLE, marginBottom: 5, fontWeight: 600 }}>{t('hero.dashboard.ai_label')}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>{t('hero.dashboard.ai_text')}</div>
             </motion.div>
           </div>
         </div>
@@ -810,7 +803,7 @@ export default function LandingPage() {
           style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, animation: 'float-y 3s ease infinite' }}
         >
           <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(59,130,246,0.4), transparent)' }} />
-          <span style={{ fontSize: 9, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.1)' }}>scroll</span>
+          <span style={{ fontSize: 9, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.1)' }}>{t('hero.scroll')}</span>
         </motion.div>
       </section>
 
@@ -823,7 +816,7 @@ export default function LandingPage() {
         <div style={{ display: 'flex', width: 'max-content', animation: 'marquee 28s linear infinite' }}>
           {[0, 1].map(o => (
             <div key={o} style={{ display: 'flex', gap: 56, paddingRight: 56 }}>
-              {MARQUEE.map((item, i) => (
+              {marquee.map((item, i) => (
                 <span key={item} style={{ fontSize: 10, color: i % 3 === 0 ? '#93c5fd' : i % 3 === 1 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)', letterSpacing: '0.15em', textTransform: 'uppercase', whiteSpace: 'nowrap', fontWeight: i % 3 === 0 ? 500 : 400 }}>
                   {item}<span style={{ margin: '0 22px', color: 'rgba(255,255,255,0.04)' }}>·</span>
                 </span>
@@ -843,23 +836,14 @@ export default function LandingPage() {
           style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 60 }}
         >
           <div style={{ width: 28, height: 1, background: 'rgba(59,130,246,0.4)' }} />
-          <Label>Manifesto</Label>
+          <Label>{t('manifesto.label')}</Label>
         </motion.div>
         <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={stagger(0.18)}>
-          {[
-            { text: 'Você não precisa de mais um app de hábitos.', dim: false },
-            { text: 'Você precisa de um sistema.', dim: false },
-            { text: 'Que conecta o que você come', dim: true },
-            { text: 'com o que você produz.', dim: true },
-            { text: 'Que sabe quando você está no seu pico', dim: true },
-            { text: 'e quando está em risco de quebrar.', dim: true },
-            { text: 'Que não te deixa mentir', dim: false },
-            { text: 'para si mesmo.', dim: false },
-          ].map(({ text, dim }, i) => (
+          {manifestoLines.map((text, i) => (
             <motion.p
               key={i}
               variants={fadeUp}
-              style={{ fontSize: 'clamp(26px, 3.8vw, 58px)', fontWeight: dim ? 300 : 900, lineHeight: 1.1, letterSpacing: '-0.028em', color: dim ? 'rgba(255,255,255,0.38)' : 'rgba(255,255,255,0.96)', marginBottom: 6, fontStyle: dim ? 'italic' : 'normal' }}
+              style={{ fontSize: 'clamp(26px, 3.8vw, 58px)', fontWeight: MANIFESTO_DIM[i] ? 300 : 900, lineHeight: 1.1, letterSpacing: '-0.028em', color: MANIFESTO_DIM[i] ? 'rgba(255,255,255,0.38)' : 'rgba(255,255,255,0.96)', marginBottom: 6, fontStyle: MANIFESTO_DIM[i] ? 'italic' : 'normal' }}
             >
               {text}
             </motion.p>
@@ -894,7 +878,6 @@ export default function LandingPage() {
               </defs>
               <circle cx="134" cy="134" r="120" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
               <circle cx="134" cy="134" r="102" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1.5" />
-              {/* Animated arc using FM */}
               <motion.circle
                 cx="134" cy="134" r="102"
                 fill="none" stroke="url(#rg)" strokeWidth="3.5" strokeLinecap="round"
@@ -923,17 +906,17 @@ export default function LandingPage() {
             transition={{ delay: 0.2 }}
             style={{ flex: 1, minWidth: 280 }}
           >
-            <Label>Seu progresso, quantificado</Label>
+            <Label>{t('score_section.label')}</Label>
             <h2 style={{ fontSize: 'clamp(26px, 3vw, 48px)', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.028em', marginBottom: 20 }}>
-              Um número que reflete<br />
-              <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 800 }}>o estado real da sua vida.</span>
+              {t('score_section.heading_1')}<br />
+              <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 800 }}>{t('score_section.heading_2')}</span>
             </h2>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.85, marginBottom: 38, fontWeight: 300 }}>
-              Calculado toda manhã a partir dos seus hábitos, sono, finanças, foco e humor. Não é uma nota — é um espelho.
+              {t('score_section.desc')}
             </p>
             <motion.div initial="hidden" animate={scoreInView ? 'visible' : 'hidden'} variants={stagger(0.1)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {([[BLUE,'30%','Hábitos diários'],[PURPLE,'25%','Tarefas & projetos'],[AMBER,'20%','Streak'],[CYAN,'15%','Sessões de foco'],[GREEN,'10%','Saúde financeira']] as [string, string, string][]).map(([color, pct, label], idx) => (
-                <motion.div key={label} variants={fadeUp} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {([[BLUE,'30%'],[PURPLE,'25%'],[AMBER,'20%'],[CYAN,'15%'],[GREEN,'10%']] as [string, string][]).map(([color, pct], idx) => (
+                <motion.div key={idx} variants={fadeUp} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 36 }}>{pct}</span>
                   <div style={{ flex: 1, height: 2, background: 'rgba(255,255,255,0.05)', borderRadius: 1, overflow: 'hidden' }}>
                     <motion.div
@@ -943,7 +926,7 @@ export default function LandingPage() {
                       style={{ height: '100%', background: color, opacity: 0.6, borderRadius: 1 }}
                     />
                   </div>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', minWidth: 140 }}>{label}</span>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', minWidth: 140 }}>{scoreBars[idx]}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -956,10 +939,10 @@ export default function LandingPage() {
       ══════════════════════════════════════════════════ */}
       <section className="lp-bento" style={{ padding: '100px 48px 120px', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
         <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={fadeUp} style={{ textAlign: 'center', marginBottom: 76 }}>
-          <Label>Módulos</Label>
+          <Label>{t('bento.label')}</Label>
           <h2 style={{ fontSize: 'clamp(30px, 4vw, 60px)', fontWeight: 900, letterSpacing: '-0.032em', lineHeight: 1.02 }}>
-            Tudo integrado.{' '}
-            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Nada isolado.</span>
+            {t('bento.heading')}{' '}
+            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t('bento.heading_accent')}</span>
           </h2>
         </motion.div>
 
@@ -981,15 +964,11 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <div style={{ fontSize: 11, color: PURPLE, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>Central IA</div>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Assistente com contexto completo</div>
+                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>{t('bento.ai_subtitle')}</div>
                   </div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[
-                    { from: 'user', text: 'Por que meu score caiu hoje?' },
-                    { from: 'ai', text: 'Analisando seus dados: você dormiu 5h20 (−42% da meta). Isso reduz sua dimensão de Saúde em 18 pontos. Além disso, 0 hábitos completados. Quer uma rotina de recuperação?' },
-                    { from: 'user', text: 'Sim, me ajuda.' },
-                  ].map((msg, i) => (
+                  {aiChat.map((msg, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'user' ? 'flex-end' : 'flex-start' }}>
                       <div style={{ maxWidth: '85%', padding: '10px 14px', borderRadius: msg.from === 'user' ? '12px 12px 4px 12px' : '12px 12px 12px 4px', background: msg.from === 'user' ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.04)', border: `1px solid ${msg.from === 'user' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.07)'}`, fontSize: 12, color: msg.from === 'user' ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
                         {msg.text}
@@ -998,7 +977,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <div style={{ marginTop: 18, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {['12 Insights hoje', '94% precisão', 'Tempo real'].map(tag => (
+                  {aiTags.map(tag => (
                     <span key={tag} style={{ fontSize: 10, color: PURPLE, background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.18)', borderRadius: 6, padding: '4px 10px' }}>{tag}</span>
                   ))}
                 </div>
@@ -1015,9 +994,9 @@ export default function LandingPage() {
                   <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <BookOpen size={14} color={AMBER} />
                   </div>
-                  <div style={{ fontSize: 11, color: AMBER, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>Hábitos</div>
+                  <div style={{ fontSize: 11, color: AMBER, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>{t('bento.habits_label')}</div>
                 </div>
-                {['Meditação', 'Leitura', 'Exercício', 'Água 2L'].map((h, i) => (
+                {bentoHabits.map((h, i) => (
                   <div key={h} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                     <div style={{ width: 18, height: 18, borderRadius: 5, background: i < 3 ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.03)', border: `1px solid ${i < 3 ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.07)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {i < 3 && <Check size={9} color={AMBER} strokeWidth={3} />}
@@ -1027,8 +1006,8 @@ export default function LandingPage() {
                   </div>
                 ))}
                 <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(245,158,11,0.06)', borderRadius: 10, border: '1px solid rgba(245,158,11,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>Streak</span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: AMBER }}>🔥 47 dias</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{t('bento.streak')}</span>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: AMBER }}>🔥 47 {t('hero.dashboard.streak_value').split(' ')[1] ?? 'dias'}</span>
                 </div>
               </div>
             </BentoCard>
@@ -1043,17 +1022,21 @@ export default function LandingPage() {
                   <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <TrendingUp size={14} color={GREEN} />
                   </div>
-                  <div style={{ fontSize: 11, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>Finanças</div>
+                  <div style={{ fontSize: 11, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>{t('bento.finance_label')}</div>
                 </div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: 4 }}>R$ 8.420</div>
-                <div style={{ fontSize: 11, color: GREEN, marginBottom: 20 }}>↑ +R$ 1.240 este mês</div>
-                {[['Investimentos', '42%', GREEN], ['Gastos fixos', '31%', BLUE], ['Lazer', '15%', PURPLE], ['Poupança', '12%', CYAN]].map(([l, p, c]) => (
-                  <div key={l as string} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: c as string }} />
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', flex: 1 }}>{l}</span>
-                    <span style={{ fontSize: 11, color: c as string, fontWeight: 600 }}>{p}</span>
-                  </div>
-                ))}
+                <div style={{ fontSize: 11, color: GREEN, marginBottom: 20 }}>{t('bento.finance_up')}</div>
+                {finCats.map((l, fi) => {
+                  const colors = [GREEN, BLUE, PURPLE, CYAN]
+                  const pcts   = ['42%', '31%', '15%', '12%']
+                  return (
+                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[fi] }} />
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', flex: 1 }}>{l}</span>
+                      <span style={{ fontSize: 11, color: colors[fi], fontWeight: 600 }}>{pcts[fi]}</span>
+                    </div>
+                  )
+                })}
               </div>
             </BentoCard>
           </motion.div>
@@ -1063,8 +1046,8 @@ export default function LandingPage() {
             <BentoCard style={{ background: 'linear-gradient(145deg,rgba(8,8,22,0.99),rgba(6,6,16,0.99))', border: '1px solid rgba(59,130,246,0.14)', borderRadius: 22, padding: 26, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent)' }} />
               <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%' }}>
-                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 24 }}>Sua semana</div>
-                {TESTIMONIALS.slice(0, 4).map(({ avatar, name, score }, i) => (
+                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 24 }}>{t('bento.week')}</div>
+                {testimonials.slice(0, 4).map(({ avatar, name, score }, i) => (
                   <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                     <div style={{ width: 30, height: 30, borderRadius: '50%', background: `linear-gradient(135deg,${i%2===0?BLUE:PURPLE},${CYAN})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{avatar}</div>
                     <div style={{ flex: 1, textAlign: 'left' }}>
@@ -1077,7 +1060,7 @@ export default function LandingPage() {
                   </div>
                 ))}
                 <div style={{ marginTop: 20, padding: '12px', background: 'rgba(59,130,246,0.06)', borderRadius: 12, border: '1px solid rgba(59,130,246,0.12)' }}>
-                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 6 }}>Seu score médio</div>
+                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', marginBottom: 6 }}>{t('bento.avg_score')}</div>
                   <div style={{ fontSize: 32, fontWeight: 900, color: BLUE, letterSpacing: '-0.04em' }}>82</div>
                 </div>
               </div>
@@ -1093,11 +1076,11 @@ export default function LandingPage() {
                   <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(6,182,212,0.12)', border: '1px solid rgba(6,182,212,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Timer size={14} color={CYAN} />
                   </div>
-                  <div style={{ fontSize: 11, color: CYAN, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>Modo Foco</div>
+                  <div style={{ fontSize: 11, color: CYAN, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 600 }}>{t('bento.focus_label')}</div>
                 </div>
                 <div style={{ textAlign: 'center', padding: '16px 0' }}>
                   <div style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-0.04em', color: '#fff', marginBottom: 4 }}>24:07</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginBottom: 20 }}>Deep Work · Sessão 2/4</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginBottom: 20 }}>{t('bento.focus_session')}</div>
                   <div style={{ width: '100%', height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
                     <div style={{ width: '64%', height: '100%', background: `linear-gradient(90deg,${CYAN},${BLUE})`, borderRadius: 2 }} />
                   </div>
@@ -1113,10 +1096,10 @@ export default function LandingPage() {
       ══════════════════════════════════════════════════ */}
       <section className="lp-how" style={{ padding: '100px 48px', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
         <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={fadeUp} style={{ textAlign: 'center', marginBottom: 80 }}>
-          <Label>Como funciona</Label>
+          <Label>{t('how.label')}</Label>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 56px)', fontWeight: 900, letterSpacing: '-0.03em' }}>
-            Três passos.{' '}
-            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Uma transformação.</span>
+            {t('how.heading')}{' '}
+            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t('how.heading_accent')}</span>
           </h2>
         </motion.div>
         <motion.div
@@ -1125,19 +1108,19 @@ export default function LandingPage() {
           initial="hidden" whileInView="visible" viewport={vp}
           variants={stagger(0.16)}
         >
-          {HOW_STEPS.map(({ num, icon: Icon, title, desc }, i) => (
+          {howSteps.map(({ title, desc }, i) => (
             <motion.div
-              key={num}
+              key={HOW_NUMS[i]}
               variants={fadeUp}
               whileHover={{ y: -6 }}
               transition={{ duration: 0.3 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 22, padding: '36px 28px', position: 'relative', overflow: 'hidden' }}
             >
-              <div style={{ position: 'absolute', top: -30, right: -20, fontSize: 100, fontWeight: 900, color: 'rgba(255,255,255,0.02)', lineHeight: 1, userSelect: 'none' }}>{num}</div>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg,${i===0?'rgba(59,130,246,0.15)':i===1?'rgba(139,92,246,0.15)':'rgba(6,182,212,0.15)'}, rgba(255,255,255,0.03))`, border: `1px solid ${i===0?'rgba(59,130,246,0.25)':i===1?'rgba(139,92,246,0.25)':'rgba(6,182,212,0.25)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-                <Icon size={20} color={i===0?BLUE:i===1?PURPLE:CYAN} />
+              <div style={{ position: 'absolute', top: -30, right: -20, fontSize: 100, fontWeight: 900, color: 'rgba(255,255,255,0.02)', lineHeight: 1, userSelect: 'none' }}>{HOW_NUMS[i]}</div>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: `linear-gradient(135deg,rgba(${i===0?'59,130,246':i===1?'139,92,246':'6,182,212'},0.15), rgba(255,255,255,0.03))`, border: `1px solid rgba(${i===0?'59,130,246':i===1?'139,92,246':'6,182,212'},0.25)`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                {(() => { const Icon = HOW_ICONS[i]; return <Icon size={20} color={HOW_COLORS[i]} /> })()}
               </div>
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', marginBottom: 12 }}>{num}</div>
+              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', marginBottom: 12 }}>{HOW_NUMS[i]}</div>
               <h3 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 12 }}>{title}</h3>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.78, fontWeight: 300 }}>{desc}</p>
             </motion.div>
@@ -1150,9 +1133,9 @@ export default function LandingPage() {
       ══════════════════════════════════════════════════ */}
       <section style={{ padding: '100px 48px', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
         <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={fadeUp} style={{ textAlign: 'center', marginBottom: 72 }}>
-          <Label>Resultados reais</Label>
+          <Label>{t('testimonials.label')}</Label>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 56px)', fontWeight: 900, letterSpacing: '-0.03em' }}>
-            Quem já opera com o{' '}
+            {t('testimonials.heading')}{' '}
             <span className="lp-shimmer">FlowOS.</span>
           </h2>
         </motion.div>
@@ -1162,7 +1145,7 @@ export default function LandingPage() {
           initial="hidden" whileInView="visible" viewport={vp}
           variants={stagger(0.09)}
         >
-          {TESTIMONIALS.map(({ name, role, avatar, text, score }, i) => (
+          {testimonials.map(({ name, role, avatar, text, score }, i) => (
             <motion.div
               key={name}
               variants={fadeUp}
@@ -1193,13 +1176,13 @@ export default function LandingPage() {
       ══════════════════════════════════════════════════ */}
       <section className="lp-pricing" style={{ padding: '100px 48px', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
         <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={fadeUp} style={{ textAlign: 'center', marginBottom: 72 }}>
-          <Label>Planos</Label>
+          <Label>{t('pricing.label')}</Label>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 56px)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 16 }}>
-            Invista no seu{' '}
-            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>sistema de vida.</span>
+            {t('pricing.heading')}{' '}
+            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t('pricing.heading_accent')}</span>
           </h2>
           <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)', maxWidth: 480, margin: '0 auto' }}>
-            15 dias grátis no Starter. Sem cobrança agora. Cancele quando quiser.
+            {t('pricing.trial_note')}
           </p>
         </motion.div>
 
@@ -1209,52 +1192,55 @@ export default function LandingPage() {
           initial="hidden" whileInView="visible" viewport={vp}
           variants={stagger(0.13)}
         >
-          {PLANS.map(({ name, price, priceNote, trial, badge, desc, features, highlight, cta }) => (
-            <motion.div
-              key={name}
-              variants={scaleIn}
-              whileHover={{ y: -10, scale: 1.02 }}
-              transition={{ duration: 0.35, ease: 'easeOut' as const }}
-              className={highlight ? 'lp-grad-border' : ''}
-              style={{
-                padding: '36px 28px',
-                background: highlight ? 'rgba(8,8,24,0.98)' : `linear-gradient(145deg, rgba(10,10,20,0.98), rgba(8,8,16,0.98))`,
-                border: highlight ? 'none' : '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 22, position: 'relative', display: 'flex', flexDirection: 'column',
-                boxShadow: highlight ? '0 0 80px rgba(59,130,246,0.12), 0 0 160px rgba(59,130,246,0.06)' : 'none',
-              }}
-            >
-              {highlight && <div style={{ position: 'absolute', inset: 0, borderRadius: 22, background: 'radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.1), transparent 60%)', pointerEvents: 'none' }} />}
-              {badge && (
-                <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff', background: grad, borderRadius: 100, padding: '4px 18px', whiteSpace: 'nowrap', fontWeight: 600, boxShadow: '0 0 20px rgba(59,130,246,0.4)' }}>{badge}</div>
-              )}
-              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <div style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginBottom: 22 }}>{name}</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 8 }}>
-                  <span style={{ fontSize: 56, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>{price}</span>
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>{priceNote}</span>
+          {plans.map((plan, pi) => {
+            const { highlight } = PLAN_META[pi]
+            return (
+              <motion.div
+                key={plan.name}
+                variants={scaleIn}
+                whileHover={{ y: -10, scale: 1.02 }}
+                transition={{ duration: 0.35, ease: 'easeOut' as const }}
+                className={highlight ? 'lp-grad-border' : ''}
+                style={{
+                  padding: '36px 28px',
+                  background: highlight ? 'rgba(8,8,24,0.98)' : `linear-gradient(145deg, rgba(10,10,20,0.98), rgba(8,8,16,0.98))`,
+                  border: highlight ? 'none' : '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 22, position: 'relative', display: 'flex', flexDirection: 'column',
+                  boxShadow: highlight ? '0 0 80px rgba(59,130,246,0.12), 0 0 160px rgba(59,130,246,0.06)' : 'none',
+                }}
+              >
+                {highlight && <div style={{ position: 'absolute', inset: 0, borderRadius: 22, background: 'radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.1), transparent 60%)', pointerEvents: 'none' }} />}
+                {plan.badge && (
+                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff', background: grad, borderRadius: 100, padding: '4px 18px', whiteSpace: 'nowrap', fontWeight: 600, boxShadow: '0 0 20px rgba(59,130,246,0.4)' }}>{plan.badge}</div>
+                )}
+                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <div style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginBottom: 22 }}>{plan.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 8 }}>
+                    <span style={{ fontSize: 56, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>{plan.price}</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)' }}>{plan.price_note}</span>
+                  </div>
+                  {plan.trial && <div style={{ fontSize: 12, color: GREEN, marginBottom: 8, fontWeight: 500 }}>✓ {plan.trial}</div>}
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, marginBottom: 26, fontWeight: 300 }}>{plan.desc}</p>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                    {plan.features.map(f => (
+                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 300 }}>
+                        <Check size={13} color={highlight ? BLUE : 'rgba(255,255,255,0.2)'} strokeWidth={2.5} style={{ marginTop: 2, flexShrink: 0 }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <motion.button
+                    onClick={goClick}
+                    whileHover={{ opacity: 0.9, scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ width: '100%', padding: '15px', background: highlight ? `linear-gradient(135deg, #3b82f6, #06b6d4)` : 'transparent', border: `1px solid ${highlight ? 'transparent' : 'rgba(255,255,255,0.1)'}`, borderRadius: 12, color: highlight ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: highlight ? 600 : 400, letterSpacing: '0.03em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', boxShadow: highlight ? '0 0 30px rgba(59,130,246,0.35)' : 'none', fontFamily: 'inherit' }}
+                  >
+                    {plan.cta} <ArrowRight size={13} />
+                  </motion.button>
                 </div>
-                {trial && <div style={{ fontSize: 12, color: GREEN, marginBottom: 8, fontWeight: 500 }}>✓ {trial}</div>}
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, marginBottom: 26, fontWeight: 300 }}>{desc}</p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                  {features.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 300 }}>
-                      <Check size={13} color={highlight ? BLUE : 'rgba(255,255,255,0.2)'} strokeWidth={2.5} style={{ marginTop: 2, flexShrink: 0 }} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <motion.button
-                  onClick={goClick}
-                  whileHover={{ opacity: 0.9, scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
-                  style={{ width: '100%', padding: '15px', background: highlight ? `linear-gradient(135deg, #3b82f6, #06b6d4)` : 'transparent', border: `1px solid ${highlight ? 'transparent' : 'rgba(255,255,255,0.1)'}`, borderRadius: 12, color: highlight ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: highlight ? 600 : 400, letterSpacing: '0.03em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', boxShadow: highlight ? '0 0 30px rgba(59,130,246,0.35)' : 'none', fontFamily: 'inherit' }}
-                >
-                  {cta} <ArrowRight size={13} />
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </motion.div>
 
         {/* Comparison table */}
@@ -1264,19 +1250,22 @@ export default function LandingPage() {
           style={{ maxWidth: 860, margin: '0 auto', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, overflow: 'hidden' }}
         >
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', background: 'rgba(255,255,255,0.025)', padding: '16px 28px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Recurso</span>
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('pricing.compare_header')}</span>
             {['Starter', 'Pro', 'Flow+'].map(n => <span key={n} style={{ fontSize: 11, color: n === 'Pro' ? BLUE : 'rgba(255,255,255,0.3)', textAlign: 'center', fontWeight: n === 'Pro' ? 600 : 400 }}>{n}</span>)}
           </div>
-          {COMPARE.map(({ label, s, p, f }, i) => (
-            <div key={label} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', padding: '13px 28px', borderBottom: i < COMPARE.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)', fontWeight: 300 }}>{label}</span>
-              {[s, p, f].map((has, j) => (
-                <div key={j} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  {has ? <Check size={14} color={j === 1 ? BLUE : GREEN} strokeWidth={2.5} /> : <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.08)' }}>–</span>}
-                </div>
-              ))}
-            </div>
-          ))}
+          {compareItems.map(({ label }, i) => {
+            const [s, p, f] = COMPARE_FLAGS[i]
+            return (
+              <div key={label} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', padding: '13px 28px', borderBottom: i < compareItems.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)', fontWeight: 300 }}>{label}</span>
+                {[s, p, f].map((has, j) => (
+                  <div key={j} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    {has ? <Check size={14} color={j === 1 ? BLUE : GREEN} strokeWidth={2.5} /> : <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.08)' }}>–</span>}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
         </motion.div>
       </section>
 
@@ -1286,11 +1275,11 @@ export default function LandingPage() {
       <section className="lp-faq" style={{ padding: '100px 48px', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
           <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={fadeUp} style={{ textAlign: 'center', marginBottom: 68 }}>
-            <Label>FAQ</Label>
-            <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 50px)', fontWeight: 900, letterSpacing: '-0.032em' }}>Perguntas frequentes</h2>
+            <Label>{t('faq.label')}</Label>
+            <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 50px)', fontWeight: 900, letterSpacing: '-0.032em' }}>{t('faq.heading')}</h2>
           </motion.div>
           <motion.div initial="hidden" whileInView="visible" viewport={vp} variants={fadeIn}>
-            <FaqAccordion />
+            <FaqAccordion items={faqs} />
           </motion.div>
         </div>
       </section>
@@ -1308,15 +1297,15 @@ export default function LandingPage() {
         >
           <motion.div variants={fadeIn} style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 36, justifyContent: 'center' }}>
             <div style={{ width: 24, height: 1, background: 'rgba(59,130,246,0.4)' }} />
-            <span style={{ fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>Está pronto?</span>
+            <span style={{ fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>{t('cta_section.ready')}</span>
             <div style={{ width: 24, height: 1, background: 'rgba(59,130,246,0.4)' }} />
           </motion.div>
           <motion.h2
             variants={fadeUp}
             style={{ fontSize: 'clamp(60px, 11vw, 140px)', fontWeight: 900, lineHeight: 0.86, letterSpacing: '-0.048em', marginBottom: 52 }}
           >
-            Comece a<br />
-            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>operar.</span>
+            {t('cta_section.heading')}<br />
+            <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t('cta_section.heading_accent')}</span>
           </motion.h2>
           <motion.button
             variants={scaleIn}
@@ -1326,10 +1315,10 @@ export default function LandingPage() {
             whileHover={{ scale: 1.06, y: -3 }}
             whileTap={{ scale: 0.97 }}
           >
-            Criar conta grátis <ArrowRight size={18} />
+            {t('cta_section.button')} <ArrowRight size={18} />
           </motion.button>
           <motion.p variants={fadeIn} style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
-            15 dias grátis · Sem cobrança agora · Cancele quando quiser
+            {t('cta_section.tagline')}
           </motion.p>
         </motion.div>
       </section>
@@ -1348,26 +1337,26 @@ export default function LandingPage() {
               </div>
               <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>FLOWOS</span>
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', maxWidth: 220, lineHeight: 1.75 }}>O sistema operacional da sua vida. Construído para quem leva o futuro a sério.</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', maxWidth: 220, lineHeight: 1.75 }}>{t('footer.tagline')}</div>
           </div>
           <div style={{ display: 'flex', gap: 48, justifyContent: 'center' }}>
-            {[['Produto', ['Recursos', 'Preços', 'Changelog']], ['Empresa', ['Sobre', 'Blog', 'Carreiras']], ['Suporte', ['Docs', 'FAQ', 'Status']]].map(([section, links]) => (
-              <div key={section as string}>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>{section}</div>
-                {(links as string[]).map(l => (
-                  <motion.div key={l} whileHover={{ color: 'rgba(255,255,255,0.7)' }} style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 10, cursor: 'pointer' }}
-                    onClick={() => navigate(`/${l.toLowerCase()}`)}>{l}</motion.div>
+            {FOOTER_SECTIONS.map(({ key, links }) => (
+              <div key={key}>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>{t(`footer.${key}`)}</div>
+                {links.map(({ key: lk, path }) => (
+                  <motion.div key={lk} whileHover={{ color: 'rgba(255,255,255,0.7)' }} style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 10, cursor: 'pointer' }}
+                    onClick={() => navigate(path)}>{t(`footer.${lk}`)}</motion.div>
                 ))}
               </div>
             ))}
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.1)', marginBottom: 8 }}>© 2026 FlowOS</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.07)' }}>Todos os direitos reservados</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.1)', marginBottom: 8 }}>{t('footer.copyright')}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.07)' }}>{t('footer.rights')}</div>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 18, flexWrap: 'wrap' }}>
-              {[['Privacidade', '/privacidade'], ['Termos', '/termos'], ['Cookies', '/cookies']].map(([l, href]) => (
-                <motion.span key={l} whileHover={{ color: 'rgba(255,255,255,0.6)' }} style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', cursor: 'pointer' }}
-                  onClick={() => navigate(href as string)}>{l}</motion.span>
+              {LEGAL_LINKS.map(({ key, path }) => (
+                <motion.span key={key} whileHover={{ color: 'rgba(255,255,255,0.6)' }} style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', cursor: 'pointer' }}
+                  onClick={() => navigate(path)}>{t(`footer.${key}`)}</motion.span>
               ))}
             </div>
           </div>

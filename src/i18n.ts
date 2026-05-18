@@ -12,6 +12,7 @@ import ptBRHabits from './locales/pt-BR/habits.json'
 import ptBRFinance from './locales/pt-BR/finance.json'
 import ptBRProfile from './locales/pt-BR/profile.json'
 import ptBRPricing from './locales/pt-BR/pricing.json'
+import ptBRLanding from './locales/pt-BR/landing.json'
 
 // EN-US
 import enUSCommon from './locales/en-US/common.json'
@@ -23,6 +24,7 @@ import enUSHabits from './locales/en-US/habits.json'
 import enUSFinance from './locales/en-US/finance.json'
 import enUSProfile from './locales/en-US/profile.json'
 import enUSPricing from './locales/en-US/pricing.json'
+import enUSLanding from './locales/en-US/landing.json'
 
 i18n
   .use(LanguageDetector)
@@ -42,6 +44,7 @@ i18n
         finance: ptBRFinance,
         profile: ptBRProfile,
         pricing: ptBRPricing,
+        landing: ptBRLanding,
       },
       'en-US': {
         common: enUSCommon,
@@ -53,6 +56,7 @@ i18n
         finance: enUSFinance,
         profile: enUSProfile,
         pricing: enUSPricing,
+        landing: enUSLanding,
       },
     },
     detection: {

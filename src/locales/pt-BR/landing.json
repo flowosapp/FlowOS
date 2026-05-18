@@ -1,0 +1,196 @@
+{
+  "nav": {
+    "features": "Recursos",
+    "how": "Como funciona",
+    "pricing": "Preços",
+    "faq": "FAQ",
+    "login": "Entrar",
+    "cta": "Começar grátis →",
+    "cta_mobile": "Começar grátis"
+  },
+  "hero": {
+    "badge": "Life Operating System",
+    "words": ["Opere", "sua", "vida", "como", "um", "sistema."],
+    "subtitle": "Hábitos, finanças, saúde, foco e inteligência artificial — unificados em um número que mede o quanto você está operando no seu potencial máximo.",
+    "cta": "Começar grátis — 15 dias",
+    "demo": "Ver demo",
+    "proof": "+2.400 usuários · 4.9/5",
+    "no_charge": "Sem cobrança agora · Cancele quando quiser",
+    "dashboard": {
+      "score_today": "Seu Life Score hoje",
+      "score_vs": "↑ +3.2 vs ontem",
+      "bar_habits": "Hábitos",
+      "bar_focus": "Foco",
+      "bar_health": "Saúde",
+      "habits_today": "Hábitos de hoje",
+      "habit_1": "Meditação 10min",
+      "habit_2": "Leitura 30min",
+      "habit_3": "Treino",
+      "streak_label": "Streak atual",
+      "streak_value": "47 dias",
+      "savings_label": "Economia este mês",
+      "savings_value": "↑ R$ 847",
+      "ai_label": "IA Insight",
+      "ai_text": "Seu sono melhorou 18% após iniciar meditação diária."
+    },
+    "scroll": "scroll"
+  },
+  "ticker": {
+    "prefix": "Sistema para",
+    "suffix": "e mais.",
+    "words": ["hábitos", "finanças", "saúde", "foco", "sono", "energia", "metas"]
+  },
+  "marquee": ["Life Score", "Hábitos", "Inteligência Artificial", "Finanças", "Modo Foco", "Saúde", "Crescimento", "Sono", "Produtividade", "Streaks", "Metas", "Bem-estar"],
+  "manifesto": {
+    "label": "Manifesto",
+    "lines": [
+      "Você não precisa de mais um app de hábitos.",
+      "Você precisa de um sistema.",
+      "Que conecta o que você come",
+      "com o que você produz.",
+      "Que sabe quando você está no seu pico",
+      "e quando está em risco de quebrar.",
+      "Que não te deixa mentir",
+      "para si mesmo."
+    ]
+  },
+  "score_section": {
+    "label": "Seu progresso, quantificado",
+    "heading_1": "Um número que reflete",
+    "heading_2": "o estado real da sua vida.",
+    "desc": "Calculado toda manhã a partir dos seus hábitos, sono, finanças, foco e humor. Não é uma nota — é um espelho.",
+    "breakdown": ["Hábitos diários", "Tarefas & projetos", "Streak", "Sessões de foco", "Saúde financeira"]
+  },
+  "bento": {
+    "label": "Módulos",
+    "heading": "Tudo integrado.",
+    "heading_accent": "Nada isolado.",
+    "ai_subtitle": "Assistente com contexto completo",
+    "ai_tags": ["12 Insights hoje", "94% precisão", "Tempo real"],
+    "ai_chat": [
+      { "from": "user", "text": "Por que meu score caiu hoje?" },
+      { "from": "ai",   "text": "Analisando seus dados: você dormiu 5h20 (−42% da meta). Isso reduz sua dimensão de Saúde em 18 pontos. Além disso, 0 hábitos completados. Quer uma rotina de recuperação?" },
+      { "from": "user", "text": "Sim, me ajuda." }
+    ],
+    "habits_label": "Hábitos",
+    "habits": ["Meditação", "Leitura", "Exercício", "Água 2L"],
+    "streak": "Streak",
+    "finance_label": "Finanças",
+    "finance_up": "↑ +R$ 1.240 este mês",
+    "finance_cats": ["Investimentos", "Gastos fixos", "Lazer", "Poupança"],
+    "week": "Sua semana",
+    "avg_score": "Seu score médio",
+    "focus_label": "Modo Foco",
+    "focus_session": "Deep Work · Sessão 2/4"
+  },
+  "how": {
+    "label": "Como funciona",
+    "heading": "Três passos.",
+    "heading_accent": "Uma transformação.",
+    "steps": [
+      { "title": "Conecte sua vida", "desc": "Registre hábitos, finanças, sono e sessões de foco. O FlowOS estrutura tudo em um sistema unificado e inteligente." },
+      { "title": "A IA aprende com você", "desc": "Em dias, a Central IA identifica padrões e correlações que você nunca perceberia sozinho — entre sono, produtividade e finanças." },
+      { "title": "Opere em modo elite", "desc": "Com o Life Score como bússola, cada decisão passa a ser guiada por dados reais da sua vida. Não por intuição." }
+    ]
+  },
+  "testimonials": {
+    "label": "Resultados reais",
+    "heading": "Quem já opera com o",
+    "items": [
+      { "name": "Lucas Ferreira", "role": "CTO · Startup de Fintech", "avatar": "LF", "text": "Em 3 semanas meu Life Score saiu de 42 para 78. O FlowOS conecta produtividade com saúde de forma que nenhum outro app consegue.", "score": 78 },
+      { "name": "Mariana Costa", "role": "Product Manager · Scale-up", "avatar": "MC", "text": "A Central IA entende meu contexto real. Ela sabe que quando durmo mal minha produtividade cai — e me avisa antes de acontecer.", "score": 85 },
+      { "name": "Rafael Oliveira", "role": "Empreendedor Serial", "avatar": "RO", "text": "Testei 11 apps nos últimos 2 anos. O FlowOS é o primeiro que cria hábito real. Meu streak de 60 dias fala por si só.", "score": 91 },
+      { "name": "Juliana Santos", "role": "Designer · Agência Criativa", "avatar": "JS", "text": "Finalmente um app bonito que também funciona. O Modo Foco com o Life Score dobrou minha produtividade criativa.", "score": 72 },
+      { "name": "Pedro Alves", "role": "Engenheiro de Software", "avatar": "PA", "text": "Controle financeiro integrado com hábitos foi um game-changer. Economizei R$2.400 no primeiro mês com os insights da IA.", "score": 88 },
+      { "name": "Ana Lima", "role": "Médica · Residência", "avatar": "AL", "text": "Como médica com 12h/dia de trabalho, o FlowOS me ajuda a manter saúde mental e física em equilíbrio. O módulo de sono é preciso.", "score": 83 }
+    ]
+  },
+  "pricing": {
+    "label": "Planos",
+    "heading": "Invista no seu",
+    "heading_accent": "sistema de vida.",
+    "trial_note": "15 dias grátis no Starter. Sem cobrança agora. Cancele quando quiser.",
+    "compare_header": "Recurso",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "R$ 29",
+        "price_note": "/mês",
+        "trial": "15 dias grátis",
+        "desc": "Para quem quer começar com o essencial e sentir o poder de um sistema de vida.",
+        "features": ["Dashboard + Life Score", "Hábitos e Projetos ilimitados", "Modo Foco (Pomodoro)", "Finanças básicas", "App mobile (PWA)", "Suporte por e-mail"],
+        "cta": "Começar grátis"
+      },
+      {
+        "name": "Pro",
+        "price": "R$ 49",
+        "price_note": "/mês",
+        "badge": "Mais popular",
+        "desc": "Para quem leva a sério e quer IA desbloqueada com análises profundas da sua vida.",
+        "features": ["Tudo do Starter", "Central IA ilimitada", "Finanças avançadas + metas", "Relatórios semanais com IA", "Saúde & Sono avançados", "Suporte prioritário"],
+        "cta": "Assinar Pro"
+      },
+      {
+        "name": "Flow+",
+        "price": "R$ 129",
+        "price_note": "/mês",
+        "desc": "Para high-performers que exigem o máximo de tecnologia, controle e suporte dedicado.",
+        "features": ["Tudo do Pro", "IA avançada (Gemini 3.1 Pro)", "Múltiplos perfis/famílias", "Acesso à API pública", "Onboarding 1:1 personalizado", "SLA de suporte dedicado"],
+        "cta": "Falar com time"
+      }
+    ],
+    "compare": [
+      { "label": "Life Score diário" },
+      { "label": "Hábitos ilimitados" },
+      { "label": "Modo Foco (Pomodoro)" },
+      { "label": "Finanças básicas" },
+      { "label": "Central IA" },
+      { "label": "Finanças avançadas + metas" },
+      { "label": "Relatórios semanais IA" },
+      { "label": "Saúde avançada + HRV" },
+      { "label": "Gemini 3.1 Pro (IA premium)" },
+      { "label": "Múltiplos perfis" },
+      { "label": "Acesso à API" },
+      { "label": "Onboarding 1:1" }
+    ]
+  },
+  "faq": {
+    "label": "FAQ",
+    "heading": "Perguntas frequentes",
+    "items": [
+      { "q": "Como funciona o período de teste gratuito?", "a": "Você tem 15 dias completos do plano Starter com acesso total. Um cartão de crédito é necessário para ativar o trial — mas nenhum valor é cobrado agora. No D+15 você escolhe continuar ou cancelar, sem cobranças surpresa." },
+      { "q": "O FlowOS funciona offline?", "a": "Sim. O FlowOS é um PWA com cache inteligente. Você pode registrar hábitos, sessões de foco e transações sem internet. Os dados sincronizam automaticamente quando a conexão retorna." },
+      { "q": "Meus dados ficam seguros?", "a": "Todos os dados são criptografados em trânsito e em repouso via Supabase com Row Level Security. Nunca vendemos dados para terceiros. Você pode exportar ou deletar tudo a qualquer momento." },
+      { "q": "Como o Life Score é calculado?", "a": "O Life Score (0-100) é calculado diariamente: Hábitos 30% + Tarefas & Projetos 25% + Streak 20% + Sessões de Foco 15% + Saúde Financeira 10%." },
+      { "q": "Posso migrar de plano a qualquer momento?", "a": "Sim, upgrade ou downgrade a qualquer momento. Upgrades têm efeito imediato com crédito proporcional. Sem taxas de cancelamento." },
+      { "q": "A Central IA usa qual modelo?", "a": "O plano Pro usa Gemini 3.1 Flash Lite — rápido, eficiente e muito capaz para análises do dia a dia. O Flow+ usa Gemini 3.1 Pro — o modelo mais avançado do Google, com raciocínio profundo e análises estratégicas de longo prazo." }
+    ]
+  },
+  "cta_section": {
+    "ready": "Está pronto?",
+    "heading": "Comece a",
+    "heading_accent": "operar.",
+    "button": "Criar conta grátis",
+    "tagline": "15 dias grátis · Sem cobrança agora · Cancele quando quiser"
+  },
+  "footer": {
+    "tagline": "O sistema operacional da sua vida. Construído para quem leva o futuro a sério.",
+    "copyright": "© 2026 FlowOS",
+    "rights": "Todos os direitos reservados",
+    "product": "Produto",
+    "company": "Empresa",
+    "support": "Suporte",
+    "features": "Recursos",
+    "pricing": "Preços",
+    "changelog": "Changelog",
+    "about": "Sobre",
+    "blog": "Blog",
+    "careers": "Carreiras",
+    "docs": "Docs",
+    "faq": "FAQ",
+    "status": "Status",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "cookies": "Cookies"
+  }
+}

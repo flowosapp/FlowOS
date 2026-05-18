@@ -1,0 +1,196 @@
+{
+  "nav": {
+    "features": "Features",
+    "how": "How it works",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "login": "Log in",
+    "cta": "Start free →",
+    "cta_mobile": "Start free"
+  },
+  "hero": {
+    "badge": "Life Operating System",
+    "words": ["Run", "your", "life", "like", "a", "system."],
+    "subtitle": "Habits, finance, health, focus, and AI — unified into a single number that measures how much you're operating at your full potential.",
+    "cta": "Start free — 15 days",
+    "demo": "See demo",
+    "proof": "+2,400 users · 4.9/5",
+    "no_charge": "No charge now · Cancel anytime",
+    "dashboard": {
+      "score_today": "Your Life Score today",
+      "score_vs": "↑ +3.2 vs yesterday",
+      "bar_habits": "Habits",
+      "bar_focus": "Focus",
+      "bar_health": "Health",
+      "habits_today": "Today's habits",
+      "habit_1": "Meditation 10min",
+      "habit_2": "Reading 30min",
+      "habit_3": "Workout",
+      "streak_label": "Current streak",
+      "streak_value": "47 days",
+      "savings_label": "Savings this month",
+      "savings_value": "↑ $210",
+      "ai_label": "AI Insight",
+      "ai_text": "Your sleep improved 18% after starting daily meditation."
+    },
+    "scroll": "scroll"
+  },
+  "ticker": {
+    "prefix": "System for",
+    "suffix": "and more.",
+    "words": ["habits", "finance", "health", "focus", "sleep", "energy", "goals"]
+  },
+  "marquee": ["Life Score", "Habits", "Artificial Intelligence", "Finance", "Focus Mode", "Health", "Growth", "Sleep", "Productivity", "Streaks", "Goals", "Wellbeing"],
+  "manifesto": {
+    "label": "Manifesto",
+    "lines": [
+      "You don't need another habit app.",
+      "You need a system.",
+      "One that connects what you eat",
+      "to what you produce.",
+      "That knows when you're at your peak",
+      "and when you're at risk of breaking.",
+      "That won't let you lie",
+      "to yourself."
+    ]
+  },
+  "score_section": {
+    "label": "Your progress, quantified",
+    "heading_1": "A number that reflects",
+    "heading_2": "the real state of your life.",
+    "desc": "Calculated every morning from your habits, sleep, finances, focus, and mood. Not a grade — a mirror.",
+    "breakdown": ["Daily habits", "Tasks & projects", "Streak", "Focus sessions", "Financial health"]
+  },
+  "bento": {
+    "label": "Modules",
+    "heading": "All integrated.",
+    "heading_accent": "Nothing isolated.",
+    "ai_subtitle": "Assistant with full context",
+    "ai_tags": ["12 Insights today", "94% accuracy", "Real-time"],
+    "ai_chat": [
+      { "from": "user", "text": "Why did my score drop today?" },
+      { "from": "ai",   "text": "Analyzing your data: you slept 5h20 (−42% of goal). This reduces your Health dimension by 18 points. Also, 0 habits completed. Want a recovery routine?" },
+      { "from": "user", "text": "Yes, help me." }
+    ],
+    "habits_label": "Habits",
+    "habits": ["Meditation", "Reading", "Exercise", "Water 2L"],
+    "streak": "Streak",
+    "finance_label": "Finance",
+    "finance_up": "↑ +$310 this month",
+    "finance_cats": ["Investments", "Fixed costs", "Leisure", "Savings"],
+    "week": "Your week",
+    "avg_score": "Your average score",
+    "focus_label": "Focus Mode",
+    "focus_session": "Deep Work · Session 2/4"
+  },
+  "how": {
+    "label": "How it works",
+    "heading": "Three steps.",
+    "heading_accent": "One transformation.",
+    "steps": [
+      { "title": "Connect your life", "desc": "Log habits, finances, sleep, and focus sessions. FlowOS structures everything into a unified, intelligent system." },
+      { "title": "The AI learns from you", "desc": "Within days, the AI Hub identifies patterns and correlations you'd never notice alone — between sleep, productivity, and finances." },
+      { "title": "Operate in elite mode", "desc": "With the Life Score as your compass, every decision is guided by real data from your life. Not intuition." }
+    ]
+  },
+  "testimonials": {
+    "label": "Real results",
+    "heading": "Who already runs on",
+    "items": [
+      { "name": "Alex Morgan", "role": "CTO · Fintech Startup", "avatar": "AM", "text": "In 3 weeks my Life Score went from 42 to 78. FlowOS connects productivity with health in ways no other app can.", "score": 78 },
+      { "name": "Sarah Chen", "role": "Product Manager · Scale-up", "avatar": "SC", "text": "The AI Hub understands my real context. It knows that when I sleep badly my productivity drops — and warns me before it happens.", "score": 85 },
+      { "name": "Ryan Davis", "role": "Serial Entrepreneur", "avatar": "RD", "text": "I tried 11 apps in the last 2 years. FlowOS is the first that builds real habits. My 60-day streak speaks for itself.", "score": 91 },
+      { "name": "Julia Park", "role": "Designer · Creative Agency", "avatar": "JP", "text": "Finally a beautiful app that actually works. Focus Mode with the Life Score doubled my creative productivity.", "score": 72 },
+      { "name": "Mike Torres", "role": "Software Engineer", "avatar": "MT", "text": "Finance tracking integrated with habits was a game-changer. I saved $600 in the first month with AI insights.", "score": 88 },
+      { "name": "Emma Wilson", "role": "Doctor · Residency", "avatar": "EW", "text": "As a doctor working 12h/day, FlowOS helps me maintain mental and physical balance. The sleep module is incredibly accurate.", "score": 83 }
+    ]
+  },
+  "pricing": {
+    "label": "Pricing",
+    "heading": "Invest in your",
+    "heading_accent": "life system.",
+    "trial_note": "15-day free trial on Starter. No charge now. Cancel anytime.",
+    "compare_header": "Feature",
+    "plans": [
+      {
+        "name": "Starter",
+        "price": "$9",
+        "price_note": "/month",
+        "trial": "15-day free trial",
+        "desc": "For those who want to start with the essentials and feel the power of a life system.",
+        "features": ["Dashboard + Life Score", "Unlimited habits & projects", "Focus Mode (Pomodoro)", "Basic finance", "Mobile app (PWA)", "Email support"],
+        "cta": "Start free"
+      },
+      {
+        "name": "Pro",
+        "price": "$19",
+        "price_note": "/month",
+        "badge": "Most popular",
+        "desc": "For those who are serious and want unlocked AI with deep analysis of your life.",
+        "features": ["Everything in Starter", "Unlimited AI Hub", "Advanced finance + goals", "Weekly AI reports", "Advanced health & sleep", "Priority support"],
+        "cta": "Subscribe Pro"
+      },
+      {
+        "name": "Flow+",
+        "price": "$49",
+        "price_note": "/month",
+        "desc": "For high-performers who demand maximum technology, control and dedicated support.",
+        "features": ["Everything in Pro", "Advanced AI (Gemini 3.1 Pro)", "Multiple profiles/families", "Public API access", "Personalized 1:1 onboarding", "Dedicated support SLA"],
+        "cta": "Talk to team"
+      }
+    ],
+    "compare": [
+      { "label": "Daily Life Score" },
+      { "label": "Unlimited habits" },
+      { "label": "Focus Mode (Pomodoro)" },
+      { "label": "Basic finance" },
+      { "label": "AI Hub" },
+      { "label": "Advanced finance + goals" },
+      { "label": "Weekly AI reports" },
+      { "label": "Advanced health + HRV" },
+      { "label": "Gemini 3.1 Pro (premium AI)" },
+      { "label": "Multiple profiles" },
+      { "label": "API access" },
+      { "label": "1:1 Onboarding" }
+    ]
+  },
+  "faq": {
+    "label": "FAQ",
+    "heading": "Frequently asked questions",
+    "items": [
+      { "q": "How does the free trial work?", "a": "You get 15 full days of the Starter plan with full access. A credit card is required to activate the trial — but nothing is charged now. On day 15, you choose to continue or cancel, no surprise charges." },
+      { "q": "Does FlowOS work offline?", "a": "Yes. FlowOS is a PWA with smart caching. You can log habits, focus sessions, and transactions without internet. Data syncs automatically when the connection returns." },
+      { "q": "Is my data secure?", "a": "All data is encrypted in transit and at rest via Supabase with Row Level Security. We never sell data to third parties. You can export or delete everything at any time." },
+      { "q": "How is the Life Score calculated?", "a": "The Life Score (0-100) is calculated daily: Habits 30% + Tasks & Projects 25% + Streak 20% + Focus Sessions 15% + Financial Health 10%." },
+      { "q": "Can I change plans at any time?", "a": "Yes, upgrade or downgrade anytime. Upgrades take effect immediately with proportional credit. No cancellation fees." },
+      { "q": "Which AI model does the AI Hub use?", "a": "The Pro plan uses Gemini 3.1 Flash Lite — fast, efficient and very capable for everyday analysis. Flow+ uses Gemini 3.1 Pro — Google's most advanced model, with deep reasoning and long-term strategic analysis." }
+    ]
+  },
+  "cta_section": {
+    "ready": "Ready?",
+    "heading": "Start",
+    "heading_accent": "operating.",
+    "button": "Create free account",
+    "tagline": "15-day free trial · No charge now · Cancel anytime"
+  },
+  "footer": {
+    "tagline": "The operating system for your life. Built for those who take the future seriously.",
+    "copyright": "© 2026 FlowOS",
+    "rights": "All rights reserved",
+    "product": "Product",
+    "company": "Company",
+    "support": "Support",
+    "features": "Features",
+    "pricing": "Pricing",
+    "changelog": "Changelog",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "docs": "Docs",
+    "faq": "FAQ",
+    "status": "Status",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies"
+  }
+}
