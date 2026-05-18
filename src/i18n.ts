@@ -56,10 +56,11 @@ i18n
       },
     },
     detection: {
-      // Detecta neste ordem: localStorage → navigator.language → htmlTag
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      // querystring (?lng=en-US) sobrepõe tudo — útil para testes e links diretos
+      order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
       lookupLocalStorage: 'flowos-lang',
+      lookupQuerystring: 'lng',
     },
     interpolation: {
       escapeValue: false, // React já escapa por padrão
