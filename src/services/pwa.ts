@@ -59,7 +59,7 @@ export async function subscribePush(userId?: string): Promise<PushSubscription |
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     })
     const json = sub.toJSON() as { endpoint: string; keys?: { p256dh?: string; auth?: string } }
-    await fetch('/api/push/subscribe', {
+    await fetch('/api/push?action=subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...json, userId }),
@@ -82,7 +82,7 @@ export async function unsubscribePush(): Promise<void> {
   if (!sub) return
   const endpoint = sub.endpoint
   await sub.unsubscribe()
-  await fetch('/api/push/unsubscribe', {
+  await fetch('/api/push?action=unsubscribe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ endpoint }),
