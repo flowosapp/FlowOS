@@ -248,7 +248,7 @@ export default function App() {
       <UpdatePrompt />
       <CookieBanner />
       {installModal}
-      <Suspense fallback={<SkeletonDashboard />}>
+      <Suspense fallback={<div style={{ background: '#04040e', minHeight: '100vh' }} />}>
       <Routes>
         {/* Páginas públicas acessíveis mesmo logado */}
         <Route path="/" element={<LandingPage />} />

@@ -7,7 +7,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
-    // Faz upload de source maps para o Sentry apenas no build de produção
     mode === 'production' && sentryVitePlugin({
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -16,8 +15,22 @@ export default defineConfig(({ mode }) => ({
     }),
   ].filter(Boolean),
   build: {
-    // Source maps necessários para o Sentry mapear erros ao código original
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('framer-motion'))                           return 'vendor-motion'
+          if (id.includes('recharts') || id.includes('/d3-'))         return 'vendor-charts'
+          if (id.includes('@supabase'))                               return 'vendor-supabase'
+          if (id.includes('i18next') || id.includes('react-i18next')) return 'vendor-i18n'
+          if (id.includes('@sentry'))                                 return 'vendor-sentry'
+          if (id.includes('@stripe'))                                 return 'vendor-stripe'
+          if (id.includes('react-dom') || id.includes('react-router') ||
+              (id.includes('/react/') && !id.includes('react-i18next'))) return 'vendor-react'
+        },
+      },
+    },
   },
   server: {
     port: 5174,

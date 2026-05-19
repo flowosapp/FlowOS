@@ -28,6 +28,9 @@ export function initAnalytics() {
       maskTextSelector: '.ph-mask',
       blockSelector: '.ph-no-capture',
     },
+    // Desativa scripts extras do PostHog que impactam performance (43KB)
+    disable_surveys: true,
+    enable_heatmaps: false,
   })
 }
 
