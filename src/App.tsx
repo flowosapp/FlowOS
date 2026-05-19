@@ -12,8 +12,8 @@ import AppLayout from './components/AppLayout'
 import OfflineBanner from './components/OfflineBanner'
 import UpdatePrompt from './components/UpdatePrompt'
 import { SkeletonDashboard } from './components/Skeleton'
+import LandingPage from './pages/LandingPage'
 // Lazy-loaded pages — cada rota vira um chunk separado no build
-const LandingPage      = lazy(() => import('./pages/LandingPage'))
 const LoginPage        = lazy(() => import('./pages/LoginPage'))
 const OnboardingPage   = lazy(() => import('./pages/OnboardingPage'))
 const DashboardPage    = lazy(() => import('./pages/DashboardPage'))
@@ -39,6 +39,9 @@ const PrecosPage       = lazy(() => import('./pages/PrecosPage'))
 import { CookieBanner } from './components/CookieBanner'
 import { Sentry } from './services/sentry'
 import { ErrorFallback } from './components/ErrorFallback'
+
+const PUBLIC_PATHS = ['/', '/precos', '/sobre', '/blog', '/carreiras', '/docs',
+  '/changelog', '/status', '/privacidade', '/termos', '/cookies', '/contrato']
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null)
@@ -209,7 +212,7 @@ export default function App() {
     </div>
   )
 
-  if (authLoading) {
+  if (authLoading && !PUBLIC_PATHS.includes(window.location.pathname)) {
     return (
       <div style={{ height: '100%', background: 'var(--bg-primary)', overflow: 'hidden' }}>
         <SkeletonDashboard />
@@ -219,21 +222,23 @@ export default function App() {
 
   if (isSupabaseConfigured && !user) {
     return (
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/sobre" element={<SobrePage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/carreiras" element={<CarreirasPage />} />
-        <Route path="/docs" element={<DocsPage />} />
-        <Route path="/changelog" element={<ChangelogPage />} />
-        <Route path="/status" element={<StatusPage />} />
-        <Route path="/privacidade" element={<PrivacidadePage />} />
-        <Route path="/termos" element={<TermosPage />} />
-        <Route path="/cookies" element={<CookiesPage />} />
-        <Route path="/contrato" element={<ContratoPage />} />
-        <Route path="/precos" element={<PrecosPage />} />
-        <Route path="*" element={<LoginPage />} />
-      </Routes>
+      <Suspense fallback={<div style={{ background: '#04040e', minHeight: '100vh' }} />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/sobre" element={<SobrePage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/carreiras" element={<CarreirasPage />} />
+          <Route path="/docs" element={<DocsPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/status" element={<StatusPage />} />
+          <Route path="/privacidade" element={<PrivacidadePage />} />
+          <Route path="/termos" element={<TermosPage />} />
+          <Route path="/cookies" element={<CookiesPage />} />
+          <Route path="/contrato" element={<ContratoPage />} />
+          <Route path="/precos" element={<PrecosPage />} />
+          <Route path="*" element={<LoginPage />} />
+        </Routes>
+      </Suspense>
     )
   }
 
