@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import type { User } from '@supabase/supabase-js'
 import { Smartphone, X, Download } from 'lucide-react'
@@ -12,29 +12,30 @@ import AppLayout from './components/AppLayout'
 import OfflineBanner from './components/OfflineBanner'
 import UpdatePrompt from './components/UpdatePrompt'
 import { SkeletonDashboard } from './components/Skeleton'
-import LandingPage from './pages/LandingPage'
-import LoginPage from './pages/LoginPage'
-import OnboardingPage from './pages/OnboardingPage'
-import DashboardPage from './pages/DashboardPage'
-import AIPage from './pages/AIPage'
-import HabitsPage from './pages/HabitsPage'
-import ProjectsPage from './pages/ProjectsPage'
-import FinancePage from './pages/FinancePage'
-import FocusPage from './pages/FocusPage'
-import ProfilePage from './pages/ProfilePage'
-import SaudePage from './pages/SaudePage'
-import CrescimentoPage from './pages/CrescimentoPage'
-import SobrePage from './pages/public/SobrePage'
-import BlogPage from './pages/public/BlogPage'
-import CarreirasPage from './pages/public/CarreirasPage'
-import DocsPage from './pages/public/DocsPage'
-import ChangelogPage from './pages/public/ChangelogPage'
-import StatusPage from './pages/public/StatusPage'
-import PrivacidadePage from './pages/public/PrivacidadePage'
-import TermosPage from './pages/public/TermosPage'
-import CookiesPage from './pages/public/CookiesPage'
-import ContratoPage from './pages/public/ContratoPage'
-import PrecosPage from './pages/PrecosPage'
+// Lazy-loaded pages — cada rota vira um chunk separado no build
+const LandingPage      = lazy(() => import('./pages/LandingPage'))
+const LoginPage        = lazy(() => import('./pages/LoginPage'))
+const OnboardingPage   = lazy(() => import('./pages/OnboardingPage'))
+const DashboardPage    = lazy(() => import('./pages/DashboardPage'))
+const AIPage           = lazy(() => import('./pages/AIPage'))
+const HabitsPage       = lazy(() => import('./pages/HabitsPage'))
+const ProjectsPage     = lazy(() => import('./pages/ProjectsPage'))
+const FinancePage      = lazy(() => import('./pages/FinancePage'))
+const FocusPage        = lazy(() => import('./pages/FocusPage'))
+const ProfilePage      = lazy(() => import('./pages/ProfilePage'))
+const SaudePage        = lazy(() => import('./pages/SaudePage'))
+const CrescimentoPage  = lazy(() => import('./pages/CrescimentoPage'))
+const SobrePage        = lazy(() => import('./pages/public/SobrePage'))
+const BlogPage         = lazy(() => import('./pages/public/BlogPage'))
+const CarreirasPage    = lazy(() => import('./pages/public/CarreirasPage'))
+const DocsPage         = lazy(() => import('./pages/public/DocsPage'))
+const ChangelogPage    = lazy(() => import('./pages/public/ChangelogPage'))
+const StatusPage       = lazy(() => import('./pages/public/StatusPage'))
+const PrivacidadePage  = lazy(() => import('./pages/public/PrivacidadePage'))
+const TermosPage       = lazy(() => import('./pages/public/TermosPage'))
+const CookiesPage      = lazy(() => import('./pages/public/CookiesPage'))
+const ContratoPage     = lazy(() => import('./pages/public/ContratoPage'))
+const PrecosPage       = lazy(() => import('./pages/PrecosPage'))
 import { CookieBanner } from './components/CookieBanner'
 import { Sentry } from './services/sentry'
 import { ErrorFallback } from './components/ErrorFallback'
@@ -247,6 +248,7 @@ export default function App() {
       <UpdatePrompt />
       <CookieBanner />
       {installModal}
+      <Suspense fallback={<SkeletonDashboard />}>
       <Routes>
         {/* Páginas públicas acessíveis mesmo logado */}
         <Route path="/" element={<LandingPage />} />
@@ -333,6 +335,7 @@ export default function App() {
           </>
         } />
       </Routes>
+      </Suspense>
     </AuthContext.Provider>
     </Sentry.ErrorBoundary>
   )
