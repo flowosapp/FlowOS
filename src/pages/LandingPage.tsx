@@ -617,9 +617,9 @@ export default function LandingPage() {
               {heroWords.map((word, i) => (
                 <motion.span
                   key={i}
-                  initial={{ opacity: 0, y: 72, filter: 'blur(12px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  transition={{ duration: 1.2, delay: 0.3 + i * 0.1, ease: 'easeOut' as const }}
+                  initial={{ opacity: 1, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.1 + i * 0.07, ease: 'easeOut' as const }}
                   style={{
                     display: 'inline-block', marginRight: '0.28em',
                     ...(i === heroWords.length - 1 ? { background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}),
