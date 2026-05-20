@@ -13,6 +13,11 @@ import OfflineBanner from './components/OfflineBanner'
 import UpdatePrompt from './components/UpdatePrompt'
 import { SkeletonDashboard } from './components/Skeleton'
 import LandingPage from './pages/LandingPage'
+import LaunchPage from './pages/LaunchPage'
+
+const LAUNCH_DATE = new Date('2026-06-08T00:00:00-03:00')
+const isPreLaunch = () => Date.now() < LAUNCH_DATE.getTime()
+
 // Lazy-loaded pages — cada rota vira um chunk separado no build
 const LoginPage        = lazy(() => import('./pages/LoginPage'))
 const OnboardingPage   = lazy(() => import('./pages/OnboardingPage'))
@@ -224,7 +229,7 @@ export default function App() {
     return (
       <Suspense fallback={<div style={{ background: '#04040e', minHeight: '100vh' }} />}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={isPreLaunch() ? <LaunchPage /> : <LandingPage />} />
           <Route path="/sobre" element={<SobrePage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/carreiras" element={<CarreirasPage />} />
