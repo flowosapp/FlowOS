@@ -28,7 +28,7 @@ export function PublicShell({ children }: PublicShellProps) {
         .pub-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 48px 0; }
       `}</style>
 
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, padding: '14px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(4,4,14,0.92)', backdropFilter: 'blur(24px) saturate(1.5)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, padding: '14px clamp(20px, 5vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(4,4,14,0.92)', backdropFilter: 'blur(24px) saturate(1.5)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#fff', padding: 0 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: grad, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(59,130,246,0.4)' }}>
             <Zap size={12} color="#fff" fill="#fff" />
@@ -45,11 +45,11 @@ export function PublicShell({ children }: PublicShellProps) {
         </button>
       </nav>
 
-      <main style={{ maxWidth: 900, margin: '0 auto', padding: '72px 48px 120px' }}>
+      <main style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(40px, 6vw, 72px) clamp(20px, 5vw, 48px) 120px' }}>
         {children}
       </main>
 
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '28px 48px', textAlign: 'center' }}>
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '28px clamp(20px, 5vw, 48px)', textAlign: 'center' }}>
         <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.1)' }}>© 2026 FlowOS</p>
       </footer>
     </div>

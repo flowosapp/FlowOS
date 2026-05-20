@@ -6,8 +6,7 @@ const grad = 'linear-gradient(135deg, #3b82f6, #06b6d4)'
 const SERVICES = [
   { name: 'Dashboard & App',      status: 'operational', uptime: '99.98%' },
   { name: 'API pública',          status: 'operational', uptime: '99.94%' },
-  { name: 'Central IA (Sonnet)',  status: 'operational', uptime: '99.91%' },
-  { name: 'Central IA (Opus)',    status: 'operational', uptime: '99.87%' },
+  { name: 'Central IA (Gemini)',  status: 'operational', uptime: '99.91%' },
   { name: 'Sincronização offline',status: 'operational', uptime: '99.99%' },
   { name: 'Autenticação',         status: 'operational', uptime: '100.0%' },
   { name: 'Webhooks',             status: 'operational', uptime: '99.82%' },
@@ -58,12 +57,14 @@ export default function StatusPage() {
         {SERVICES.map(({ name, status, uptime }) => {
           const info = statusInfo[status as keyof typeof statusInfo]
           return (
-            <div key={name} style={{ display: 'flex', alignItems: 'center', padding: '16px 24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12 }}>
-              <span style={{ flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>{name}</span>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginRight: 20 }}>{uptime} uptime (30d)</span>
-              <span style={{ fontSize: 11, color: info.color, background: info.bg, border: `1px solid ${info.border}`, borderRadius: 6, padding: '3px 10px', fontWeight: 600, letterSpacing: '0.05em' }}>
-                {info.label}
-              </span>
+            <div key={name} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px 0', padding: '14px 20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12 }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: 'rgba(255,255,255,0.75)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>{uptime}</span>
+                <span style={{ fontSize: 11, color: info.color, background: info.bg, border: `1px solid ${info.border}`, borderRadius: 6, padding: '3px 10px', fontWeight: 600, letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                  {info.label}
+                </span>
+              </div>
             </div>
           )
         })}

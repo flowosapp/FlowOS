@@ -41,7 +41,7 @@ const HOW_COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4']
 const HOW_NUMS   = ['01', '02', '03']
 
 const FOOTER_SECTIONS = [
-  { key: 'product', links: [{ key: 'features', path: '/features' }, { key: 'pricing', path: '/pricing' }, { key: 'changelog', path: '/changelog' }] },
+  { key: 'product', links: [{ key: 'features', path: '/#features' }, { key: 'pricing', path: '/precos' }, { key: 'changelog', path: '/changelog' }] },
   { key: 'company', links: [{ key: 'about', path: '/sobre' }, { key: 'blog', path: '/blog' }, { key: 'careers', path: '/carreiras' }] },
   { key: 'support', links: [{ key: 'docs', path: '/docs' }, { key: 'faq', path: '#faq' }, { key: 'status', path: '/status' }] },
 ]

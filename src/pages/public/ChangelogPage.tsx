@@ -4,7 +4,20 @@ const grad = 'linear-gradient(135deg, #3b82f6, #06b6d4)'
 
 const RELEASES = [
   {
-    version: 'v0.9.2', date: '12 mai 2026', badge: 'Mais recente', badgeColor: '#10b981',
+    version: 'v1.0.0', date: '8 jun 2026', badge: 'Lançamento oficial', badgeColor: '#3b82f6',
+    changes: [
+      { type: 'new',  text: 'Lançamento público do FlowOS — Life Operating System disponível para todos' },
+      { type: 'new',  text: 'Life Score v3: cálculo em tempo real com hábitos (30%), tarefas (25%), streak (20%), foco (15%) e finanças (10%)' },
+      { type: 'new',  text: 'Central IA com Gemini 2.0 Flash: contexto completo do usuário, insights personalizados por histórico' },
+      { type: 'new',  text: 'PWA completo: funciona offline, sincronização automática ao reconectar, instalável na tela inicial' },
+      { type: 'new',  text: 'Push notifications: alertas de hábitos, streaks em risco e relatório semanal de Life Score' },
+      { type: 'new',  text: 'Planos Starter (R$29,90), Pro (R$49,90) e Flow+ (R$249,90) com 15 dias grátis no Starter' },
+      { type: 'imp',  text: 'Performance: LCP abaixo de 2,5s, score Lighthouse 75+ em mobile' },
+      { type: 'imp',  text: 'i18n completo: interface disponível em Português e Inglês' },
+    ],
+  },
+  {
+    version: 'v0.9.2', date: '12 mai 2026', badge: '', badgeColor: '',
     changes: [
       { type: 'new',  text: 'Modo Foco: detecção automática de queda de atenção com sugestão de pausa estratégica' },
       { type: 'new',  text: 'Dashboard: novo widget de tendência semanal do Life Score com spark-line' },
