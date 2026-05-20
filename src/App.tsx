@@ -16,7 +16,7 @@ import LandingPage from './pages/LandingPage'
 import LaunchPage from './pages/LaunchPage'
 
 const LAUNCH_DATE = new Date('2026-06-08T00:00:00-03:00')
-const isPreLaunch = () => Date.now() < LAUNCH_DATE.getTime()
+const isPreLaunch = () => !import.meta.env.DEV && Date.now() < LAUNCH_DATE.getTime()
 
 // Lazy-loaded pages — cada rota vira um chunk separado no build
 const LoginPage        = lazy(() => import('./pages/LoginPage'))
