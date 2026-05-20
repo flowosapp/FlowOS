@@ -485,6 +485,8 @@ function TabAlimentacao() {
   const atualizarAgua = useFlowStore(s => s.atualizarAgua)
   const adicionarMensagem = useFlowStore(s => s.adicionarMensagem)
   const perfil = useFlowStore(s => s.perfil)
+  const sessoesTreino = useFlowStore(s => s.sessoesTreino)
+  const planoTreino = useFlowStore(s => s.planoTreino)
 
   const h = hoje()
   const registroHoje = registrosAlimentacao.find(r => r.data === h)
@@ -504,10 +506,23 @@ function TabAlimentacao() {
 
   function handleSolicitarCardapio() {
     const nome = perfil?.nome ?? 'usuário'
-    const rest = restricoes.length > 0 ? `Restrições: ${restricoes.join(', ')}.` : ''
+    const rest = restricoes.length > 0 ? `Restrições alimentares: ${restricoes.join(', ')}.` : ''
     const pref = preferencias ? `Preferências/paladar: ${preferencias}.` : ''
     const refeicoes = Object.entries(REFEICOES_CONFIG).map(([, c]) => c.label).join(', ')
-    const prompt = `Monte um cardápio saudável e gostoso para hoje, ${nome}. ${rest} ${pref} O cardápio deve incluir: ${refeicoes}. Seja específico com os alimentos, quantidades e uma estimativa de calorias por refeição. Foque em praticidade e nutrição de alta performance.`
+
+    // Contexto de treino dos últimos 3 dias
+    const hoje3 = Array.from({ length: 3 }, (_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0]
+    })
+    const treinosRecentes = sessoesTreino.filter(s => hoje3.includes(s.data))
+    const treinoCtx = treinosRecentes.length > 0
+      ? `Treinos recentes (últimos 3 dias): ${treinosRecentes.map(s => `${s.nome} (${s.kcalTotal} kcal queimadas em ${new Date(s.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short' })})`).join(', ')}.`
+      : ''
+    const objetivoCtx = planoTreino
+      ? `Objetivo de treino: ${({ hipertrofia: 'hipertrofia muscular', forca: 'ganho de força', emagrecimento: 'emagrecimento', condicionamento: 'condicionamento físico' })[planoTreino.objetivo]}.`
+      : ''
+
+    const prompt = `Monte um cardápio saudável e gostoso para hoje, ${nome}. ${rest} ${pref} ${treinoCtx} ${objetivoCtx} O cardápio deve incluir: ${refeicoes}. Adapte as quantidades de proteína e carboidratos considerando os treinos recentes e o objetivo. Seja específico com alimentos, quantidades e estimativa de calorias por refeição. Foque em praticidade e nutrição de alta performance.`
     adicionarMensagem('usuario', prompt)
     setShowIAModal(false)
     navigate('/ia')

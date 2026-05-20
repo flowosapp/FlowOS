@@ -1,3 +1,10 @@
+## seedance skill
+
+- **seedance** (`.claude/skills/seedance/SKILL.md`) — geração de prompts 中文 para Seedance 2.0 (即梦) no CapCut Pro. Trigger: `/seedance`
+When the user types `/seedance`, invoke the Skill tool with `skill: "seedance"` before doing anything else.
+
+---
+
 ## graphify RAG system
 
 The knowledge graph at `D:\dev\FlowOS_prototype\graphify-out\` is the primary RAG index for this codebase. Use it before touching any source file.

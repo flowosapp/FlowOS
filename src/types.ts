@@ -153,11 +153,50 @@ export interface Livro {
   dataFim?: string
   avaliacao?: 1 | 2 | 3 | 4 | 5
   notas?: string
+  pdfUrl?: string
 }
 
 // ─── Conhecimento ─────────────────────────────────────────────────────────────
 
 export type StatusCurso = 'ativo' | 'pausado' | 'concluido'
+
+// ─── Faculdade ───────────────────────────────────────────────────────────────
+
+export interface NotaFaculdade {
+  id: string
+  nome: string       // ex: "P1", "P2", "Trabalho Final"
+  valor: number      // 0–10
+  peso?: number      // peso percentual para média ponderada
+  data?: string
+}
+
+export interface TrabalhoFaculdade {
+  id: string
+  titulo: string
+  dataEntrega: string
+  entregue: boolean
+  nota?: number
+}
+
+export type StatusMateria = 'cursando' | 'aprovado' | 'reprovado' | 'trancado'
+
+export interface MateriaFaculdade {
+  id: string
+  nome: string
+  professor?: string
+  cargaHoraria?: number
+  notas: NotaFaculdade[]
+  trabalhos: TrabalhoFaculdade[]
+  status: StatusMateria
+}
+
+export interface SemestreFaculdade {
+  id: string
+  numero: number
+  ano: number
+  materias: MateriaFaculdade[]
+  ativo: boolean
+}
 
 export interface Curso {
   id: string
@@ -168,6 +207,9 @@ export interface Curso {
   status: StatusCurso
   notas?: string
   dataInicio?: string
+  dataFim?: string
+  tipo?: 'curso' | 'faculdade'
+  semestres?: SemestreFaculdade[]
 }
 
 export interface NotaAprendizado {
@@ -440,6 +482,17 @@ export interface FlowState {
   removerCurso: (id: string) => void
   adicionarNota: (nota: Omit<NotaAprendizado, 'id'>) => void
   removerNota: (id: string) => void
+
+  // Faculdade
+  adicionarSemestre: (cursoId: string, semestre: Omit<SemestreFaculdade, 'id'>) => void
+  removerSemestre: (cursoId: string, semestreId: string) => void
+  adicionarMateria: (cursoId: string, semestreId: string, materia: Omit<MateriaFaculdade, 'id'>) => void
+  atualizarMateria: (cursoId: string, semestreId: string, materiaId: string, dados: Partial<MateriaFaculdade>) => void
+  removerMateria: (cursoId: string, semestreId: string, materiaId: string) => void
+  adicionarNotaMateria: (cursoId: string, semestreId: string, materiaId: string, nota: Omit<NotaFaculdade, 'id'>) => void
+  removerNotaMateria: (cursoId: string, semestreId: string, materiaId: string, notaId: string) => void
+  adicionarTrabalhoMateria: (cursoId: string, semestreId: string, materiaId: string, trabalho: Omit<TrabalhoFaculdade, 'id'>) => void
+  toggleTrabalhoEntregue: (cursoId: string, semestreId: string, materiaId: string, trabalhoId: string) => void
 
   // Metas
   adicionarMeta: (meta: Omit<Meta, 'id'>) => void

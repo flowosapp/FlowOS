@@ -778,6 +778,91 @@ export const useFlowStore = create<FlowState>()(
       })),
       removerNota: (id) => set(s => ({ notasAprendizado: s.notasAprendizado.filter(n => n.id !== id) })),
 
+      // Faculdade
+      adicionarSemestre: (cursoId, semestre) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: [...(c.semestres ?? []), { ...semestre, id: uid() }],
+        }),
+      })),
+      removerSemestre: (cursoId, semestreId) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).filter(s => s.id !== semestreId),
+        }),
+      })),
+      adicionarMateria: (cursoId, semestreId, materia) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: [...sem.materias, { ...materia, id: uid() }],
+          }),
+        }),
+      })),
+      atualizarMateria: (cursoId, semestreId, materiaId, dados) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: sem.materias.map(m => m.id !== materiaId ? m : { ...m, ...dados }),
+          }),
+        }),
+      })),
+      removerMateria: (cursoId, semestreId, materiaId) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: sem.materias.filter(m => m.id !== materiaId),
+          }),
+        }),
+      })),
+      adicionarNotaMateria: (cursoId, semestreId, materiaId, nota) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: sem.materias.map(m => m.id !== materiaId ? m : {
+              ...m, notas: [...m.notas, { ...nota, id: uid() }],
+            }),
+          }),
+        }),
+      })),
+      removerNotaMateria: (cursoId, semestreId, materiaId, notaId) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: sem.materias.map(m => m.id !== materiaId ? m : {
+              ...m, notas: m.notas.filter(n => n.id !== notaId),
+            }),
+          }),
+        }),
+      })),
+      adicionarTrabalhoMateria: (cursoId, semestreId, materiaId, trabalho) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: sem.materias.map(m => m.id !== materiaId ? m : {
+              ...m, trabalhos: [...m.trabalhos, { ...trabalho, id: uid() }],
+            }),
+          }),
+        }),
+      })),
+      toggleTrabalhoEntregue: (cursoId, semestreId, materiaId, trabalhoId) => set(s => ({
+        cursos: s.cursos.map(c => c.id !== cursoId ? c : {
+          ...c,
+          semestres: (c.semestres ?? []).map(sem => sem.id !== semestreId ? sem : {
+            ...sem,
+            materias: sem.materias.map(m => m.id !== materiaId ? m : {
+              ...m, trabalhos: m.trabalhos.map(t => t.id !== trabalhoId ? t : { ...t, entregue: !t.entregue }),
+            }),
+          }),
+        }),
+      })),
+
       // Metas
       adicionarMeta: (meta) => set(s => ({ metas: [{ ...meta, id: uid() }, ...s.metas] })),
       atualizarMeta: (id, dados) => set(s => ({
