@@ -1,19 +1,11 @@
 import { useState, useRef, useEffect, useContext, type KeyboardEvent } from 'react'
 import { useFlowStore } from '../store'
+import { useTranslation } from 'react-i18next'
 import { Send, Sparkles, Trash2, Zap } from 'lucide-react'
 import { track, Events } from '../services/analytics'
 import { AuthContext } from '../contexts/AuthContext'
 
 const API_URL = (import.meta.env.VITE_FLOWOS_API_URL as string | undefined) ?? ''
-
-const SUGESTOES = [
-  'Organize meu dia para máxima produtividade',
-  'Analise minha situação financeira',
-  'Me ajude a criar uma rotina matinal',
-  'No que devo me focar esta semana?',
-  'Revise minha consistência de hábitos',
-  'Crie um desafio de 30 dias para mim',
-]
 
 function construirResposta(query: string, state: ReturnType<typeof useFlowStore.getState>): string {
   const q = query.toLowerCase()
@@ -231,11 +223,14 @@ Estou aqui para te ajudar a rodar sua vida como um sistema.`
 }
 
 export default function AIPage() {
+  const { t } = useTranslation('ai')
   const user = useContext(AuthContext)
   const mensagens = useFlowStore(s => s.mensagens)
   const adicionarMensagem = useFlowStore(s => s.adicionarMensagem)
   const limparMensagens = useFlowStore(s => s.limparMensagens)
   const perfil = useFlowStore(s => s.perfil)
+
+  const SUGESTOES = t('suggestions', { returnObjects: true }) as string[]
 
   const [input, setInput] = useState('')
   const [carregando, setCarregando] = useState(false)
@@ -322,14 +317,14 @@ export default function AIPage() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
             <Sparkles size={18} color="var(--purple)" />
-            <h1 style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>Central de IA</h1>
+            <h1 style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>{t('page_title')}</h1>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Inteligência contextual para o seu sistema de vida</p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{t('page_subtitle')}</p>
         </div>
         {mensagens.length > 0 && (
           <button className="btn-ghost" onClick={limparMensagens} style={{ gap: 6, fontSize: 13, padding: '7px 12px' }}>
             <Trash2 size={14} />
-            Limpar
+            {t('clear')}
           </button>
         )}
       </div>
@@ -343,10 +338,10 @@ export default function AIPage() {
                 <Sparkles size={28} color="#fff" />
               </div>
               <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8, letterSpacing: '-0.02em' }}>
-                Como posso te ajudar{perfil?.nome ? `, ${perfil.nome}` : ''}?
+                {t('greeting', { name: perfil?.nome ? `, ${perfil.nome}` : '' })}
               </h2>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 380, margin: '0 auto' }}>
-                Tenho contexto completo dos seus hábitos, tarefas, projetos e finanças. Pergunte qualquer coisa.
+                {t('context_hint')}
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxWidth: 640, margin: '0 auto' }}>
@@ -401,7 +396,7 @@ export default function AIPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Pergunte qualquer coisa... (Enter para enviar, Shift+Enter para nova linha)"
+            placeholder={t('placeholder')}
             rows={1}
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 14, resize: 'none', lineHeight: 1.5, maxHeight: 120, overflow: 'auto' }}
           />
@@ -412,8 +407,8 @@ export default function AIPage() {
         </div>
         <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 8, textAlign: 'center' }}>
           {API_URL
-            ? `Powered by ${activeModel ?? 'Gemini'} · contexto completo do seu FLOWOS`
-            : 'A IA do FLOWOS conhece seus hábitos, tarefas, projetos e finanças.'}
+            ? t('powered_api', { model: activeModel ?? 'Gemini' })
+            : t('powered_local')}
         </p>
       </div>
 

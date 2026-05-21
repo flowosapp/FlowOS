@@ -1,0 +1,18 @@
+{
+  "page_title": "Central de IA",
+  "page_subtitle": "Inteligência contextual para o seu sistema de vida",
+  "clear": "Limpar",
+  "greeting": "Como posso te ajudar{{name}}?",
+  "context_hint": "Tenho contexto completo dos seus hábitos, tarefas, projetos e finanças. Pergunte qualquer coisa.",
+  "placeholder": "Pergunte qualquer coisa... (Enter para enviar, Shift+Enter para nova linha)",
+  "powered_api": "Powered by {{model}} · contexto completo do seu FLOWOS",
+  "powered_local": "A IA do FLOWOS conhece seus hábitos, tarefas, projetos e finanças.",
+  "suggestions": [
+    "Organize meu dia para máxima produtividade",
+    "Analise minha situação financeira",
+    "Me ajude a criar uma rotina matinal",
+    "No que devo me focar esta semana?",
+    "Revise minha consistência de hábitos",
+    "Crie um desafio de 30 dias para mim"
+  ]
+}

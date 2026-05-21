@@ -1,0 +1,11 @@
+{
+  "page_title": "Focus Mode",
+  "sessions_one": "{{count}} session today",
+  "sessions_other": "{{count}} sessions today",
+  "mode_focus": "Focus",
+  "mode_short_break": "Short Break",
+  "mode_long_break": "Long Break",
+  "working_on": "Working on",
+  "all_tasks_done": "🎉 All tasks completed!",
+  "close_distractions": "Close all distractions. One thing at a time."
+}

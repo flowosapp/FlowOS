@@ -1,0 +1,11 @@
+{
+  "page_title": "Modo Foco",
+  "sessions_one": "{{count}} sessão hoje",
+  "sessions_other": "{{count}} sessões hoje",
+  "mode_focus": "Foco",
+  "mode_short_break": "Pausa Curta",
+  "mode_long_break": "Pausa Longa",
+  "working_on": "Trabalhando em",
+  "all_tasks_done": "🎉 Todas as tarefas concluídas!",
+  "close_distractions": "Feche todas as distrações. Uma coisa de cada vez."
+}

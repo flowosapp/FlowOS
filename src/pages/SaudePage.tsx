@@ -6,6 +6,7 @@ import {
   BarChart2, Timer, Flame, UserCheck, Trophy, RefreshCw, ChevronRight,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore } from '../store'
 import { agendarAlarmeViaSW, cancelarAlarmeViaSW, requestNotificationPermission, getNotificationPermission } from '../services/pwa'
 import type { QualidadeSono, TipoRefeicao, NivelHumor, CategoriaExercicio, DiaSemana, ItemSessao, ObjetivoTreino, NivelTreino, EquipamentoTreino } from '../types'
@@ -147,22 +148,24 @@ function ProgressBar({ value, color = 'var(--accent)', height = 4 }: { value: nu
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 type Tab = 'sono' | 'alimentacao' | 'saude' | 'treino' | 'trainer'
-const TABS: { id: Tab; icon: typeof Moon; label: string }[] = [
-  { id: 'sono',        icon: Moon,      label: 'Sono' },
-  { id: 'alimentacao', icon: Utensils,  label: 'Alimentação' },
-  { id: 'saude',       icon: Heart,     label: 'Saúde' },
-  { id: 'treino',      icon: Dumbbell,  label: 'Treino' },
-  { id: 'trainer',     icon: UserCheck, label: 'Personal' },
-]
 
 export default function SaudePage() {
+  const { t } = useTranslation('saude')
   const [tab, setTab] = useState<Tab>('sono')
+
+  const TABS: { id: Tab; icon: typeof Moon; label: string }[] = [
+    { id: 'sono',        icon: Moon,      label: t('tab_sleep') },
+    { id: 'alimentacao', icon: Utensils,  label: t('tab_nutrition') },
+    { id: 'saude',       icon: Heart,     label: t('tab_health') },
+    { id: 'treino',      icon: Dumbbell,  label: t('tab_workout') },
+    { id: 'trainer',     icon: UserCheck, label: t('tab_trainer') },
+  ]
 
   return (
     <div className="page-container animate-in">
       <div className="page-header">
-        <h1 className="page-title">Saúde & Bem-estar</h1>
-        <p className="page-subtitle">Sono, alimentação, saúde e performance física em um só lugar.</p>
+        <h1 className="page-title">{t('page_title')}</h1>
+        <p className="page-subtitle">{t('page_subtitle')}</p>
       </div>
 
       <div style={{ display: 'flex', gap: 3, marginBottom: 24, padding: 4, width: 'fit-content', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10 }}>

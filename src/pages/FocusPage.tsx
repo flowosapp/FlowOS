@@ -1,15 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
 import { useFlowStore } from '../store'
+import { useTranslation } from 'react-i18next'
 import { Play, Pause, RotateCcw, CheckCircle2, Target, Zap } from 'lucide-react'
 
-const MODOS = [
-  { label: 'Foco',        duracao: 25, cor: '#3b82f6', glow: 'rgba(59,130,246,0.2)'  },
-  { label: 'Pausa Curta', duracao: 5,  cor: '#10b981', glow: 'rgba(16,185,129,0.2)'  },
-  { label: 'Pausa Longa', duracao: 15, cor: '#8b5cf6', glow: 'rgba(139,92,246,0.2)' },
-]
 type ModoKey = 0 | 1 | 2
 
 export default function FocusPage() {
+  const { t } = useTranslation('focus')
+
+  const MODOS = [
+    { label: t('mode_focus'),       duracao: 25, cor: '#3b82f6', glow: 'rgba(59,130,246,0.2)'  },
+    { label: t('mode_short_break'), duracao: 5,  cor: '#10b981', glow: 'rgba(16,185,129,0.2)'  },
+    { label: t('mode_long_break'),  duracao: 15, cor: '#8b5cf6', glow: 'rgba(139,92,246,0.2)' },
+  ]
+
   const tarefas        = useFlowStore(s => s.tarefas)
   const focosHoje      = useFlowStore(s => s.focosHoje)
   const incrementarFoco = useFlowStore(s => s.incrementarFoco)
@@ -68,10 +72,10 @@ export default function FocusPage() {
         <div style={{ textAlign: 'center', marginBottom: 30 }} className="animate-in">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
             <Target size={17} color={modo.cor} style={{ filter: `drop-shadow(0 0 5px ${modo.cor})` }}/>
-            <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.03em' }}>Modo Foco</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.03em' }}>{t('page_title')}</h1>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-1)' }}>
-            {total2} {total2 === 1 ? 'sessão' : 'sessões'} hoje
+            {t(total2 === 1 ? 'sessions_one' : 'sessions_other', { count: total2 })}
           </p>
         </div>
 
@@ -101,7 +105,6 @@ export default function FocusPage() {
         {/* Timer ring */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 38 }}>
           <div style={{ position: 'relative', width: 280, height: 280 }}>
-            {/* Outer ambient glow */}
             {rodando && (
               <div style={{
                 position: 'absolute', inset: -12, borderRadius: '50%',
@@ -112,11 +115,8 @@ export default function FocusPage() {
             )}
 
             <svg width="280" height="280" style={{ transform: 'rotate(-90deg)' }}>
-              {/* secondary glow ring */}
               <circle cx="140" cy="140" r="120" fill="none" stroke={`${modo.cor}10`} strokeWidth="14"/>
-              {/* track */}
               <circle cx="140" cy="140" r="120" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6"/>
-              {/* progress */}
               <circle cx="140" cy="140" r="120" fill="none"
                 stroke={modo.cor} strokeWidth="6" strokeLinecap="round"
                 strokeDasharray={C} strokeDashoffset={offset}
@@ -196,24 +196,24 @@ export default function FocusPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 11 }}>
             <Zap size={13} color={modo.cor} style={{ filter: `drop-shadow(0 0 4px ${modo.cor})` }}/>
             <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Trabalhando em
+              {t('working_on')}
             </span>
           </div>
           {tarefas.filter(t => !t.concluida).length === 0 ? (
-            <div style={{ fontSize: 14, color: 'var(--text-2)', textAlign: 'center', padding: '8px 0' }}>🎉 Todas as tarefas concluídas!</div>
+            <div style={{ fontSize: 14, color: 'var(--text-2)', textAlign: 'center', padding: '8px 0' }}>{t('all_tasks_done')}</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {tarefas.filter(t => !t.concluida).slice(0, 5).map(t => (
-                <button key={t.id} onClick={() => setTarefaSel(t.id)} style={{
+              {tarefas.filter(tk => !tk.concluida).slice(0, 5).map(tk => (
+                <button key={tk.id} onClick={() => setTarefaSel(tk.id)} style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '8px 11px',
-                  background: tarefaSel === t.id ? `${modo.cor}12` : 'rgba(255,255,255,0.02)',
-                  border: `1px solid ${tarefaSel === t.id ? `${modo.cor}40` : 'var(--border-0)'}`,
+                  background: tarefaSel === tk.id ? `${modo.cor}12` : 'rgba(255,255,255,0.02)',
+                  border: `1px solid ${tarefaSel === tk.id ? `${modo.cor}40` : 'var(--border-0)'}`,
                   borderRadius: 8, cursor: 'pointer', textAlign: 'left', width: '100%',
                   fontFamily: 'inherit', transition: 'all var(--t-fast)',
                 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: tarefaSel === t.id ? modo.cor : 'var(--text-2)', flexShrink: 0, transition: 'background var(--t-fast)' }}/>
-                  <span style={{ fontSize: 13, color: tarefaSel === t.id ? 'var(--text-0)' : 'var(--text-1)', fontWeight: tarefaSel === t.id ? 500 : 400, letterSpacing: '-0.01em' }}>
-                    {t.titulo}
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: tarefaSel === tk.id ? modo.cor : 'var(--text-2)', flexShrink: 0, transition: 'background var(--t-fast)' }}/>
+                  <span style={{ fontSize: 13, color: tarefaSel === tk.id ? 'var(--text-0)' : 'var(--text-1)', fontWeight: tarefaSel === tk.id ? 500 : 400, letterSpacing: '-0.01em' }}>
+                    {tk.titulo}
                   </span>
                 </button>
               ))}
@@ -223,7 +223,7 @@ export default function FocusPage() {
 
         {rodando && (
           <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-2)', marginTop: 22, lineHeight: 1.55, animation: 'fadeIn 0.4s ease' }}>
-            Feche todas as distrações. Uma coisa de cada vez.
+            {t('close_distractions')}
           </p>
         )}
       </div>

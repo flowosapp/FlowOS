@@ -4,6 +4,7 @@ import {
   ChevronRight, Check, FileText, GraduationCap,
   ChevronDown, ChevronUp, Sparkles,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useFlowStore } from '../store'
 import type {
   StatusLivro, StatusCurso, HorizonteMeta, StatusMeta,
@@ -20,25 +21,6 @@ function progresso(atual: number, total: number) {
 }
 
 type Tab = 'leitura' | 'conhecimento' | 'metas'
-
-const TABS: { id: Tab; icon: typeof BookOpen; label: string }[] = [
-  { id: 'leitura', icon: BookOpen, label: 'Leitura' },
-  { id: 'conhecimento', icon: Brain, label: 'Conhecimento' },
-  { id: 'metas', icon: Target, label: 'Metas & Objetivos' },
-]
-
-const HORIZONTE_LABEL: Record<HorizonteMeta, { label: string; cor: string }> = {
-  '30d':  { label: '30 dias',  cor: '#ef4444' },
-  '90d':  { label: '90 dias',  cor: '#f59e0b' },
-  '1a':   { label: '1 ano',    cor: '#3b82f6' },
-  '5a':   { label: '5 anos',   cor: '#8b5cf6' },
-}
-
-const STATUS_LIVRO: Record<StatusLivro, { label: string; cor: string }> = {
-  'quero-ler': { label: 'Quero Ler', cor: '#71717a' },
-  'lendo':     { label: 'Lendo',     cor: '#3b82f6' },
-  'lido':      { label: 'Lido ✓',   cor: '#10b981' },
-}
 
 function ProgressBar({ value, color = 'var(--accent)', height = 4 }: { value: number; color?: string; height?: number }) {
   return (
@@ -73,13 +55,20 @@ function ScoreRingSmall({ value, color, size = 52 }: { value: number; color: str
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function CrescimentoPage() {
+  const { t } = useTranslation('crescimento')
   const [tab, setTab] = useState<Tab>('leitura')
+
+  const TABS: { id: Tab; icon: typeof BookOpen; label: string }[] = [
+    { id: 'leitura',      icon: BookOpen, label: t('tab_reading') },
+    { id: 'conhecimento', icon: Brain,    label: t('tab_knowledge') },
+    { id: 'metas',        icon: Target,   label: t('tab_goals') },
+  ]
 
   return (
     <div className="page-container animate-in">
       <div className="page-header">
-        <h1 className="page-title">Crescimento Pessoal</h1>
-        <p className="page-subtitle">Leitura, cursos, aprendizado e metas de alta performance.</p>
+        <h1 className="page-title">{t('page_title')}</h1>
+        <p className="page-subtitle">{t('page_subtitle')}</p>
       </div>
 
       <div style={{
@@ -116,6 +105,12 @@ export default function CrescimentoPage() {
 // ─── Tab Leitura ─────────────────────────────────────────────────────────────
 
 function TabLeitura() {
+  const { t } = useTranslation('crescimento')
+  const STATUS_LIVRO: Record<StatusLivro, { label: string; cor: string }> = {
+    'quero-ler': { label: t('status_want_to_read'), cor: '#71717a' },
+    'lendo':     { label: t('status_reading'),      cor: '#3b82f6' },
+    'lido':      { label: t('status_done'),         cor: '#10b981' },
+  }
   const livros = useFlowStore(s => s.livros)
   const metaLivrosPorAno = useFlowStore(s => s.metaLivrosPorAno)
   const adicionarLivro = useFlowStore(s => s.adicionarLivro)
@@ -1133,6 +1128,13 @@ function TabConhecimento() {
 // ─── Tab Metas ────────────────────────────────────────────────────────────────
 
 function TabMetas() {
+  const { t } = useTranslation('crescimento')
+  const HORIZONTE_LABEL: Record<HorizonteMeta, { label: string; cor: string }> = {
+    '30d': { label: t('horizon_30d'), cor: '#ef4444' },
+    '90d': { label: t('horizon_90d'), cor: '#f59e0b' },
+    '1a':  { label: t('horizon_1a'),  cor: '#3b82f6' },
+    '5a':  { label: t('horizon_5a'),  cor: '#8b5cf6' },
+  }
   const metas = useFlowStore(s => s.metas)
   const adicionarMeta = useFlowStore(s => s.adicionarMeta)
   const atualizarMeta = useFlowStore(s => s.atualizarMeta)

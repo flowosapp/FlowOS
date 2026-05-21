@@ -1,0 +1,18 @@
+{
+  "page_title": "AI Hub",
+  "page_subtitle": "Contextual intelligence for your life system",
+  "clear": "Clear",
+  "greeting": "How can I help you{{name}}?",
+  "context_hint": "I have full context of your habits, tasks, projects and finances. Ask me anything.",
+  "placeholder": "Ask anything... (Enter to send, Shift+Enter for new line)",
+  "powered_api": "Powered by {{model}} · full context of your FlowOS",
+  "powered_local": "FlowOS AI knows your habits, tasks, projects and finances.",
+  "suggestions": [
+    "Organize my day for maximum productivity",
+    "Analyze my financial situation",
+    "Help me create a morning routine",
+    "What should I focus on this week?",
+    "Review my habit consistency",
+    "Create a 30-day challenge for me"
+  ]
+}

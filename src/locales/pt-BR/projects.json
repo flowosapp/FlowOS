@@ -1,0 +1,20 @@
+{
+  "page_title": "Projetos",
+  "subtitle_one": "{{tasks}} tarefa em {{projects}} projeto",
+  "subtitle_other": "{{tasks}} tarefas em {{projects}} projetos",
+  "new_project": "Novo Projeto",
+  "project_placeholder": "Nome do projeto...",
+  "create": "Criar",
+  "add_task": "+ Adicionar tarefa...",
+  "add": "Adicionar",
+  "all": "Todos",
+  "col_todo": "A Fazer",
+  "col_in_progress": "Em Progresso",
+  "col_done": "Concluído",
+  "prio_high": "Alta",
+  "prio_medium": "Média",
+  "prio_low": "Baixa",
+  "move_back": "Mover para anterior",
+  "move_forward": "Avançar",
+  "remove": "Remover"
+}

@@ -1,23 +1,31 @@
 import { useState, type FormEvent } from 'react'
 import { useFlowStore } from '../store'
+import { useTranslation } from 'react-i18next'
 import type { KanbanColumn, Priority, Tarefa } from '../types'
 import { Plus, Trash2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react'
-
-const COLUNAS: { key: KanbanColumn; label: string; cor: string }[] = [
-  { key: 'a-fazer', label: 'A Fazer', cor: '#71717a' },
-  { key: 'em-progresso', label: 'Em Progresso', cor: '#3b82f6' },
-  { key: 'concluido', label: 'Concluído', cor: '#10b981' },
-]
 
 const PRIORIDADES: Priority[] = ['alta', 'media', 'baixa']
 const CORES_P: Record<Priority, string> = { alta: '#ef4444', media: '#f59e0b', baixa: '#3b82f6' }
 const BG_P: Record<Priority, string> = { alta: 'rgba(239,68,68,0.1)', media: 'rgba(245,158,11,0.1)', baixa: 'rgba(59,130,246,0.1)' }
-const LABELS_P: Record<Priority, string> = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
 
 const PROXIMA: Record<KanbanColumn, KanbanColumn | null> = { 'a-fazer': 'em-progresso', 'em-progresso': 'concluido', 'concluido': null }
 const ANTERIOR: Record<KanbanColumn, KanbanColumn | null> = { 'a-fazer': null, 'em-progresso': 'a-fazer', 'concluido': 'em-progresso' }
 
 export default function ProjectsPage() {
+  const { t } = useTranslation('projects')
+
+  const COLUNAS: { key: KanbanColumn; label: string; cor: string }[] = [
+    { key: 'a-fazer',      label: t('col_todo'),        cor: '#71717a' },
+    { key: 'em-progresso', label: t('col_in_progress'), cor: '#3b82f6' },
+    { key: 'concluido',    label: t('col_done'),        cor: '#10b981' },
+  ]
+
+  const LABELS_P: Record<Priority, string> = {
+    alta:  t('prio_high'),
+    media: t('prio_medium'),
+    baixa: t('prio_low'),
+  }
+
   const tarefas = useFlowStore(s => s.tarefas)
   const projetos = useFlowStore(s => s.projetos)
   const adicionarTarefa = useFlowStore(s => s.adicionarTarefa)
@@ -55,18 +63,20 @@ export default function ProjectsPage() {
       <div style={{ padding: '20px 32px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <div>
-            <h1 className="page-title">Projetos</h1>
-            <p className="page-subtitle">{tarefas.length} tarefas em {projetos.length} projetos</p>
+            <h1 className="page-title">{t('page_title')}</h1>
+            <p className="page-subtitle">
+              {t(tarefas.length === 1 ? 'subtitle_one' : 'subtitle_other', { tasks: tarefas.length, projects: projetos.length })}
+            </p>
           </div>
           <button className="btn-primary" onClick={() => setShowNovoProjeto(true)} style={{ gap: 6 }}>
             <Plus size={15} />
-            Novo Projeto
+            {t('new_project')}
           </button>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <TabProjeto label="Todos" count={tarefas.length} ativo={projetoSelecionado === 'todos'} onClick={() => setProjetoSelecionado('todos')} cor="#71717a" />
+          <TabProjeto label={t('all')} count={tarefas.length} ativo={projetoSelecionado === 'todos'} onClick={() => setProjetoSelecionado('todos')} cor="#71717a" />
           {projetos.map(p => (
-            <TabProjeto key={p.id} label={p.nome} count={tarefas.filter(t => t.projetoId === p.id).length} ativo={projetoSelecionado === p.id} onClick={() => setProjetoSelecionado(p.id)} cor={p.cor} />
+            <TabProjeto key={p.id} label={p.nome} count={tarefas.filter(tk => tk.projetoId === p.id).length} ativo={projetoSelecionado === p.id} onClick={() => setProjetoSelecionado(p.id)} cor={p.cor} />
           ))}
         </div>
       </div>
@@ -74,16 +84,16 @@ export default function ProjectsPage() {
       {showNovoProjeto && (
         <div style={{ padding: '12px 32px', borderBottom: '1px solid var(--border)', background: 'rgba(59,130,246,0.04)', flexShrink: 0 }}>
           <form onSubmit={handleAdicionarProjeto} style={{ display: 'flex', gap: 8, maxWidth: 420 }}>
-            <input className="input-field" placeholder="Nome do projeto..." value={nomeProjeto} onChange={e => setNomeProjeto(e.target.value)} autoFocus style={{ flex: 1 }} />
-            <button type="submit" className="btn-primary" disabled={!nomeProjeto.trim()} style={{ opacity: nomeProjeto.trim() ? 1 : 0.4 }}>Criar</button>
-            <button type="button" className="btn-ghost" onClick={() => setShowNovoProjeto(false)}>Cancelar</button>
+            <input className="input-field" placeholder={t('project_placeholder')} value={nomeProjeto} onChange={e => setNomeProjeto(e.target.value)} autoFocus style={{ flex: 1 }} />
+            <button type="submit" className="btn-primary" disabled={!nomeProjeto.trim()} style={{ opacity: nomeProjeto.trim() ? 1 : 0.4 }}>{t('create')}</button>
+            <button type="button" className="btn-ghost" onClick={() => setShowNovoProjeto(false)}>{t('cancel', { ns: 'common' })}</button>
           </form>
         </div>
       )}
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 32px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'start' }}>
         {COLUNAS.map(col => {
-          const tarefasCol = tarefasFiltradas.filter(t => t.coluna === col.key)
+          const tarefasCol = tarefasFiltradas.filter(tk => tk.coluna === col.key)
           return (
             <div key={col.key}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 4px' }}>
@@ -96,17 +106,20 @@ export default function ProjectsPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {tarefasCol.map(tarefa => (
-                  <CartaoTarefa key={tarefa.id} tarefa={tarefa}
+                  <CartaoTarefa key={tarefa.id} tarefa={tarefa} labelsP={LABELS_P}
                     onRemover={() => removerTarefa(tarefa.id)}
                     onMoverProxima={PROXIMA[col.key] ? () => moverTarefa(tarefa.id, PROXIMA[col.key]!) : undefined}
                     onMoverAnterior={ANTERIOR[col.key] ? () => moverTarefa(tarefa.id, ANTERIOR[col.key]!) : undefined}
                     concluido={col.key === 'concluido'}
+                    titleBack={t('move_back')}
+                    titleForward={t('move_forward')}
+                    titleRemove={t('remove')}
                   />
                 ))}
 
                 <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: 10, padding: '10px 12px' }}>
                   <input className="input-field"
-                    placeholder="+ Adicionar tarefa..."
+                    placeholder={t('add_task')}
                     value={inputColuna[col.key] ?? ''}
                     onChange={e => setInputColuna(prev => ({ ...prev, [col.key]: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && handleAdicionarTarefa(col.key)}
@@ -120,7 +133,7 @@ export default function ProjectsPage() {
                           {LABELS_P[p]}
                         </button>
                       ))}
-                      <button type="button" className="btn-primary" onClick={() => handleAdicionarTarefa(col.key)} style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: 12 }}>Adicionar</button>
+                      <button type="button" className="btn-primary" onClick={() => handleAdicionarTarefa(col.key)} style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: 12 }}>{t('add')}</button>
                     </div>
                   )}
                 </div>
@@ -133,12 +146,16 @@ export default function ProjectsPage() {
   )
 }
 
-function CartaoTarefa({ tarefa, onRemover, onMoverProxima, onMoverAnterior, concluido }: {
+function CartaoTarefa({ tarefa, onRemover, onMoverProxima, onMoverAnterior, concluido, labelsP, titleBack, titleForward, titleRemove }: {
   tarefa: Tarefa
   onRemover: () => void
   onMoverProxima?: () => void
   onMoverAnterior?: () => void
   concluido: boolean
+  labelsP: Record<Priority, string>
+  titleBack: string
+  titleForward: string
+  titleRemove: string
 }) {
   const [hovered, setHovered] = useState(false)
   return (
@@ -153,17 +170,17 @@ function CartaoTarefa({ tarefa, onRemover, onMoverProxima, onMoverAnterior, conc
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-        <span style={{ padding: '2px 7px', background: BG_P[tarefa.prioridade], color: CORES_P[tarefa.prioridade], borderRadius: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          {LABELS_P[tarefa.prioridade]}
+        <span style={{ padding: '2px 7px', background: BG_P[tarefa.prioridade], color: CORES_P[tarefa.prioridade] as string, borderRadius: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          {labelsP[tarefa.prioridade]}
         </span>
         <div style={{ display: 'flex', gap: 4 }}>
           {onMoverAnterior && (
-            <BtnAcao onClick={onMoverAnterior} title="Mover para anterior" hoverColor="var(--text-primary)"><ArrowLeft size={13} /></BtnAcao>
+            <BtnAcao onClick={onMoverAnterior} title={titleBack} hoverColor="var(--text-primary)"><ArrowLeft size={13} /></BtnAcao>
           )}
           {onMoverProxima && (
-            <BtnAcao onClick={onMoverProxima} title="Avançar" hoverColor="var(--accent)"><ArrowRight size={13} /></BtnAcao>
+            <BtnAcao onClick={onMoverProxima} title={titleForward} hoverColor="var(--accent)"><ArrowRight size={13} /></BtnAcao>
           )}
-          <BtnAcao onClick={onRemover} title="Remover" hoverColor="var(--danger)"><Trash2 size={13} /></BtnAcao>
+          <BtnAcao onClick={onRemover} title={titleRemove} hoverColor="var(--danger)"><Trash2 size={13} /></BtnAcao>
         </div>
       </div>
     </div>
