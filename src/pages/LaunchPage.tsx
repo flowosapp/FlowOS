@@ -102,15 +102,24 @@ const PLANS = [
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 export default function LaunchPage() {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft())
-  const [email, setEmail]       = useState('')
-  const [plan, setPlan]         = useState('starter')
-  const [status, setStatus]     = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
-  const [errorMsg, setErrorMsg] = useState('')
+  const [timeLeft, setTimeLeft]   = useState(getTimeLeft())
+  const [email, setEmail]         = useState('')
+  const [name, setName]           = useState('')
+  const [plan, setPlan]           = useState('starter')
+  const [status, setStatus]       = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [errorMsg, setErrorMsg]   = useState('')
+  const [waitlistCount, setWaitlistCount] = useState<number | null>(null)
 
   useEffect(() => {
     const id = setInterval(() => setTimeLeft(getTimeLeft()), 1000)
     return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/waitlist')
+      .then(r => r.json())
+      .then(d => setWaitlistCount(d.count ?? null))
+      .catch(() => {})
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -122,11 +131,12 @@ export default function LaunchPage() {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), plan, source: 'launch_page' }),
+        body: JSON.stringify({ email: email.trim(), name: name.trim(), plan, source: 'launch_page' }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Erro ao cadastrar.')
       setStatus('done')
+      setWaitlistCount(c => (c ?? 0) + 1)
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Tente novamente.')
       setStatus('error')
@@ -168,12 +178,12 @@ export default function LaunchPage() {
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 100, marginBottom: 32 }}
         >
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: BLUE, boxShadow: `0 0 8px ${BLUE}`, animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 11, color: '#93c5fd', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Lançamento em</span>
+          <span style={{ fontSize: 11, color: '#93c5fd', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Lançamento em 08/06/2026</span>
         </motion.div>
 
         {/* Headline */}
         <motion.h1
-          initial={{ opacity: 1, y: 20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
           style={{ fontSize: 'clamp(36px,6vw,80px)', fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.0, marginBottom: 20, maxWidth: 800 }}
@@ -222,20 +232,23 @@ export default function LaunchPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 16, padding: '24px 28px', textAlign: 'center' }}
+              style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 16, padding: '28px 32px', textAlign: 'center' }}
             >
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-                <Check size={22} color="#10b981" />
+              <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Check size={24} color="#10b981" />
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 8 }}>Você está na lista! 🎉</h3>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
-                Enviamos um e-mail de confirmação. No dia 08/06 você será o primeiro a saber.
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 8 }}>
+                {name.trim() ? `${name.trim().split(' ')[0]}, você está na lista! 🎉` : 'Você está na lista! 🎉'}
+              </h3>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.75 }}>
+                Enviamos um e-mail de confirmação para <strong style={{ color: 'rgba(255,255,255,0.75)' }}>{email}</strong>.<br />
+                No dia <strong style={{ color: '#fff' }}>08/06</strong> você será um dos primeiros a acessar o trial de 15 dias.
               </p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit}>
               {/* Plan selector */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {PLANS.map(p => (
                   <button
                     key={p.id}
@@ -261,16 +274,16 @@ export default function LaunchPage() {
                 ))}
               </div>
 
-              {/* Email input */}
-              <div style={{ display: 'flex', gap: 8 }}>
+              {/* Name + Email */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
+                  type="text"
+                  placeholder="Seu nome"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
                   style={{
-                    flex: 1, padding: '14px 18px', background: 'rgba(255,255,255,0.04)',
+                    width: 160, flexShrink: 0, padding: '14px 16px',
+                    background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                     color: '#fff', fontSize: 14, fontFamily: sans, outline: 'none',
                     transition: 'border-color 0.2s',
@@ -278,39 +291,55 @@ export default function LaunchPage() {
                   onFocus={e => (e.target.style.borderColor = 'rgba(59,130,246,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
                 />
-                <button
-                  type="submit"
-                  disabled={status === 'loading' || !email.trim()}
+                <input
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
                   style={{
-                    padding: '14px 22px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                    background: status === 'loading' ? 'rgba(59,130,246,0.4)' : grad,
-                    color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: sans,
-                    display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap',
-                    boxShadow: '0 0 24px rgba(59,130,246,0.3)', transition: 'opacity 0.2s',
-                    opacity: (!email.trim() || status === 'loading') ? 0.6 : 1,
+                    flex: 1, padding: '14px 16px', background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+                    color: '#fff', fontSize: 14, fontFamily: sans, outline: 'none',
+                    transition: 'border-color 0.2s',
                   }}
-                >
-                  {status === 'loading' ? 'Enviando…' : (<>Garantir acesso <ArrowRight size={15} /></>)}
-                </button>
+                  onFocus={e => (e.target.style.borderColor = 'rgba(59,130,246,0.5)')}
+                  onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
+                />
               </div>
+
+              <button
+                type="submit"
+                disabled={status === 'loading' || !email.trim()}
+                style={{
+                  width: '100%', padding: '15px 22px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                  background: status === 'loading' ? 'rgba(59,130,246,0.4)' : grad,
+                  color: '#fff', fontWeight: 700, fontSize: 15, fontFamily: sans,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: '0 0 32px rgba(59,130,246,0.25)', transition: 'opacity 0.2s',
+                  opacity: (!email.trim() || status === 'loading') ? 0.6 : 1,
+                }}
+              >
+                {status === 'loading' ? 'Enviando…' : (<>Garantir minha vaga <ArrowRight size={16} /></>)}
+              </button>
 
               {status === 'error' && (
                 <p style={{ fontSize: 12, color: '#ef4444', marginTop: 8, textAlign: 'left' }}>{errorMsg}</p>
               )}
 
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 12, lineHeight: 1.6 }}>
-                Sem spam. Acesso antecipado + condições especiais de early bird no dia do lançamento.
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 10, lineHeight: 1.6 }}>
+                Sem spam. No dia do lançamento você receberá seu link de acesso + 15 dias de trial grátis.
               </p>
             </form>
           )}
         </motion.div>
 
-        {/* Social proof */}
+        {/* Social proof — contador real */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          style={{ marginTop: 48, display: 'flex', alignItems: 'center', gap: 10 }}
+          style={{ marginTop: 44, display: 'flex', alignItems: 'center', gap: 12 }}
         >
           <div style={{ display: 'flex' }}>
             {['🧠', '⚡', '🎯', '💪', '🚀'].map((emoji, i) => (
@@ -319,8 +348,11 @@ export default function LaunchPage() {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', lineHeight: 1.5 }}>
-            Junte-se a quem já está na lista de espera
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
+            {waitlistCount !== null && waitlistCount > 0
+              ? <><strong style={{ color: 'rgba(255,255,255,0.7)' }}>{waitlistCount.toLocaleString('pt-BR')}</strong> pessoas já garantiram sua vaga</>
+              : 'Junte-se à lista de espera'
+            }
           </p>
         </motion.div>
       </main>

@@ -32,6 +32,10 @@
     {
       "path": "/api/email/trial-ending",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/email/launch-blast",
+      "schedule": "0 11 8 6 *"
     }
   ]
 }

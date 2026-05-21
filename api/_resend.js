@@ -126,6 +126,107 @@ export function buildCancelledHtml({ name, planName, accessUntil, dataDeletionDa
     ${footer()}`)
 }
 
+export function buildWaitlistConfirmHtml({ name, plan }) {
+  const first = (name ?? '').split(' ')[0] || null
+  const greeting = first ? `Olá, ${first}! 👋` : 'Você está dentro! 👋'
+  const PLAN_LABEL = { starter: 'Starter — R$ 29,90/mês', pro: 'Pro — R$ 49,90/mês', flow: 'Flow+ — R$ 249,90/mês' }
+  const planLabel = PLAN_LABEL[plan] ?? PLAN_LABEL.starter
+  return wrap(`
+    ${logo}
+    <tr><td style="background:#0b0b0f;border:1px solid rgba(59,130,246,0.2);border-radius:20px;padding:40px 40px 36px;text-align:center;">
+      <div style="margin-bottom:24px;">
+        <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+          <td style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:50%;width:64px;height:64px;text-align:center;vertical-align:middle;">
+            <span style="font-size:28px;line-height:64px;">✅</span>
+          </td>
+        </tr></table>
+      </div>
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:900;color:#f2f2f5;letter-spacing:-0.5px;">${greeting}</h1>
+      <p style="margin:0 0 24px;font-size:15px;color:#9898a8;line-height:1.8;">
+        Sua vaga está garantida. Em <strong style="color:#fff">08 de junho de 2026</strong> o FlowOS abre as portas e você será um dos primeiros a entrar.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+        <tr><td style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:14px;padding:20px;text-align:left;">
+          <p style="margin:0 0 12px;font-size:11px;font-weight:700;color:#60a5fa;letter-spacing:0.12em;text-transform:uppercase;">Seu plano reservado</p>
+          <p style="margin:0;font-size:15px;font-weight:700;color:#fff;">${planLabel}</p>
+          <p style="margin:6px 0 0;font-size:12px;color:#9898a8;">✓ 15 dias grátis · Sem cobrança no cadastro · Cancele quando quiser</p>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+        <tr><td style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;">
+          <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#fff;">O que é o FlowOS?</p>
+          <p style="margin:4px 0;font-size:12px;color:#9898a8;"><span style="color:#3b82f6;margin-right:8px;">⚡</span>Hábitos, IA, finanças, foco e saúde em um único painel</p>
+          <p style="margin:4px 0;font-size:12px;color:#9898a8;"><span style="color:#3b82f6;margin-right:8px;">📊</span>Life Score — um número de 0 a 100 que mede sua vida em tempo real</p>
+          <p style="margin:4px 0;font-size:12px;color:#9898a8;"><span style="color:#3b82f6;margin-right:8px;">🤖</span>IA com contexto completo dos seus dados — não é chatbot genérico</p>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 6px;font-size:12px;color:#62627a;">Acompanhe os bastidores:</p>
+      <a href="https://instagram.com/flowosapp.io" style="color:#3b82f6;font-size:13px;font-weight:600;">@flowosapp.io no Instagram →</a>
+    </td></tr>
+    ${footer()}`)
+}
+
+export function buildLaunchBlastHtml({ name, plan }) {
+  const first = (name ?? '').split(' ')[0] || null
+  const greeting = first ? `${first}, o dia chegou.` : 'O dia chegou.'
+  const APP_URL_LOCAL = process.env.FLOWOS_APP_URL ?? 'https://flowosapp.io'
+  const PLAN_LABEL = { starter: 'Starter', pro: 'Pro', flow: 'Flow+' }
+  const planLabel = PLAN_LABEL[plan] ?? 'Starter'
+  return wrap(`
+    ${logo}
+    <tr><td style="background:#0b0b0f;border:1px solid rgba(59,130,246,0.25);border-radius:20px;padding:40px 40px 36px;text-align:center;">
+      <div style="margin-bottom:20px;">
+        <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+          <td style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(6,182,212,0.2));border:1px solid rgba(59,130,246,0.3);border-radius:16px;width:72px;height:72px;text-align:center;vertical-align:middle;">
+            <span style="font-size:36px;line-height:72px;">⚡</span>
+          </td>
+        </tr></table>
+      </div>
+      <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#60a5fa;letter-spacing:0.14em;text-transform:uppercase;">FlowOS está no ar</p>
+      <h1 style="margin:0 0 16px;font-size:30px;font-weight:900;color:#f2f2f5;letter-spacing:-0.8px;line-height:1.1;">${greeting}</h1>
+      <p style="margin:0 0 32px;font-size:15px;color:#9898a8;line-height:1.8;">
+        Você garantiu sua vaga na lista de espera. Agora é a hora — comece seu <strong style="color:#fff">trial gratuito de 15 dias</strong> do plano <strong style="color:#60a5fa">${planLabel}</strong>.
+      </p>
+      <a href="${APP_URL_LOCAL}"
+         style="display:inline-block;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:14px;letter-spacing:-0.2px;box-shadow:0 0 32px rgba(59,130,246,0.4);">
+        Começar meu trial grátis →
+      </a>
+      <p style="margin:16px 0 0;font-size:12px;color:#62627a;">Sem cartão agora · 15 dias grátis · Cancele quando quiser</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:32px;">
+        <tr><td style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px;">
+          <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:#fff;text-align:left;">O que você encontra no FlowOS:</p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="50%" style="padding:6px 0;font-size:12px;color:#9898a8;vertical-align:top;">
+                <span style="color:#3b82f6;margin-right:6px;">⚡</span>Dashboard + Life Score
+              </td>
+              <td width="50%" style="padding:6px 0;font-size:12px;color:#9898a8;vertical-align:top;">
+                <span style="color:#8b5cf6;margin-right:6px;">🤖</span>Central de IA com contexto
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:12px;color:#9898a8;vertical-align:top;">
+                <span style="color:#10b981;margin-right:6px;">🔥</span>Hábitos e streaks
+              </td>
+              <td style="padding:6px 0;font-size:12px;color:#9898a8;vertical-align:top;">
+                <span style="color:#f59e0b;margin-right:6px;">💰</span>Controle financeiro
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:12px;color:#9898a8;vertical-align:top;">
+                <span style="color:#06b6d4;margin-right:6px;">🎯</span>Modo Foco (Pomodoro)
+              </td>
+              <td style="padding:6px 0;font-size:12px;color:#9898a8;vertical-align:top;">
+                <span style="color:#ef4444;margin-right:6px;">❤️</span>Saúde e sono
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+    ${footer()}`)
+}
+
 export function buildTrialEndingHtml({ name, lifeScore, trialEndDate }) {
   const first = (name ?? '').split(' ')[0] || 'você'
   return wrap(`
