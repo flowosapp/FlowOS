@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import type { User } from '@supabase/supabase-js'
-import { Smartphone, X, Download } from 'lucide-react'
+import { Smartphone, X, Download, Share, ArrowUp } from 'lucide-react'
 import { useFlowStore, DATA_KEYS } from './store'
 import type { FlowState } from './types'
 import { isSupabaseConfigured, getCurrentUser, onAuthChange, loadUserState, saveUserState, getSubscription, isActiveSubscription } from './services/supabase'
-import { canInstall, isStandalone, captureInstallPrompt, promptInstall, registerBackgroundSync } from './services/pwa'
+import { canInstall, isStandalone, captureInstallPrompt, promptInstall, registerBackgroundSync, isIOSSafari, isMacOSSafari } from './services/pwa'
 import { AuthContext } from './contexts/AuthContext'
 import { identifyUser, resetAnalyticsUser, track, Events } from './services/analytics'
 import AppLayout from './components/AppLayout'
@@ -85,9 +85,10 @@ export default function App() {
       }
 
       // Show install modal on fresh login (null → user)
+      // canInstall() = Android/Chrome; isIOSSafari()/isMacOSSafari() = Apple platforms
       if (!prevUser.current && u && !isStandalone() && !sessionStorage.getItem('install-modal-shown')) {
         setTimeout(() => {
-          if (canInstall()) {
+          if (canInstall() || isIOSSafari() || isMacOSSafari()) {
             setShowInstallModal(true)
             sessionStorage.setItem('install-modal-shown', '1')
           }
@@ -191,28 +192,53 @@ export default function App() {
         <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.02em' }}>
           Instale o FlowOS
         </h2>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 28 }}>
-          Adicione o FlowOS à sua tela inicial e use <strong style={{ color: 'var(--text-primary)' }}>offline</strong> — sem precisar abrir o navegador. Quando voltar a internet, tudo sincroniza automaticamente.
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 20 }}>
+          Use <strong style={{ color: 'var(--text-primary)' }}>offline</strong> e acesse direto da tela inicial — sem abrir o navegador.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button
-            className="btn-primary"
-            style={{ justifyContent: 'center', gap: 8 }}
-            onClick={async () => {
-              await promptInstall()
-              setShowInstallModal(false)
-            }}
-          >
-            <Download size={15} />
-            Instalar na tela inicial
-          </button>
-          <button
-            onClick={() => setShowInstallModal(false)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: 13, cursor: 'pointer', padding: 8 }}
-          >
-            Agora não
-          </button>
-        </div>
+
+        {/* iOS Safari — instruções manuais */}
+        {isIOSSafari() ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            {[
+              { icon: <Share size={14} color="#3b82f6" />, text: <>Toque em <strong>Compartilhar</strong> <Share size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> na barra do Safari</> },
+              { icon: <ArrowUp size={14} color="#3b82f6" />, text: <>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></> },
+              { icon: <Smartphone size={14} color="#3b82f6" />, text: <>Toque em <strong>Adicionar</strong> — FlowOS abre como app nativo</> },
+            ].map((step, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, textAlign: 'left' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(59,130,246,0.1)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {step.icon}
+                </div>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{step.text}</span>
+              </div>
+            ))}
+          </div>
+        ) : isMacOSSafari() ? (
+          <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, textAlign: 'left', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+            No Safari: <strong style={{ color: 'var(--text-primary)' }}>Arquivo → Adicionar ao Dock</strong>
+            <br /><span style={{ fontSize: 11, color: 'var(--text-dim)' }}>Requer macOS Sonoma (14+) ou superior</span>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 8 }}>
+            <button
+              className="btn-primary"
+              style={{ justifyContent: 'center', gap: 8 }}
+              onClick={async () => {
+                await promptInstall()
+                setShowInstallModal(false)
+              }}
+            >
+              <Download size={15} />
+              Instalar na tela inicial
+            </button>
+          </div>
+        )}
+
+        <button
+          onClick={() => setShowInstallModal(false)}
+          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: 13, cursor: 'pointer', padding: 8, width: '100%' }}
+        >
+          Agora não
+        </button>
       </div>
     </div>
   )

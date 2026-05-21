@@ -1,6 +1,27 @@
 /* PWA utilities — install prompt, push subscription, SW messaging */
 
-// ── Install prompt ───────────────────────────────────────────────────────────
+// ── Platform detection ────────────────────────────────────────────────────────
+
+export function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+export function isIOSSafari(): boolean {
+  if (!isIOS()) return false
+  // CriOS = Chrome iOS, FxiOS = Firefox iOS — both support different install flows
+  return /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS/.test(navigator.userAgent)
+}
+
+export function isMacOSSafari(): boolean {
+  const ua = navigator.userAgent
+  return /Macintosh/.test(ua)
+    && /Safari/.test(ua)
+    && !/Chrome|Chromium|CriOS/.test(ua)
+    && navigator.maxTouchPoints === 0
+}
+
+// ── Install prompt ────────────────────────────────────────────────────────────
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null
 
