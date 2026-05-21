@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, ArrowRight, Check, Instagram, Twitter } from 'lucide-react'
+import { Zap, ArrowRight, Check, Instagram, Twitter, Tag, Copy, CheckCheck } from 'lucide-react'
 
 const LAUNCH_DATE = new Date('2026-06-08T00:00:00-03:00')
 const BLUE  = '#3b82f6'
@@ -109,6 +109,14 @@ export default function LaunchPage() {
   const [status, setStatus]       = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [errorMsg, setErrorMsg]   = useState('')
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null)
+  const [codeCopied, setCodeCopied]       = useState(false)
+
+  function copyPromoCode() {
+    navigator.clipboard.writeText('PH10OFF').then(() => {
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    })
+  }
 
   useEffect(() => {
     const id = setInterval(() => setTimeLeft(getTimeLeft()), 1000)
@@ -354,6 +362,25 @@ export default function LaunchPage() {
               : 'Junte-se à lista de espera'
             }
           </p>
+        </motion.div>
+        {/* Promo Code */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+          style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}
+        >
+          <Tag size={12} color="rgba(167,139,250,0.7)" />
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+            Product Hunt: use{' '}
+            <button
+              onClick={copyPromoCode}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.35)', borderRadius: 5, padding: '1px 8px', color: '#c4b5fd', fontFamily: sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer' }}
+            >
+              PH10OFF {codeCopied ? <CheckCheck size={10} color="#86efac" /> : <Copy size={10} />}
+            </button>{' '}
+            <span style={{ color: 'rgba(167,139,250,0.6)' }}>e ganhe 3 meses grátis no PRO</span>
+          </span>
         </motion.div>
       </main>
 

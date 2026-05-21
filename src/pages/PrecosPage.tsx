@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, Zap, Cpu, Crown, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react'
+import { Check, Zap, Cpu, Crown, ArrowLeft, ChevronDown, ChevronUp, Copy, CheckCheck, Tag } from 'lucide-react'
 import { isSupabaseConfigured } from '../services/supabase'
 import { createCheckoutSession } from '../services/billing'
 import type { BillingPlan } from '../services/billing'
@@ -16,6 +16,14 @@ export default function PrecosPage() {
   const navigate = useNavigate()
   const [loadingPlan, setLoadingPlan] = useState<BillingPlan | null>(null)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [codeCopied, setCodeCopied] = useState(false)
+
+  function copyPromoCode() {
+    navigator.clipboard.writeText('PH10OFF').then(() => {
+      setCodeCopied(true)
+      setTimeout(() => setCodeCopied(false), 2000)
+    })
+  }
 
   const faqs        = t('faqs',         { returnObjects: true }) as FAQ[]
   const compareRows = t('compare_rows', { returnObjects: true }) as CompareRow[]
@@ -117,6 +125,24 @@ export default function PrecosPage() {
           </p>
         </div>
 
+        {/* Promo Banner */}
+        <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08))', border: '1px solid rgba(139,92,246,0.22)', borderRadius: 16, padding: '14px 20px', marginBottom: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Tag size={15} color="#a78bfa" />
+          <span style={{ fontSize: 13, color: '#c4b5fd', lineHeight: 1.5 }}>
+            Código <strong style={{ color: '#fff' }}>Product Hunt</strong>: use{' '}
+            <button
+              onClick={copyPromoCode}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(139,92,246,0.25)', border: '1px solid rgba(139,92,246,0.4)', borderRadius: 6, padding: '2px 10px', color: '#e9d5ff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(139,92,246,0.4)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(139,92,246,0.25)')}
+            >
+              PH10OFF
+              {codeCopied ? <CheckCheck size={12} color="#86efac" /> : <Copy size={12} />}
+            </button>{' '}
+            no checkout e ganhe <strong style={{ color: '#a78bfa' }}>3 meses grátis no PRO</strong>
+          </span>
+        </div>
+
         {/* Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20, marginBottom: 64 }}>
           {PLANS.map(plan => {
@@ -139,6 +165,12 @@ export default function PrecosPage() {
                 {'badge' in plan && plan.badge && (
                   <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: plan.gradient, borderRadius: 20, padding: '4px 16px', fontSize: 11, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', letterSpacing: '0.05em' }}>
                     ★ {plan.badge}
+                  </div>
+                )}
+                {plan.id === 'pro' && (
+                  <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(139,92,246,0.18)', border: '1px solid rgba(139,92,246,0.35)', borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, color: '#c4b5fd', letterSpacing: '0.04em' }}>
+                    <Tag size={9} />
+                    PH10OFF · 3 meses grátis
                   </div>
                 )}
 
