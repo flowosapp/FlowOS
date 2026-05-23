@@ -287,7 +287,7 @@ export default function App() {
       <Suspense fallback={<div style={{ background: '#04040e', minHeight: '100vh' }} />}>
       <Routes>
         {/* Páginas públicas acessíveis mesmo logado */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={isPreLaunch() ? <LaunchPage /> : <LandingPage />} />
         <Route path="/precos" element={<PrecosPage />} />
 
         {/* Todas as rotas do app dentro do AppLayout */}
