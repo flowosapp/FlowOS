@@ -37,12 +37,14 @@ function CountUnit({ value, label }: { value: number; label: string }) {
   }, [value])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 72 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, flex: '1 1 0' }}>
       <div style={{
-        position: 'relative', width: 80, height: 88,
+        position: 'relative',
+        width: '100%', aspectRatio: '1 / 1.1',
+        maxWidth: 80,
         background: 'rgba(255,255,255,0.04)',
         border: '1px solid rgba(59,130,246,0.2)',
-        borderRadius: 16,
+        borderRadius: 14,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         boxShadow: '0 0 32px rgba(59,130,246,0.08), inset 0 1px 0 rgba(255,255,255,0.05)',
         overflow: 'hidden',
@@ -51,17 +53,17 @@ function CountUnit({ value, label }: { value: number; label: string }) {
         <AnimatePresence mode="popLayout">
           <motion.span
             key={value}
-            initial={{ y: flip ? -30 : 0, opacity: flip ? 0 : 1 }}
+            initial={{ y: flip ? -20 : 0, opacity: flip ? 0 : 1 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 30, opacity: 0 }}
+            exit={{ y: 20, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            style={{ fontSize: 40, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', zIndex: 1 }}
+            style={{ fontSize: 'clamp(20px, 7vw, 40px)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', zIndex: 1 }}
           >
             {String(value).padStart(2, '0')}
           </motion.span>
         </AnimatePresence>
       </div>
-      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 10, fontWeight: 500 }}>
+      <span style={{ fontSize: 'clamp(8px, 2.2vw, 10px)', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase', marginTop: 8, fontWeight: 500 }}>
         {label}
       </span>
     </div>
@@ -150,7 +152,7 @@ export default function LaunchPage() {
   }
 
   return (
-    <div style={{ background: '#04040e', minHeight: '100vh', color: '#e2e8f0', fontFamily: sans, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: '#04040e', minHeight: '100vh', color: '#e2e8f0', fontFamily: sans, display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
       <Particles />
 
       {/* Nav */}
@@ -216,14 +218,14 @@ export default function LaunchPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px,2vw,20px)', marginBottom: 60 }}
+          style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(4px,2vw,20px)', marginBottom: 60, width: '100%', maxWidth: 440 }}
         >
           <CountUnit value={timeLeft.days}    label={t('days')} />
-          <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 20, lineHeight: 1 }}>:</span>
+          <span style={{ fontSize: 'clamp(20px, 6vw, 36px)', fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 'clamp(8px, 2.5vw, 20px)', lineHeight: 1, flexShrink: 0 }}>:</span>
           <CountUnit value={timeLeft.hours}   label={t('hours')} />
-          <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 20, lineHeight: 1 }}>:</span>
+          <span style={{ fontSize: 'clamp(20px, 6vw, 36px)', fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 'clamp(8px, 2.5vw, 20px)', lineHeight: 1, flexShrink: 0 }}>:</span>
           <CountUnit value={timeLeft.minutes} label={t('min')} />
-          <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 20, lineHeight: 1 }}>:</span>
+          <span style={{ fontSize: 'clamp(20px, 6vw, 36px)', fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 'clamp(8px, 2.5vw, 20px)', lineHeight: 1, flexShrink: 0 }}>:</span>
           <CountUnit value={timeLeft.seconds} label={t('sec')} />
         </motion.div>
 
@@ -284,18 +286,18 @@ export default function LaunchPage() {
               </div>
 
               {/* Name + Email */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <div className="input-row" style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <input
                   type="text"
                   placeholder={t('name_ph')}
                   value={name}
                   onChange={e => setName(e.target.value)}
                   style={{
-                    width: 160, flexShrink: 0, padding: '14px 16px',
+                    flex: '0 0 auto', width: 160, padding: '14px 16px',
                     background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                     color: '#fff', fontSize: 14, fontFamily: sans, outline: 'none',
-                    transition: 'border-color 0.2s',
+                    transition: 'border-color 0.2s', boxSizing: 'border-box',
                   }}
                   onFocus={e => (e.target.style.borderColor = 'rgba(59,130,246,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
@@ -307,10 +309,10 @@ export default function LaunchPage() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   style={{
-                    flex: 1, padding: '14px 16px', background: 'rgba(255,255,255,0.04)',
+                    flex: 1, minWidth: 0, padding: '14px 16px', background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                     color: '#fff', fontSize: 14, fontFamily: sans, outline: 'none',
-                    transition: 'border-color 0.2s',
+                    transition: 'border-color 0.2s', boxSizing: 'border-box',
                   }}
                   onFocus={e => (e.target.style.borderColor = 'rgba(59,130,246,0.5)')}
                   onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
@@ -402,6 +404,10 @@ export default function LaunchPage() {
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         input::placeholder { color: rgba(255,255,255,0.2); }
+        @media (max-width: 480px) {
+          .input-row { flex-direction: column !important; }
+          .input-row input { width: 100% !important; flex: 1 1 auto !important; }
+        }
       `}</style>
     </div>
   )
