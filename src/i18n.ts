@@ -18,6 +18,7 @@ import ptBRProjects from './locales/pt-BR/projects.json'
 import ptBRAI from './locales/pt-BR/ai.json'
 import ptBRSaude from './locales/pt-BR/saude.json'
 import ptBRCrescimento from './locales/pt-BR/crescimento.json'
+import ptBRLaunch from './locales/pt-BR/launch.json'
 
 // EN-US
 import enUSCommon from './locales/en-US/common.json'
@@ -35,6 +36,7 @@ import enUSProjects from './locales/en-US/projects.json'
 import enUSAI from './locales/en-US/ai.json'
 import enUSSaude from './locales/en-US/saude.json'
 import enUSCrescimento from './locales/en-US/crescimento.json'
+import enUSLaunch from './locales/en-US/launch.json'
 
 i18n
   .use(LanguageDetector)
@@ -60,6 +62,7 @@ i18n
         ai: ptBRAI,
         saude: ptBRSaude,
         crescimento: ptBRCrescimento,
+        launch: ptBRLaunch,
       },
       'en-US': {
         common: enUSCommon,
@@ -77,6 +80,7 @@ i18n
         ai: enUSAI,
         saude: enUSSaude,
         crescimento: enUSCrescimento,
+        launch: enUSLaunch,
       },
     },
     detection: {

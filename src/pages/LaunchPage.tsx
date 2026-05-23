@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, ArrowRight, Check, Instagram, Twitter, Tag, Copy, CheckCheck } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const LAUNCH_DATE = new Date('2026-06-08T00:00:00-03:00')
 const BLUE  = '#3b82f6'
@@ -91,17 +92,14 @@ function Particles() {
   )
 }
 
-// ── Plan selector ──────────────────────────────────────────────────────────────
-
-const PLANS = [
-  { id: 'starter', label: 'Starter', price: 'R$ 29,90', note: '/mês · 15 dias grátis', color: BLUE },
-  { id: 'pro',     label: 'Pro',     price: 'R$ 49,90', note: '/mês',                  color: '#8b5cf6', badge: 'Popular' },
-  { id: 'flow',    label: 'Flow+',   price: 'R$ 249,90',note: '/mês · API + automações', color: CYAN },
-]
-
 // ── Main ───────────────────────────────────────────────────────────────────────
 
 export default function LaunchPage() {
+  const { t, i18n } = useTranslation('launch')
+  const plans = t('plans', { returnObjects: true }) as Array<{ id: string; price: string; note: string; badge?: string }>
+  const PLAN_COLORS: Record<string, string> = { starter: BLUE, pro: '#8b5cf6', flow: CYAN }
+  const PLAN_LABELS: Record<string, string> = { starter: 'Starter', pro: 'Pro', flow: 'Flow+' }
+
   const [timeLeft, setTimeLeft]   = useState(getTimeLeft())
   const [email, setEmail]         = useState('')
   const [name, setName]           = useState('')
@@ -186,7 +184,7 @@ export default function LaunchPage() {
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 100, marginBottom: 32 }}
         >
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: BLUE, boxShadow: `0 0 8px ${BLUE}`, animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 11, color: '#93c5fd', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>Lançamento em 08/06/2026</span>
+          <span style={{ fontSize: 11, color: '#93c5fd', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>{t('badge')}</span>
         </motion.div>
 
         {/* Headline */}
@@ -196,9 +194,9 @@ export default function LaunchPage() {
           transition={{ duration: 0.7, delay: 0.1 }}
           style={{ fontSize: 'clamp(36px,6vw,80px)', fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.0, marginBottom: 20, maxWidth: 800 }}
         >
-          Seu Life OS está<br />
+          {t('headline')}<br />
           <span style={{ background: grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            quase pronto.
+            {t('headline_accent')}
           </span>
         </motion.h1>
 
@@ -209,8 +207,8 @@ export default function LaunchPage() {
           transition={{ duration: 0.7, delay: 0.2 }}
           style={{ fontSize: 'clamp(15px,2vw,18px)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, marginBottom: 52, maxWidth: 520 }}
         >
-          Hábitos, IA, finanças, foco e saúde em um único painel.<br />
-          Um número que mede sua vida inteira: o <strong style={{ color: 'rgba(255,255,255,0.85)' }}>Life Score</strong>.
+          {t('subtitle1')}<br />
+          {t('subtitle2_pre')}<strong style={{ color: 'rgba(255,255,255,0.85)' }}>Life Score</strong>{t('subtitle2_suf')}
         </motion.p>
 
         {/* Countdown */}
@@ -220,13 +218,13 @@ export default function LaunchPage() {
           transition={{ duration: 0.7, delay: 0.3 }}
           style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px,2vw,20px)', marginBottom: 60 }}
         >
-          <CountUnit value={timeLeft.days}    label="dias" />
+          <CountUnit value={timeLeft.days}    label={t('days')} />
           <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 20, lineHeight: 1 }}>:</span>
-          <CountUnit value={timeLeft.hours}   label="horas" />
+          <CountUnit value={timeLeft.hours}   label={t('hours')} />
           <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 20, lineHeight: 1 }}>:</span>
-          <CountUnit value={timeLeft.minutes} label="min" />
+          <CountUnit value={timeLeft.minutes} label={t('min')} />
           <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(59,130,246,0.4)', marginTop: 20, lineHeight: 1 }}>:</span>
-          <CountUnit value={timeLeft.seconds} label="seg" />
+          <CountUnit value={timeLeft.seconds} label={t('sec')} />
         </motion.div>
 
         {/* Form */}
@@ -246,47 +244,50 @@ export default function LaunchPage() {
                 <Check size={24} color="#10b981" />
               </div>
               <h3 style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 8 }}>
-                {name.trim() ? `${name.trim().split(' ')[0]}, você está na lista! 🎉` : 'Você está na lista! 🎉'}
+                {name.trim() ? t('success_name', { name: name.trim().split(' ')[0] }) : t('success')}
               </h3>
               <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.75 }}>
-                Enviamos um e-mail de confirmação para <strong style={{ color: 'rgba(255,255,255,0.75)' }}>{email}</strong>.<br />
-                No dia <strong style={{ color: '#fff' }}>08/06</strong> você será um dos primeiros a acessar o trial de 15 dias.
+                {t('success_desc1')} <strong style={{ color: 'rgba(255,255,255,0.75)' }}>{email}</strong>.<br />
+                {t('success_desc2')} <strong style={{ color: '#fff' }}>{t('success_date')}</strong> {t('success_desc3')}
               </p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit}>
               {/* Plan selector */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-                {PLANS.map(p => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPlan(p.id)}
-                    style={{
-                      flex: 1, padding: '10px 6px', borderRadius: 12, cursor: 'pointer',
-                      background: plan === p.id ? `${p.color}18` : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${plan === p.id ? p.color + '50' : 'rgba(255,255,255,0.08)'}`,
-                      color: plan === p.id ? '#fff' : 'rgba(255,255,255,0.45)',
-                      fontSize: 11, fontWeight: 700, fontFamily: sans, transition: 'all 0.18s',
-                      position: 'relative',
-                    }}
-                  >
-                    {p.badge && (
-                      <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', fontSize: 8, background: '#8b5cf6', color: '#fff', borderRadius: 4, padding: '2px 6px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                        {p.badge}
-                      </span>
-                    )}
-                    <div style={{ marginBottom: 2 }}>{p.label}</div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: plan === p.id ? p.color : 'rgba(255,255,255,0.3)' }}>{p.price}</div>
-                  </button>
-                ))}
+                {plans.map(p => {
+                  const color = PLAN_COLORS[p.id] ?? BLUE
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPlan(p.id)}
+                      style={{
+                        flex: 1, padding: '10px 6px', borderRadius: 12, cursor: 'pointer',
+                        background: plan === p.id ? `${color}18` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${plan === p.id ? color + '50' : 'rgba(255,255,255,0.08)'}`,
+                        color: plan === p.id ? '#fff' : 'rgba(255,255,255,0.45)',
+                        fontSize: 11, fontWeight: 700, fontFamily: sans, transition: 'all 0.18s',
+                        position: 'relative',
+                      }}
+                    >
+                      {p.badge && (
+                        <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', fontSize: 8, background: '#8b5cf6', color: '#fff', borderRadius: 4, padding: '2px 6px', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+                          {p.badge}
+                        </span>
+                      )}
+                      <div style={{ marginBottom: 2 }}>{PLAN_LABELS[p.id]}</div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: plan === p.id ? color : 'rgba(255,255,255,0.3)' }}>{p.price}</div>
+                    </button>
+                  )
+                })}
               </div>
 
               {/* Name + Email */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <input
                   type="text"
-                  placeholder="Seu nome"
+                  placeholder={t('name_ph')}
                   value={name}
                   onChange={e => setName(e.target.value)}
                   style={{
@@ -301,7 +302,7 @@ export default function LaunchPage() {
                 />
                 <input
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder={t('email_ph')}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
@@ -328,7 +329,7 @@ export default function LaunchPage() {
                   opacity: (!email.trim() || status === 'loading') ? 0.6 : 1,
                 }}
               >
-                {status === 'loading' ? 'Enviando…' : (<>Garantir minha vaga <ArrowRight size={16} /></>)}
+                {status === 'loading' ? t('sending') : (<>{t('cta')} <ArrowRight size={16} /></>)}
               </button>
 
               {status === 'error' && (
@@ -336,7 +337,7 @@ export default function LaunchPage() {
               )}
 
               <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 10, lineHeight: 1.6 }}>
-                Sem spam. No dia do lançamento você receberá seu link de acesso + 15 dias de trial grátis.
+                {t('fine_print')}
               </p>
             </form>
           )}
@@ -358,8 +359,8 @@ export default function LaunchPage() {
           </div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>
             {waitlistCount !== null && waitlistCount > 0
-              ? <><strong style={{ color: 'rgba(255,255,255,0.7)' }}>{waitlistCount.toLocaleString('pt-BR')}</strong> pessoas já garantiram sua vaga</>
-              : 'Junte-se à lista de espera'
+              ? <><strong style={{ color: 'rgba(255,255,255,0.7)' }}>{waitlistCount.toLocaleString(i18n.language)}</strong> {t('joined')}</>
+              : t('join_list')
             }
           </p>
         </motion.div>
@@ -372,23 +373,23 @@ export default function LaunchPage() {
         >
           <Tag size={12} color="rgba(167,139,250,0.7)" />
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
-            Product Hunt: use{' '}
+            {t('promo_label')}{' '}
             <button
               onClick={copyPromoCode}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.35)', borderRadius: 5, padding: '1px 8px', color: '#c4b5fd', fontFamily: sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', cursor: 'pointer' }}
             >
               PH10OFF {codeCopied ? <CheckCheck size={10} color="#86efac" /> : <Copy size={10} />}
             </button>{' '}
-            <span style={{ color: 'rgba(167,139,250,0.6)' }}>e ganhe 3 meses grátis no PRO</span>
+            <span style={{ color: 'rgba(167,139,250,0.6)' }}>{t('promo_benefit')}</span>
           </span>
         </motion.div>
       </main>
 
       {/* Footer */}
       <footer style={{ position: 'relative', zIndex: 10, padding: '20px clamp(20px,5vw,48px)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)' }}>© 2026 FlowOS · Lançamento 08/06/2026</p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.15)' }}>{t('copyright')}</p>
         <div style={{ display: 'flex', gap: 20 }}>
-          {[{ label: 'Privacidade', path: '/privacidade' }, { label: 'Termos', path: '/termos' }].map(({ label, path }) => (
+          {[{ label: t('privacy'), path: '/privacidade' }, { label: t('terms'), path: '/termos' }].map(({ label, path }) => (
             <a key={path} href={path} style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', textDecoration: 'none', transition: 'color 0.2s' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.2)')}>
